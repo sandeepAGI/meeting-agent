@@ -1,0 +1,32 @@
+{
+  "name": "meeting-agent",
+  "version": "0.1.0",
+  "description": "AI-powered meeting transcription and summarization tool",
+  "main": "dist/main/index.js",
+  "author": "Sandeep Mangaraj",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Development script will be configured with build tools'",
+    "build": "echo 'Build script will be configured with build tools'",
+    "test": "echo 'Test script will be configured with Jest'",
+    "test:integration": "echo 'Integration test script will be configured'",
+    "lint": "echo 'Lint script will be configured with ESLint'",
+    "format": "echo 'Format script will be configured with Prettier'",
+    "type-check": "tsc --noEmit",
+    "package:mac": "echo 'Package script will be configured with electron-builder'",
+    "dist:mac": "echo 'Distribution script will be configured with electron-builder'",
+    "setup:whisper": "echo 'Whisper model download script will be added'",
+    "db:migrate": "echo 'Database migration script will be added'",
+    "db:reset": "echo 'Database reset script will be added'",
+    "db:backup": "echo 'Database backup script will be added'"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}
