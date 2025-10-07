@@ -1,0 +1,22 @@
+appId: com.meetingagent.app
+productName: Meeting Agent
+directories:
+  buildResources: resources
+  output: out
+files:
+  - dist/**/*
+  - package.json
+mac:
+  target:
+    - dmg
+    - zip
+  category: public.app-category.productivity
+  icon: resources/icon.icns
+dmg:
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
