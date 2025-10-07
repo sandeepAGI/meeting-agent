@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from 'electron'
 import path from 'path'
+import { setupIPC, cleanupIPC } from './ipc'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -28,6 +29,7 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  setupIPC()
   createWindow()
 
   app.on('activate', () => {
@@ -38,7 +40,12 @@ app.whenReady().then(() => {
 })
 
 app.on('window-all-closed', () => {
+  cleanupIPC()
   if (process.platform !== 'darwin') {
     app.quit()
   }
+})
+
+app.on('before-quit', () => {
+  cleanupIPC()
 })
