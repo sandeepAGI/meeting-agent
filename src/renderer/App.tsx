@@ -1,96 +1,135 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { AudioCaptureService } from '../services/audioCapture'
 import type { AudioLevel } from '../types/audio'
 
 function App() {
   const [isInitialized, setIsInitialized] = useState(false)
+  const [isCaptureActive, setIsCaptureActive] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
   const [duration, setDuration] = useState(0)
   const [audioLevel, setAudioLevel] = useState<AudioLevel | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [blackHoleAvailable, setBlackHoleAvailable] = useState(false)
+  const [isInitializing, setIsInitializing] = useState(false)
 
-  // Check for BlackHole on mount
+  const audioServiceRef = useRef<AudioCaptureService | null>(null)
+  const durationIntervalRef = useRef<number | null>(null)
+
+  // Initialize audio service on mount
   useEffect(() => {
-    const checkBlackHole = async () => {
-      const available = await window.electron.audio.isBlackHoleAvailable()
-      setBlackHoleAvailable(available)
-
-      if (!available) {
-        setError(
-          'BlackHole audio device not found. Please install from https://existential.audio/blackhole/'
-        )
-      }
-    }
-    checkBlackHole()
-  }, [])
-
-  // Listen to audio levels
-  useEffect(() => {
-    window.electron.audio.onAudioLevel(level => {
-      setAudioLevel(level)
-    })
-
+    audioServiceRef.current = new AudioCaptureService()
     return () => {
-      window.electron.audio.removeAudioLevelListener()
+      // Cleanup on unmount
+      if (audioServiceRef.current) {
+        audioServiceRef.current.stopCapture()
+      }
     }
   }, [])
 
   // Update duration while recording
   useEffect(() => {
-    if (!isRecording) return
+    if (isRecording) {
+      durationIntervalRef.current = window.setInterval(() => {
+        if (audioServiceRef.current) {
+          const state = audioServiceRef.current.getState()
+          setDuration(state.duration)
+        }
+      }, 100)
+    } else {
+      if (durationIntervalRef.current) {
+        clearInterval(durationIntervalRef.current)
+        durationIntervalRef.current = null
+      }
+    }
 
-    const interval = setInterval(async () => {
-      const status = await window.electron.audio.getStatus()
-      setDuration(status.duration)
-    }, 100)
-
-    return () => clearInterval(interval)
+    return () => {
+      if (durationIntervalRef.current) {
+        clearInterval(durationIntervalRef.current)
+      }
+    }
   }, [isRecording])
 
   const handleInitialize = async () => {
     setError(null)
-    const result = await window.electron.audio.initialize()
+    setIsInitializing(true)
 
-    if (result.success) {
+    try {
+      if (!audioServiceRef.current) {
+        throw new Error('Audio service not available')
+      }
+
+      // Initialize WAV encoder
+      await audioServiceRef.current.initialize()
+
+      // Start audio capture
+      await audioServiceRef.current.startCapture()
+
+      // Set up audio level callback
+      audioServiceRef.current.onAudioLevel((level) => {
+        setAudioLevel(level)
+      })
+
       setIsInitialized(true)
-    } else {
-      setError(result.error || 'Failed to initialize audio')
+      setIsCaptureActive(true)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to initialize audio'
+      setError(message)
+      console.error('Initialization error:', err)
+    } finally {
+      setIsInitializing(false)
     }
-  }
-
-  const handleDebugDevices = async () => {
-    const allDevices = await window.electron.audio.getAllDevices()
-    const filteredDevices = await window.electron.audio.getDevices()
-    console.log('ALL DEVICES (unfiltered):', allDevices)
-    console.log('FILTERED DEVICES (input only):', filteredDevices)
-    alert(`Found ${allDevices.length} total devices, ${filteredDevices.length} input devices. Check console for details.`)
   }
 
   const handleStartRecording = async () => {
     setError(null)
-    const result = await window.electron.audio.startRecording()
 
-    if (result.success) {
+    try {
+      if (!audioServiceRef.current) {
+        throw new Error('Audio service not available')
+      }
+
+      await audioServiceRef.current.startRecording()
       setIsRecording(true)
       setDuration(0)
-    } else {
-      setError(result.error || 'Failed to start recording')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to start recording'
+      setError(message)
+      console.error('Recording error:', err)
     }
   }
 
   const handleStopRecording = async () => {
     setError(null)
-    const result = await window.electron.audio.stopRecording()
 
-    if (result.success) {
+    try {
+      if (!audioServiceRef.current) {
+        throw new Error('Audio service not available')
+      }
+
+      const session = await audioServiceRef.current.stopRecording()
       setIsRecording(false)
-      if (result.session) {
+
+      // Get the recorded blob
+      const blob = audioServiceRef.current.getRecordingBlob()
+
+      if (blob) {
+        // Create download link
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `recording_${session.id.replace(/[:.]/g, '-')}.wav`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+
         alert(
-          `Recording saved!\n\nDuration: ${result.session.duration.toFixed(1)}s\nSize: ${(result.session.sizeBytes / 1024).toFixed(1)} KB\nFile: ${result.session.filePath}`
+          `Recording saved!\n\nDuration: ${session.duration.toFixed(1)}s\nSize: ${(session.sizeBytes / 1024 / 1024).toFixed(2)} MB\nFormat: WAV (16kHz mono)`
         )
       }
-    } else {
-      setError(result.error || 'Failed to stop recording')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to stop recording'
+      setError(message)
+      console.error('Stop recording error:', err)
     }
   }
 
@@ -106,47 +145,49 @@ function App() {
         <h1>Meeting Agent</h1>
         <p>AI-powered meeting transcription and summarization</p>
       </header>
+
       <main className="app-main">
         <div className="audio-controls">
           <h2>Audio Recording</h2>
 
           {error && <div className="error-message">{error}</div>}
 
-          {!blackHoleAvailable && (
-            <div className="warning-message">
-              ⚠️ BlackHole not detected. Please install it to continue.
-            </div>
-          )}
-
-          <button
-            onClick={handleDebugDevices}
-            className="btn btn-secondary"
-            style={{ marginBottom: '10px' }}
-          >
-            🔍 Debug: Show All Devices
-          </button>
-
           {!isInitialized ? (
-            <button
-              onClick={handleInitialize}
-              className="btn btn-primary"
-              disabled={!blackHoleAvailable}
-            >
-              Initialize Audio
-            </button>
+            <div className="init-section">
+              <p className="info-text">
+                <strong>Phase 1.1 - Audio Capture</strong>
+              </p>
+              <p className="info-text">
+                This captures system audio natively on macOS (no BlackHole required) and saves
+                it as WAV files (16kHz mono, compatible with Whisper).
+              </p>
+              <button
+                onClick={handleInitialize}
+                className="btn btn-primary"
+                disabled={isInitializing}
+              >
+                {isInitializing ? 'Initializing...' : 'Initialize Audio Capture'}
+              </button>
+            </div>
           ) : (
             <div className="recording-section">
-              <div className="timer">{formatDuration(duration)}</div>
+              <div className="status-bar">
+                <div className="timer">{formatDuration(duration)}</div>
+                <div className="status">
+                  {isRecording ? '🔴 Recording...' : '⏸️ Ready'}
+                </div>
+              </div>
 
               {audioLevel && (
                 <div className="audio-level">
+                  <label>Audio Level:</label>
                   <div className="level-bar">
                     <div
                       className="level-fill"
                       style={{ width: `${audioLevel.level}%` }}
                     ></div>
                   </div>
-                  <span className="level-text">{audioLevel.level.toFixed(1)}%</span>
+                  <span className="level-text">{audioLevel.level}%</span>
                 </div>
               )}
 
@@ -162,21 +203,19 @@ function App() {
                 )}
               </div>
 
-              <div className="status">
-                Status: {isRecording ? '🔴 Recording...' : '⏸️ Ready'}
+              <div className="info">
+                <p>
+                  <strong>How it works:</strong>
+                </p>
+                <ul>
+                  <li>✅ Native system audio capture (no virtual drivers)</li>
+                  <li>✅ 16kHz mono WAV output (Whisper-ready)</li>
+                  <li>✅ Real-time audio level monitoring</li>
+                  <li>✅ No BlackHole installation required</li>
+                </ul>
               </div>
             </div>
           )}
-
-          <div className="info">
-            <p>
-              <strong>Phase 1.1 - Audio Capture</strong>
-            </p>
-            <p>
-              This demo captures system audio via BlackHole and saves it as WAV files
-              (16kHz mono, compatible with Whisper).
-            </p>
-          </div>
         </div>
       </main>
     </div>

@@ -84,47 +84,55 @@ Meeting Agent is a macOS desktop application that captures, transcribes, and sum
   - Ongoing maintenance burden with native modules
 - **Decision**: Pivoted to Web API-based approach (2025-10-09)
 
-**Revised Approach (Current)**:
+**Revised Approach (Current)**: ✓ (Completed: 2025-10-09)
 Using `electron-audio-loopback` for native system audio capture without BlackHole
 
 **Tasks**:
-- [ ] Install electron-audio-loopback and WAV encoding dependencies
-- [ ] Implement main process audio loopback initialization
-- [ ] Implement renderer process audio capture with MediaStream API
-- [ ] Add Web Audio API for audio level monitoring
-- [ ] Add Web Audio API for 16kHz mono conversion/resampling
-- [ ] Implement MediaRecorder with WAV encoding
-- [ ] Implement start/stop recording functionality
-- [ ] Save recordings to WAV files (16kHz mono, Whisper-compatible)
+- [x] Install electron-audio-loopback and WAV encoding dependencies
+- [x] Implement main process audio loopback initialization
+- [x] Implement renderer process audio capture with MediaStream API
+- [x] Add Web Audio API for audio level monitoring
+- [x] Add Web Audio API for 16kHz mono conversion/resampling
+- [x] Implement MediaRecorder with WAV encoding
+- [x] Implement start/stop recording functionality
+- [x] Save recordings to WAV files (16kHz mono, Whisper-compatible)
 
 **Testing**:
-- [ ] Verify system audio capture works without BlackHole
-- [ ] Test audio level monitoring and visualization
-- [ ] Test WAV file generation at 16kHz mono
-- [ ] Verify recordings are Whisper-compatible
-- [ ] Test start/stop recording controls
-- [ ] Manual test with actual meeting audio
+- [x] Verify system audio capture works without BlackHole
+- [x] Test audio level monitoring and visualization
+- [x] Test WAV file generation at 16kHz mono
+- [x] Verify recordings are Whisper-compatible
+- [x] Test start/stop recording controls
+- [x] Manual test with actual meeting audio (YouTube video tested successfully)
 
-**Dependencies to Add**:
-- `electron-audio-loopback` - System audio capture (no native modules)
-- `extendable-media-recorder` - Custom codec support for MediaRecorder
-- `extendable-media-recorder-wav-encoder` - WAV encoding for MediaRecorder
+**Next Tasks (Microphone Capture)**:
+- [ ] Test if meeting apps (Zoom/Teams/Meet) include user's voice in system audio output
+- [ ] If not, add microphone capture and audio mixing (merge mic + system audio)
+- [ ] Implement dual-stream recording (system audio + microphone)
+- [ ] Add audio mixing/merging before encoding to WAV
 
-**Files to Create**:
-- `src/services/audioCapture.ts` - Audio capture service using electron-audio-loopback
-- `src/services/audioProcessor.ts` - Web Audio API processing (16kHz mono conversion)
-- `src/types/audio.ts` - TypeScript interfaces
-- `src/main/audioSetup.ts` - Main process audio loopback initialization
-- `src/renderer/App.tsx` - UI with recording controls and audio level meter
+**Dependencies Added**:
+- ✅ `electron-audio-loopback@1.0.6` - System audio capture (no native modules)
+- ✅ `extendable-media-recorder@9.2.31` - Custom codec support for MediaRecorder
+- ✅ `extendable-media-recorder-wav-encoder@7.0.132` - WAV encoding for MediaRecorder
+
+**Files Created**:
+- ✅ `src/services/audioCapture.ts` - Audio capture service using electron-audio-loopback (manual mode)
+- ✅ `src/types/audio.ts` - TypeScript interfaces (AudioLevel, RecordingSession, AudioConfig)
+- ✅ `src/main/audioSetup.ts` - Main process audio loopback initialization (initMain)
+- ✅ `src/renderer/App.tsx` - UI with recording controls and audio level meter
+- ✅ `src/preload/index.ts` - Context bridge for IPC (enableLoopbackAudio, disableLoopbackAudio)
+- ✅ `src/types/electron.d.ts` - ElectronAPI type definitions
 
 **Implementation Details**:
-- Uses electron-audio-loopback (pure JavaScript, no native compilation)
+- Uses electron-audio-loopback manual mode (IPC handlers auto-registered by initMain)
 - No BlackHole or other virtual audio driver required
-- MediaStream API for audio capture
-- Web Audio API for audio level calculation and format conversion
+- MediaStream API for audio capture via getDisplayMedia
+- Web Audio API for audio level calculation and 16kHz mono resampling
 - extendable-media-recorder for WAV output
-- Recordings saved to app.getPath('userData')/recordings
+- Recordings downloaded as browser files (will move to userData in Phase 6)
 - Audio captured at 16kHz mono (Whisper-compatible format)
+- Real-time audio level visualization with RMS calculation
 
 **Advantages Over naudiodon Approach**:
 - ✅ No native module compilation issues
@@ -136,9 +144,18 @@ Using `electron-audio-loopback` for native system audio capture without BlackHol
 
 **Requirements**:
 - Electron >= 31.0.1 (we have 38.2.1 ✅)
-- macOS >= 12.3 (we have 26.0.1 ✅)
+- macOS >= 12.3 (Darwin 25.0.0 ✅)
 
-**Next Phase**: Complete Phase 1.1 implementation, then Phase 1.2 - Local Whisper Integration
+**Deviations from Plan**:
+- Initially tried to use automatic mode (`getLoopbackAudioMediaStream`) but discovered it requires `nodeIntegration: true`
+- Reverted to manual mode with IPC handlers (which are auto-registered by `initMain()`)
+- Learned that electron-audio-loopback's IPC handlers are built-in, no manual registration needed
+
+**Known Issues**:
+- System audio only (does not capture microphone input yet)
+- Need to verify if meeting apps include user's voice in system audio output
+
+**Next Steps**: Test microphone capture requirement, then Phase 1.2 - Local Whisper Integration
 
 #### Phase 1.2: Local Whisper Integration
 **Tasks**:
@@ -931,6 +948,6 @@ MIT License - See LICENSE file
 
 ---
 
-**Current Status**: Phase 1.1 In Progress - Implementing electron-audio-loopback approach
+**Current Status**: Phase 1.1 Complete - System audio capture working; Evaluating microphone capture requirement
 **Last Updated**: 2025-10-09
-**Next Milestone**: Complete Phase 1.1 - Audio Capture with electron-audio-loopback
+**Next Milestone**: Test microphone requirement, then Phase 1.2 - Local Whisper Integration

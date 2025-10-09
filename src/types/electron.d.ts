@@ -1,34 +1,10 @@
-import type { AudioDevice, AudioLevel, RecordingSession } from './audio'
-
 export interface ElectronAPI {
-  audio: {
-    getDevices: () => Promise<AudioDevice[]>
-    getAllDevices: () => Promise<any[]>
-    findBlackHole: () => Promise<AudioDevice | null>
-    isBlackHoleAvailable: () => Promise<boolean>
-    initialize: (deviceId?: number) => Promise<{ success: boolean; error?: string }>
-    startRecording: () => Promise<{
-      success: boolean
-      session?: RecordingSession
-      error?: string
-    }>
-    stopRecording: () => Promise<{
-      success: boolean
-      session?: RecordingSession
-      error?: string
-    }>
-    getStatus: () => Promise<{
-      isRecording: boolean
-      currentSession: RecordingSession | null
-      duration: number
-    }>
-    onAudioLevel: (callback: (level: AudioLevel) => void) => void
-    removeAudioLevelListener: () => void
-  }
+  enableLoopbackAudio: () => Promise<void>
+  disableLoopbackAudio: () => Promise<void>
 }
 
 declare global {
   interface Window {
-    electron: ElectronAPI
+    electronAPI: ElectronAPI
   }
 }
