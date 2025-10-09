@@ -74,7 +74,7 @@ Meeting Agent is a macOS desktop application that captures, transcribes, and sum
 ### Phase 1: Audio Capture & Transcription
 **Goal**: Capture system audio and transcribe locally using Whisper
 
-#### Phase 1.1: Audio Capture (In Progress - Revised Approach 2025-10-09)
+#### Phase 1.1: Audio Capture ✓ (Completed: 2025-10-09)
 
 **Initial Approach (Abandoned)**:
 - Attempted to use `naudiodon` (PortAudio) + BlackHole virtual audio driver
@@ -105,11 +105,11 @@ Using `electron-audio-loopback` for native system audio capture without BlackHol
 - [x] Test start/stop recording controls
 - [x] Manual test with actual meeting audio (YouTube video tested successfully)
 
-**Next Tasks (Microphone Capture)**:
-- [ ] Test if meeting apps (Zoom/Teams/Meet) include user's voice in system audio output
-- [ ] If not, add microphone capture and audio mixing (merge mic + system audio)
-- [ ] Implement dual-stream recording (system audio + microphone)
-- [ ] Add audio mixing/merging before encoding to WAV
+**Microphone Capture (Completed)**:
+- [x] Test if meeting apps (Zoom/Teams/Meet) include user's voice in system audio output
+- [x] Add microphone capture and audio mixing (merge mic + system audio)
+- [x] Implement dual-stream recording (system audio + microphone)
+- [x] Add audio mixing/merging before encoding to WAV
 
 **Dependencies Added**:
 - ✅ `electron-audio-loopback@1.0.6` - System audio capture (no native modules)
@@ -150,12 +150,43 @@ Using `electron-audio-loopback` for native system audio capture without BlackHol
 - Initially tried to use automatic mode (`getLoopbackAudioMediaStream`) but discovered it requires `nodeIntegration: true`
 - Reverted to manual mode with IPC handlers (which are auto-registered by `initMain()`)
 - Learned that electron-audio-loopback's IPC handlers are built-in, no manual registration needed
+- **Added microphone capture** (not in original Phase 1.1 plan):
+  - Discovered that meeting apps (Zoom/Teams/Meet) do NOT include user's microphone in system audio output
+  - User's voice only captured if physical microphone is recorded separately
+  - Implemented dual-stream recording: system audio (meeting participants) + microphone (user's voice)
+  - Used `getUserMedia` for system default microphone with graceful fallback
+  - Deferred device selection to Phase 7 (Settings) to keep Phase 1.1 scope manageable
 
-**Known Issues**:
-- System audio only (does not capture microphone input yet)
-- Need to verify if meeting apps include user's voice in system audio output
+**Bugs Fixed (Code Review)**:
+- **Critical**: stopCapture() memory leak - now stops active recording before cleanup (src/services/audioCapture.ts:220)
+- **Medium**: mediaRecorder not nulled after stopping - fixed memory leak (src/services/audioCapture.ts:205)
+- **Medium**: Race condition in stopRecording() - added state check to prevent double-stop (src/services/audioCapture.ts:182)
+- **Security**: Added Content Security Policy to prevent XSS attacks (src/renderer/index.html:8)
+- **Hot-reload bug**: WAV encoder re-registration error - made initialization idempotent with module-level flag (src/services/audioCapture.ts:6)
 
-**Next Steps**: Test microphone capture requirement, then Phase 1.2 - Local Whisper Integration
+**Known Issues (Low Priority - Deferred to Future Phases)**:
+1. No visual feedback for microphone permission denied (low UX priority)
+2. No audio device selection UI (planned for Phase 7 - Settings)
+3. No blob size validation before download (edge case)
+4. Unused `RecordingState` interface in audio.ts (cleanup task)
+5. No warning if user closes during recording (low priority - stopCapture handles cleanup)
+6. Audio level always calculated even when not recording (minimal performance impact)
+7. No retry logic for getUserMedia failures (acceptable for MVP)
+8. Duration interval continues if unmount during recording (React cleanup handles it)
+
+**Testing Completed**:
+- ✅ System audio capture with YouTube video (verified working)
+- ✅ Microphone capture (verified both streams merged correctly)
+- ✅ Audio level monitoring (verified RMS calculation shows both system + mic)
+- ✅ WAV file download (16kHz mono format verified)
+- ✅ Recording controls (start/stop/timer verified)
+- ✅ Build and type-check pass without errors
+- ✅ Memory cleanup (verified no leaks on stopCapture)
+- ✅ Security warnings resolved (CSP added)
+
+**Success Criteria**: ✅ Phase 1.1 Complete - Captures system audio + microphone, saves as Whisper-compatible WAV files
+
+**Next Phase**: Phase 1.2 - Local Whisper Integration
 
 #### Phase 1.2: Local Whisper Integration
 **Tasks**:
@@ -948,6 +979,6 @@ MIT License - See LICENSE file
 
 ---
 
-**Current Status**: Phase 1.1 Complete - System audio capture working; Evaluating microphone capture requirement
+**Current Status**: Phase 1.1 Complete ✅ - Dual-stream audio capture (system + microphone) working
 **Last Updated**: 2025-10-09
-**Next Milestone**: Test microphone requirement, then Phase 1.2 - Local Whisper Integration
+**Next Milestone**: Phase 1.2 - Local Whisper Integration
