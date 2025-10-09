@@ -178,6 +178,12 @@ export class AudioCaptureService {
         return
       }
 
+      // ISSUE 3 FIX: Check if already stopped/stopping
+      if (this.mediaRecorder.state === 'inactive') {
+        reject(new Error('Recording already stopped'))
+        return
+      }
+
       this.mediaRecorder.onstop = () => {
         const blob = new Blob(this.recordedChunks, { type: 'audio/wav' })
         const endTime = new Date()
@@ -195,6 +201,8 @@ export class AudioCaptureService {
         this.isRecording = false
         this.startTime = null
         this.recordedChunks = []
+        // ISSUE 2 FIX: Null out mediaRecorder
+        this.mediaRecorder = null
 
         resolve(session)
       }
@@ -208,6 +216,16 @@ export class AudioCaptureService {
    * Stop audio capture and cleanup resources
    */
   stopCapture(): void {
+    // ISSUE 4 FIX: Stop active recording first
+    if (this.isRecording && this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+      console.warn('Stopping active recording before cleanup')
+      this.mediaRecorder.stop()
+      this.isRecording = false
+      this.startTime = null
+      this.recordedChunks = []
+      this.mediaRecorder = null
+    }
+
     // Stop audio level monitoring
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId)
