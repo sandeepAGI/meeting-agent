@@ -2,12 +2,17 @@ import { MediaRecorder, register, IMediaRecorder } from 'extendable-media-record
 import { connect } from 'extendable-media-recorder-wav-encoder'
 import type { AudioLevel, RecordingSession, AudioConfig } from '../types/audio'
 
+// Track if WAV encoder has been registered globally
+let wavEncoderRegistered = false
+
 export class AudioCaptureService {
-  private mediaStream: MediaStream | null = null
+  private systemAudioStream: MediaStream | null = null
+  private microphoneStream: MediaStream | null = null
   private audioContext: AudioContext | null = null
   private mediaRecorder: IMediaRecorder | null = null
   private analyser: AnalyserNode | null = null
-  private sourceNode: MediaStreamAudioSourceNode | null = null
+  private systemSourceNode: MediaStreamAudioSourceNode | null = null
+  private microphoneSourceNode: MediaStreamAudioSourceNode | null = null
   private destinationNode: MediaStreamAudioDestinationNode | null = null
 
   private recordedChunks: Blob[] = []
@@ -17,6 +22,8 @@ export class AudioCaptureService {
 
   private onAudioLevelCallback: ((level: AudioLevel) => void) | null = null
 
+  private captureMicrophone = true // Default: capture microphone
+
   private readonly config: AudioConfig = {
     sampleRate: 16000, // Whisper-compatible
     channels: 1, // Mono
@@ -24,70 +31,104 @@ export class AudioCaptureService {
 
   /**
    * Initialize the WAV encoder (must be called before recording)
+   * Safe to call multiple times - only registers once
    */
   async initialize(): Promise<void> {
-    try {
-      await register(await connect())
-      console.log('WAV encoder registered successfully')
-    } catch (error) {
-      console.error('Failed to register WAV encoder:', error)
-      throw new Error('Failed to initialize audio capture service')
+    // Only register encoder once globally
+    if (!wavEncoderRegistered) {
+      try {
+        await register(await connect())
+        wavEncoderRegistered = true
+        console.log('WAV encoder registered successfully')
+      } catch (error) {
+        console.error('Failed to register WAV encoder:', error)
+        throw new Error('Failed to initialize audio capture service')
+      }
+    } else {
+      console.log('WAV encoder already registered, skipping')
     }
   }
 
   /**
-   * Start capturing system audio using manual mode
+   * Set whether to capture microphone
+   */
+  setCaptureMicrophone(enabled: boolean): void {
+    this.captureMicrophone = enabled
+  }
+
+  /**
+   * Start capturing system audio and optionally microphone
    */
   async startCapture(): Promise<void> {
     try {
-      // Enable loopback audio via IPC (handled by initMain() in audioSetup.ts)
+      // 1. Capture system audio using electron-audio-loopback
       await window.electronAPI.enableLoopbackAudio()
 
-      // Get MediaStream with system audio loopback
-      // getDisplayMedia requires video: true, but we'll remove video tracks
-      const stream = await navigator.mediaDevices.getDisplayMedia({
+      const systemStream = await navigator.mediaDevices.getDisplayMedia({
         video: true,
         audio: true,
       })
 
       // Remove video tracks (we only want audio)
-      const videoTracks = stream.getVideoTracks()
+      const videoTracks = systemStream.getVideoTracks()
       videoTracks.forEach((track) => {
         track.stop()
-        stream.removeTrack(track)
+        systemStream.removeTrack(track)
       })
 
-      // Disable loopback audio (restore normal getDisplayMedia behavior)
       await window.electronAPI.disableLoopbackAudio()
 
-      this.mediaStream = stream
+      this.systemAudioStream = systemStream
 
-      if (!this.mediaStream) {
-        throw new Error('Failed to get audio loopback stream')
+      // 2. Optionally capture microphone (system default)
+      if (this.captureMicrophone) {
+        try {
+          this.microphoneStream = await navigator.mediaDevices.getUserMedia({
+            audio: true, // Uses system default microphone
+          })
+          console.log('Microphone capture enabled')
+        } catch (micError) {
+          console.warn('Failed to capture microphone, continuing with system audio only:', micError)
+          // Don't fail the entire capture if mic fails
+        }
       }
 
-      // Create audio context with 16kHz sample rate for Whisper
+      // 3. Create audio context with 16kHz sample rate for Whisper
       this.audioContext = new AudioContext({ sampleRate: this.config.sampleRate })
 
-      // Create source from the media stream
-      this.sourceNode = this.audioContext.createMediaStreamSource(this.mediaStream)
+      // 4. Create source nodes
+      this.systemSourceNode = this.audioContext.createMediaStreamSource(this.systemAudioStream)
 
-      // Create analyser for audio level monitoring
+      if (this.microphoneStream) {
+        this.microphoneSourceNode = this.audioContext.createMediaStreamSource(this.microphoneStream)
+      }
+
+      // 5. Create analyser for audio level monitoring
       this.analyser = this.audioContext.createAnalyser()
       this.analyser.fftSize = 2048
       this.analyser.smoothingTimeConstant = 0.8
 
-      // Create destination for resampled audio
+      // 6. Create destination for merged audio
       this.destinationNode = this.audioContext.createMediaStreamDestination()
 
-      // Connect nodes: source → analyser → destination
-      this.sourceNode.connect(this.analyser)
+      // 7. Connect nodes: system audio → analyser
+      this.systemSourceNode.connect(this.analyser)
+
+      // 8. Connect microphone to analyser (if enabled)
+      if (this.microphoneSourceNode) {
+        this.microphoneSourceNode.connect(this.analyser)
+      }
+
+      // 9. Connect analyser to destination (receives both system audio and microphone)
       this.analyser.connect(this.destinationNode)
 
-      // Start audio level monitoring
+      // 10. Start audio level monitoring
       this.startAudioLevelMonitoring()
 
-      console.log('Audio capture started successfully')
+      console.log('Audio capture started successfully:', {
+        systemAudio: true,
+        microphone: !!this.microphoneStream,
+      })
     } catch (error) {
       console.error('Failed to start audio capture:', error)
       throw error
@@ -173,16 +214,27 @@ export class AudioCaptureService {
       this.animationFrameId = null
     }
 
-    // Stop all media stream tracks
-    if (this.mediaStream) {
-      this.mediaStream.getTracks().forEach(track => track.stop())
-      this.mediaStream = null
+    // Stop system audio stream
+    if (this.systemAudioStream) {
+      this.systemAudioStream.getTracks().forEach((track) => track.stop())
+      this.systemAudioStream = null
+    }
+
+    // Stop microphone stream
+    if (this.microphoneStream) {
+      this.microphoneStream.getTracks().forEach((track) => track.stop())
+      this.microphoneStream = null
     }
 
     // Disconnect audio nodes
-    if (this.sourceNode) {
-      this.sourceNode.disconnect()
-      this.sourceNode = null
+    if (this.systemSourceNode) {
+      this.systemSourceNode.disconnect()
+      this.systemSourceNode = null
+    }
+
+    if (this.microphoneSourceNode) {
+      this.microphoneSourceNode.disconnect()
+      this.microphoneSourceNode = null
     }
 
     if (this.analyser) {
@@ -262,10 +314,9 @@ export class AudioCaptureService {
   getState() {
     return {
       isRecording: this.isRecording,
-      isCaptureActive: this.mediaStream !== null,
-      duration: this.startTime
-        ? (Date.now() - this.startTime.getTime()) / 1000
-        : 0,
+      isCaptureActive: this.systemAudioStream !== null,
+      hasMicrophone: this.microphoneStream !== null,
+      duration: this.startTime ? (Date.now() - this.startTime.getTime()) / 1000 : 0,
     }
   }
 

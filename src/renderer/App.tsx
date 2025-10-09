@@ -10,6 +10,8 @@ function App() {
   const [audioLevel, setAudioLevel] = useState<AudioLevel | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isInitializing, setIsInitializing] = useState(false)
+  const [captureMicrophone, setCaptureMicrophone] = useState(true)
+  const [hasMicrophone, setHasMicrophone] = useState(false)
 
   const audioServiceRef = useRef<AudioCaptureService | null>(null)
   const durationIntervalRef = useRef<number | null>(null)
@@ -57,11 +59,18 @@ function App() {
         throw new Error('Audio service not available')
       }
 
+      // Set microphone capture preference
+      audioServiceRef.current.setCaptureMicrophone(captureMicrophone)
+
       // Initialize WAV encoder
       await audioServiceRef.current.initialize()
 
       // Start audio capture
       await audioServiceRef.current.startCapture()
+
+      // Check if microphone was successfully captured
+      const state = audioServiceRef.current.getState()
+      setHasMicrophone(state.hasMicrophone)
 
       // Set up audio level callback
       audioServiceRef.current.onAudioLevel((level) => {
@@ -158,9 +167,23 @@ function App() {
                 <strong>Phase 1.1 - Audio Capture</strong>
               </p>
               <p className="info-text">
-                This captures system audio natively on macOS (no BlackHole required) and saves
-                it as WAV files (16kHz mono, compatible with Whisper).
+                This captures system audio natively on macOS (no BlackHole required) and
+                optionally captures your microphone. Saves as WAV files (16kHz mono, compatible
+                with Whisper).
               </p>
+
+              <div className="checkbox-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={captureMicrophone}
+                    onChange={(e) => setCaptureMicrophone(e.target.checked)}
+                    disabled={isInitializing}
+                  />
+                  Include microphone (uses system default)
+                </label>
+              </div>
+
               <button
                 onClick={handleInitialize}
                 className="btn btn-primary"
@@ -205,6 +228,16 @@ function App() {
 
               <div className="info">
                 <p>
+                  <strong>Active Sources:</strong>
+                </p>
+                <ul>
+                  <li>✅ System audio (meeting participants, videos, etc.)</li>
+                  {hasMicrophone && <li>✅ Microphone (your voice)</li>}
+                  {!hasMicrophone && captureMicrophone && (
+                    <li>⚠️ Microphone not available</li>
+                  )}
+                </ul>
+                <p style={{ marginTop: '12px' }}>
                   <strong>How it works:</strong>
                 </p>
                 <ul>
