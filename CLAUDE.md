@@ -8,7 +8,7 @@ Meeting Agent is a macOS desktop application that captures, transcribes, and sum
 
 ### Key Features
 - Calendar integration via Microsoft Graph API
-- Local audio capture using BlackHole virtual audio device
+- Native system audio capture (no virtual audio drivers required)
 - Real-time transcription (Whisper running locally)
 - AI-powered summarization (Claude API or Azure OpenAI)
 - Editable summary interface with recipient selection
@@ -74,47 +74,71 @@ Meeting Agent is a macOS desktop application that captures, transcribes, and sum
 ### Phase 1: Audio Capture & Transcription
 **Goal**: Capture system audio and transcribe locally using Whisper
 
-#### Phase 1.1: Audio Capture ✓ (Completed: 2025-10-07)
+#### Phase 1.1: Audio Capture (In Progress - Revised Approach 2025-10-09)
+
+**Initial Approach (Abandoned)**:
+- Attempted to use `naudiodon` (PortAudio) + BlackHole virtual audio driver
+- **Issue**: Native module compilation failures with Electron 38
+  - segfault-handler dependency incompatible with modern Electron
+  - NODE_MODULE_VERSION mismatch (137 vs 139)
+  - Ongoing maintenance burden with native modules
+- **Decision**: Pivoted to Web API-based approach (2025-10-09)
+
+**Revised Approach (Current)**:
+Using `electron-audio-loopback` for native system audio capture without BlackHole
+
 **Tasks**:
-- [x] Install and configure BlackHole virtual audio driver
-- [x] Implement audio capture service using `naudiodon` (PortAudio)
-- [x] Add audio level monitoring/visualization
-- [x] Implement start/stop recording functionality
-- [x] Save audio to WAV files (16kHz mono)
-- [x] Add error handling for missing audio device
+- [ ] Install electron-audio-loopback and WAV encoding dependencies
+- [ ] Implement main process audio loopback initialization
+- [ ] Implement renderer process audio capture with MediaStream API
+- [ ] Add Web Audio API for audio level monitoring
+- [ ] Add Web Audio API for 16kHz mono conversion/resampling
+- [ ] Implement MediaRecorder with WAV encoding
+- [ ] Implement start/stop recording functionality
+- [ ] Save recordings to WAV files (16kHz mono, Whisper-compatible)
 
 **Testing**:
-- [x] Build succeeds without errors
-- [x] TypeScript compilation passes
-- [x] BlackHole detection works
-- [x] Audio level visualization implemented
-- [x] Start/stop recording controls functional
-- [ ] Manual test with actual audio (requires user testing)
+- [ ] Verify system audio capture works without BlackHole
+- [ ] Test audio level monitoring and visualization
+- [ ] Test WAV file generation at 16kHz mono
+- [ ] Verify recordings are Whisper-compatible
+- [ ] Test start/stop recording controls
+- [ ] Manual test with actual meeting audio
 
-**Files Created**:
-- `src/services/audio.ts` - Audio capture service with EventEmitter
-- `src/utils/audioDevice.ts` - BlackHole detection utilities
+**Dependencies to Add**:
+- `electron-audio-loopback` - System audio capture (no native modules)
+- `extendable-media-recorder` - Custom codec support for MediaRecorder
+- `extendable-media-recorder-wav-encoder` - WAV encoding for MediaRecorder
+
+**Files to Create**:
+- `src/services/audioCapture.ts` - Audio capture service using electron-audio-loopback
+- `src/services/audioProcessor.ts` - Web Audio API processing (16kHz mono conversion)
 - `src/types/audio.ts` - TypeScript interfaces
-- `src/types/electron.d.ts` - Window.electron API types
-- `src/main/ipc.ts` - IPC handlers for audio operations
-- `src/preload/index.ts` - Exposed electron APIs
+- `src/main/audioSetup.ts` - Main process audio loopback initialization
 - `src/renderer/App.tsx` - UI with recording controls and audio level meter
 
-**Dependencies Added**:
-- `naudiodon` - PortAudio bindings for Node.js
-- `wav` - WAV file writer
-- `@types/wav` - TypeScript types
-
 **Implementation Details**:
-- Used naudiodon (PortAudio) for cross-platform audio capture
-- Audio captured at 16kHz mono (Whisper-compatible format)
-- Real-time audio level calculation from PCM samples
-- IPC communication between main and renderer processes
+- Uses electron-audio-loopback (pure JavaScript, no native compilation)
+- No BlackHole or other virtual audio driver required
+- MediaStream API for audio capture
+- Web Audio API for audio level calculation and format conversion
+- extendable-media-recorder for WAV output
 - Recordings saved to app.getPath('userData')/recordings
-- Visual audio level meter with gradient (green → yellow → red)
-- Error handling for missing BlackHole device
+- Audio captured at 16kHz mono (Whisper-compatible format)
 
-**Next Phase**: Phase 1.2 - Local Whisper Integration
+**Advantages Over naudiodon Approach**:
+- ✅ No native module compilation issues
+- ✅ No BlackHole user installation required
+- ✅ Uses standard Web APIs (better documented)
+- ✅ Cross-platform ready (macOS 12.3+, Windows 10+, Linux)
+- ✅ Active maintenance (updated 2024)
+- ✅ Simpler architecture
+
+**Requirements**:
+- Electron >= 31.0.1 (we have 38.2.1 ✅)
+- macOS >= 12.3 (we have 26.0.1 ✅)
+
+**Next Phase**: Complete Phase 1.1 implementation, then Phase 1.2 - Local Whisper Integration
 
 #### Phase 1.2: Local Whisper Integration
 **Tasks**:
@@ -828,19 +852,18 @@ WHISPER_MODEL=small
 
 ## Known Limitations
 
-1. **macOS only**: Windows/Linux support requires different audio capture
-2. **BlackHole required**: User must install separately (not bundled)
-3. **M365 dependency**: Requires M365 account for calendar/email
-4. **English-first**: Whisper supports multiple languages, but prompts are English
-5. **No automatic join**: User must manually join meetings
-6. **Single meeting**: Can only record one meeting at a time
+1. **macOS 12.3+**: Requires macOS 12.3 or later for native audio loopback
+2. **M365 dependency**: Requires M365 account for calendar/email
+3. **English-first**: Whisper supports multiple languages, but prompts are English
+4. **No automatic join**: User must manually join meetings
+5. **Single meeting**: Can only record one meeting at a time
 
 ---
 
 ## Future Enhancements (Post-MVP)
 
-- [ ] Windows support (WASAPI loopback)
-- [ ] Linux support (PulseAudio)
+- [ ] Windows 10+ support (electron-audio-loopback already supports it)
+- [ ] Linux support (electron-audio-loopback already supports PulseAudio)
 - [ ] Multi-language support
 - [ ] Speaker diarization (who said what)
 - [ ] Real-time translation
@@ -908,6 +931,6 @@ MIT License - See LICENSE file
 
 ---
 
-**Current Status**: Phase 0 Complete ✅ - Ready for Phase 1 (Audio Capture)
-**Last Updated**: 2025-10-07
-**Next Milestone**: Phase 1.1 - Audio Capture Implementation
+**Current Status**: Phase 1.1 In Progress - Implementing electron-audio-loopback approach
+**Last Updated**: 2025-10-09
+**Next Milestone**: Complete Phase 1.1 - Audio Capture with electron-audio-loopback

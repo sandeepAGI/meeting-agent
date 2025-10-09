@@ -58,6 +58,14 @@ function App() {
     }
   }
 
+  const handleDebugDevices = async () => {
+    const allDevices = await window.electron.audio.getAllDevices()
+    const filteredDevices = await window.electron.audio.getDevices()
+    console.log('ALL DEVICES (unfiltered):', allDevices)
+    console.log('FILTERED DEVICES (input only):', filteredDevices)
+    alert(`Found ${allDevices.length} total devices, ${filteredDevices.length} input devices. Check console for details.`)
+  }
+
   const handleStartRecording = async () => {
     setError(null)
     const result = await window.electron.audio.startRecording()
@@ -109,6 +117,14 @@ function App() {
               ⚠️ BlackHole not detected. Please install it to continue.
             </div>
           )}
+
+          <button
+            onClick={handleDebugDevices}
+            className="btn btn-secondary"
+            style={{ marginBottom: '10px' }}
+          >
+            🔍 Debug: Show All Devices
+          </button>
 
           {!isInitialized ? (
             <button

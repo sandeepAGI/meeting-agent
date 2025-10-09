@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('electron', {
   audio: {
     // Device methods
     getDevices: (): Promise<AudioDevice[]> => ipcRenderer.invoke('audio:getDevices'),
+    getAllDevices: (): Promise<any[]> => ipcRenderer.invoke('audio:getAllDevices'),
     findBlackHole: (): Promise<AudioDevice | null> =>
       ipcRenderer.invoke('audio:findBlackHole'),
     isBlackHoleAvailable: (): Promise<boolean> =>

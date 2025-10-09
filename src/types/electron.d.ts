@@ -3,6 +3,7 @@ import type { AudioDevice, AudioLevel, RecordingSession } from './audio'
 export interface ElectronAPI {
   audio: {
     getDevices: () => Promise<AudioDevice[]>
+    getAllDevices: () => Promise<any[]>
     findBlackHole: () => Promise<AudioDevice | null>
     isBlackHoleAvailable: () => Promise<boolean>
     initialize: (deviceId?: number) => Promise<{ success: boolean; error?: string }>
