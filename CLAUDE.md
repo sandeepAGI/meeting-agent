@@ -685,9 +685,464 @@ pip install pyannote.audio
 ---
 
 **Planned Enhancements (Before Phase 2)**:
-1. **Better progress feedback** - Show detailed diarization progress messages
-2. **Optional diarization** - Allow "Transcribe only" for speed
-3. **GPU acceleration** - Explore Metal/CUDA support for pyannote (future optimization)
+1. ✅ **Better progress feedback** - Show detailed diarization progress messages (Completed: 2025-10-13)
+2. ✅ **Optional diarization** - Allow "Transcribe only" for speed (Completed: 2025-10-13)
+3. 📄 **GPU acceleration** - Documented Metal/CUDA support for future (docs/gpu-acceleration.md)
+
+---
+
+#### Phase 1.4: Recording Announcement (Next)
+**Goal**: Add audio announcement for meeting transparency and consent
+
+**Requirement**:
+When user clicks "Start Recording", play an announcement through system speakers to inform meeting participants that recording is in progress. This ensures transparency and allows participants to object or leave if they don't consent.
+
+**Announcement Text**:
+> "This meeting, with your permission, is being recorded to generate meeting notes. These recordings will be deleted after notes are generated."
+
+**Why This Matters**:
+- Legal compliance (some jurisdictions require consent)
+- Ethical transparency (participants should know they're being recorded)
+- Trust building (shows respect for participant privacy)
+- Audio documentation (announcement is captured in recording itself)
+
+**Implementation Plan**:
+
+**Tasks**:
+- [ ] Implement `playAnnouncement()` method in AudioCaptureService
+- [ ] Use macOS `say` command for text-to-speech
+- [ ] Trigger announcement immediately after "Start Recording" clicked
+- [ ] Add 2-second delay before recording starts (allow announcement to complete)
+- [ ] Update deletion policy: "delete after summary generation" (not just transcription)
+- [ ] Add announcement settings (Phase 7): custom text, enable/disable
+- [ ] Update Phase 6 documentation with revised deletion policy
+
+**Technical Approach**:
+```typescript
+// src/services/audioCapture.ts
+async startRecording() {
+  // Play announcement first
+  await this.playAnnouncement()
+
+  // Wait 2 seconds for announcement to complete
+  await new Promise(resolve => setTimeout(resolve, 2000))
+
+  // Then start recording
+  this.isRecording = true
+  // ... rest of recording logic
+}
+
+private async playAnnouncement(): Promise<void> {
+  const text = "This meeting, with your permission, is being recorded to generate meeting notes. These recordings will be deleted after notes are generated."
+
+  return new Promise((resolve, reject) => {
+    const process = spawn('say', [text])
+    process.on('close', (code) => {
+      if (code === 0) resolve()
+      else reject(new Error(`Announcement failed: ${code}`))
+    })
+  })
+}
+```
+
+**Testing**:
+- [ ] Test announcement plays through system speakers
+- [ ] Verify announcement is captured in recording
+- [ ] Test recording starts after announcement completes
+- [ ] Test on Zoom/Teams/Meet (verify remote participants hear it)
+- [ ] Test error handling if `say` command fails
+- [ ] Verify 2-second delay is sufficient for announcement
+
+**Files to Modify**:
+- `src/services/audioCapture.ts` - Add announcement playback
+- `src/types/audio.ts` - Add `announcementText` to AudioConfig (optional)
+- `CLAUDE.md` - Update Phase 6 deletion policy
+
+**Platform Considerations**:
+- macOS: Use `say` command (built-in, no dependencies)
+- Windows (future): Use PowerShell `Add-Type -AssemblyName System.Speech`
+- Linux (future): Use `espeak` or `festival`
+
+**Customization (Phase 7 - Settings)**:
+- Allow users to edit announcement text
+- Toggle announcement on/off
+- Select voice/language (macOS supports multiple voices)
+- Example: `say -v Samantha "Your text here"`
+
+**Privacy & Legal**:
+- Announcement provides **notice** of recording
+- Does NOT replace legal consent requirements (consult lawyer)
+- User should still inform participants at start of meeting
+- Announcement creates audio record of notice
+
+**Audio File Deletion Policy Update**:
+
+**Old Policy** (Phase 6):
+- Delete audio immediately after transcription succeeds
+
+**New Policy**:
+- Delete audio after **summary generation** succeeds
+- Ensures audio is available if transcription needs to be regenerated
+- Summary is the final deliverable, so safe to delete after that point
+
+**Updated Phase 6 Tasks**:
+```markdown
+- [ ] Implement audio file lifecycle management:
+  - [ ] Delete audio after successful summary generation (not just transcription)
+  - [ ] Option to keep audio files (user preference)
+  - [ ] If keeping audio: enforce storage quota (default 5GB)
+  - [ ] Auto-delete oldest audio files when quota exceeded
+  - [ ] Track total storage usage in settings UI
+```
+
+**Success Criteria**:
+- Announcement plays through system speakers when recording starts
+- Remote meeting participants hear the announcement
+- Announcement is captured in the recording
+- Recording starts smoothly after announcement completes
+- Phase 6 deletion policy updated in documentation
+
+**Next Phase**: Phase 1.5 - Chunked Recording with Auto-Save
+
+---
+
+#### Phase 1.5: Chunked Recording with Auto-Save (Next)
+**Goal**: Prevent data loss and memory exhaustion during long meetings
+
+**Problem Statement**:
+Current implementation buffers entire recording in memory, which creates risks:
+1. **Memory exhaustion** - 60-minute recording = ~60MB RAM, 120 minutes = ~120MB
+2. **Browser crash** - Large Blob objects (>1GB) can crash renderer process
+3. **Data loss** - If app crashes before `stopRecording()`, entire recording is lost
+4. **File save failure** - Very large ArrayBuffers may fail IPC transfer or disk write
+
+**Current Architecture Issue**:
+```typescript
+// src/services/audioCapture.ts - Current implementation
+this.mediaRecorder.ondataavailable = (event: BlobEvent) => {
+  if (event.data.size > 0) {
+    this.chunks.push(event.data)  // ❌ Keeps growing unbounded in RAM
+  }
+}
+```
+
+**Solution**: Time-based Auto-Save with Chunking
+
+Save audio chunks to disk every 5 minutes automatically, then merge on completion.
+
+**Implementation Plan**:
+
+**Tasks**:
+- [ ] Modify MediaRecorder to use `timeslice: 5 minutes`
+- [ ] Implement automatic chunk save to disk
+- [ ] Add IPC handler: `saveAudioChunk(arrayBuffer, filename)`
+- [ ] Create chunk directory structure: `recordings/session_ID/chunk_N.wav`
+- [ ] Implement WAV chunk merging using FFmpeg
+- [ ] Add crash recovery: auto-merge incomplete recordings on startup
+- [ ] Update UI: show "Last saved: X minutes ago" indicator
+- [ ] Add cleanup: delete chunks after successful merge
+- [ ] Test with 60-minute recording (verify memory stays <10MB)
+- [ ] Test crash recovery (kill app mid-recording, verify chunks merge)
+
+**Technical Approach**:
+
+**1. Chunked Recording**:
+```typescript
+// src/services/audioCapture.ts
+async startRecording() {
+  // Configure MediaRecorder to emit chunks every 5 minutes
+  this.mediaRecorder = new MediaRecorder(mergedStream, {
+    mimeType: 'audio/wav',
+    timeslice: 5 * 60 * 1000  // 5 minutes = 300,000ms
+  })
+
+  this.currentSession = {
+    id: new Date().toISOString(),
+    chunkIndex: 0,
+    savedChunks: [],
+    startTime: Date.now()
+  }
+
+  // Auto-save each chunk as it becomes available
+  this.mediaRecorder.ondataavailable = async (event: BlobEvent) => {
+    if (event.data.size > 0) {
+      await this.saveChunk(event.data)
+      this.chunks = []  // Clear memory after saving
+    }
+  }
+
+  this.mediaRecorder.start()
+  this.isRecording = true
+}
+
+private async saveChunk(blob: Blob): Promise<void> {
+  const session = this.currentSession!
+  const chunkIndex = session.chunkIndex++
+  const filename = `chunk_${chunkIndex.toString().padStart(3, '0')}.wav`
+
+  console.log(`[AutoSave] Saving chunk ${chunkIndex} (${blob.size} bytes)...`)
+
+  const arrayBuffer = await blob.arrayBuffer()
+  const result = await window.electronAPI.saveAudioChunk(
+    arrayBuffer,
+    session.id,
+    filename
+  )
+
+  if (result.success) {
+    session.savedChunks.push(result.filePath)
+    session.lastSaveTime = Date.now()
+    console.log(`[AutoSave] Chunk ${chunkIndex} saved successfully`)
+  } else {
+    throw new Error(`Failed to save chunk ${chunkIndex}: ${result.error}`)
+  }
+}
+
+async stopRecording(): Promise<RecordingSession> {
+  // Request final chunk
+  this.mediaRecorder.stop()
+
+  // Wait for final chunk to be saved
+  await new Promise(resolve => {
+    this.mediaRecorder.onstop = resolve
+  })
+
+  // Merge all chunks into final WAV file
+  console.log('[Merge] Merging chunks into final recording...')
+  const mergedPath = await this.mergeChunks(this.currentSession!)
+
+  // Cleanup: delete individual chunks (optional, for disk space)
+  await this.cleanupChunks(this.currentSession!)
+
+  this.isRecording = false
+
+  return {
+    id: this.currentSession!.id,
+    startTime: this.currentSession!.startTime,
+    duration: (Date.now() - this.currentSession!.startTime) / 1000,
+    filePath: mergedPath,
+    blob: null  // Not needed anymore, file is on disk
+  }
+}
+```
+
+**2. Chunk Storage Structure**:
+```
+userData/recordings/
+  session_2025-10-13T16-30-00-000Z/
+    chunk_000.wav  (0-5 min)
+    chunk_001.wav  (5-10 min)
+    chunk_002.wav  (10-15 min)
+    chunk_003.wav  (15-20 min)
+    merged.wav     (final output, created on stopRecording)
+```
+
+**3. WAV Chunk Merging (FFmpeg)**:
+```typescript
+// src/services/audioCapture.ts
+private async mergeChunks(session: RecordingSession): Promise<string> {
+  const sessionDir = path.join(app.getPath('userData'), 'recordings', session.id)
+  const mergedPath = path.join(sessionDir, 'merged.wav')
+
+  // Create concat list for FFmpeg
+  const concatList = session.savedChunks
+    .map(chunk => `file '${chunk}'`)
+    .join('\n')
+
+  const listPath = path.join(sessionDir, 'concat_list.txt')
+  fs.writeFileSync(listPath, concatList)
+
+  // Merge using FFmpeg
+  return new Promise((resolve, reject) => {
+    const ffmpeg = spawn('ffmpeg', [
+      '-f', 'concat',
+      '-safe', '0',
+      '-i', listPath,
+      '-c', 'copy',
+      mergedPath
+    ])
+
+    ffmpeg.on('close', (code) => {
+      fs.unlinkSync(listPath)  // Cleanup concat list
+      if (code === 0) {
+        console.log('[Merge] Successfully merged chunks')
+        resolve(mergedPath)
+      } else {
+        reject(new Error(`FFmpeg merge failed: ${code}`))
+      }
+    })
+  })
+}
+
+private async cleanupChunks(session: RecordingSession): Promise<void> {
+  for (const chunkPath of session.savedChunks) {
+    try {
+      fs.unlinkSync(chunkPath)
+      console.log(`[Cleanup] Deleted chunk: ${chunkPath}`)
+    } catch (err) {
+      console.warn(`[Cleanup] Failed to delete chunk: ${chunkPath}`, err)
+    }
+  }
+}
+```
+
+**4. IPC Handler (Main Process)**:
+```typescript
+// src/main/index.ts
+ipcMain.handle('save-audio-chunk', async (_event, arrayBuffer: ArrayBuffer, sessionId: string, filename: string) => {
+  try {
+    const userDataPath = app.getPath('userData')
+    const sessionDir = path.join(userDataPath, 'recordings', sessionId)
+
+    // Create session directory if it doesn't exist
+    if (!fs.existsSync(sessionDir)) {
+      fs.mkdirSync(sessionDir, { recursive: true })
+    }
+
+    const filePath = path.join(sessionDir, filename)
+
+    // Write chunk to disk
+    fs.writeFileSync(filePath, Buffer.from(arrayBuffer))
+
+    console.log(`[Main] Chunk saved: ${filePath} (${arrayBuffer.byteLength} bytes)`)
+    return { success: true, filePath }
+  } catch (error) {
+    console.error('[Main] Failed to save chunk:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to save chunk'
+    }
+  }
+})
+```
+
+**5. Crash Recovery on Startup**:
+```typescript
+// src/main/index.ts - Call this in app.whenReady()
+async function recoverIncompleteRecordings() {
+  const recordingsDir = path.join(app.getPath('userData'), 'recordings')
+
+  if (!fs.existsSync(recordingsDir)) return
+
+  const sessions = fs.readdirSync(recordingsDir)
+
+  for (const sessionId of sessions) {
+    const sessionDir = path.join(recordingsDir, sessionId)
+    const mergedPath = path.join(sessionDir, 'merged.wav')
+
+    // Check if this is an incomplete recording
+    if (!fs.existsSync(mergedPath)) {
+      const chunks = fs.readdirSync(sessionDir)
+        .filter(f => f.startsWith('chunk_') && f.endsWith('.wav'))
+        .sort()
+
+      if (chunks.length > 0) {
+        console.log(`[Recovery] Found incomplete recording: ${sessionId} (${chunks.length} chunks)`)
+
+        try {
+          // Merge chunks automatically
+          await mergeChunksFFmpeg(sessionDir, chunks, mergedPath)
+          console.log(`[Recovery] Successfully recovered: ${sessionId}`)
+
+          // Cleanup chunks after successful merge
+          for (const chunk of chunks) {
+            fs.unlinkSync(path.join(sessionDir, chunk))
+          }
+        } catch (error) {
+          console.error(`[Recovery] Failed to recover ${sessionId}:`, error)
+        }
+      }
+    }
+  }
+}
+
+app.whenReady().then(async () => {
+  // Recover any incomplete recordings from previous crashes
+  await recoverIncompleteRecordings()
+
+  // ... rest of initialization
+})
+```
+
+**6. UI Updates**:
+```tsx
+// src/renderer/App.tsx
+const [lastAutoSave, setLastAutoSave] = useState<Date | null>(null)
+
+// Listen for chunk save events
+useEffect(() => {
+  if (audioServiceRef.current) {
+    audioServiceRef.current.onChunkSaved(() => {
+      setLastAutoSave(new Date())
+    })
+  }
+}, [])
+
+// Display last save time
+<div className="recording-status">
+  <div className="timer">{formatDuration(duration)}</div>
+  <div className="status">
+    {isRecording ? '🔴 Recording...' : '⏸️ Ready'}
+  </div>
+  {lastAutoSave && isRecording && (
+    <div className="auto-save-info">
+      💾 Last saved: {timeSince(lastAutoSave)}
+    </div>
+  )}
+</div>
+```
+
+**Testing**:
+- [ ] Test 5-minute recording: verify single chunk saved
+- [ ] Test 15-minute recording: verify 3 chunks saved and merged correctly
+- [ ] Test 60-minute recording: verify memory stays <10MB (not ~60MB)
+- [ ] Test crash recovery: kill app at 12 minutes, restart, verify 2 chunks merge
+- [ ] Test merge quality: verify merged audio has no gaps, clicks, or artifacts
+- [ ] Test transcription: verify Whisper works correctly with merged files
+- [ ] Test chunk cleanup: verify individual chunks deleted after merge
+- [ ] Test disk space: verify chunks are reasonable size (~5MB each)
+
+**Files to Modify**:
+- `src/services/audioCapture.ts` - Add chunking and auto-save logic
+- `src/main/index.ts` - Add `saveAudioChunk` IPC handler and crash recovery
+- `src/preload/index.ts` - Expose `saveAudioChunk` to renderer
+- `src/types/electron.d.ts` - Add type definitions
+- `src/types/audio.ts` - Update RecordingSession type
+- `src/renderer/App.tsx` - Add last-save indicator
+- `src/renderer/styles/index.css` - Style auto-save indicator
+
+**Dependencies**:
+- `ffmpeg` - Already required for Phase 1.2 (audio preprocessing)
+- No new dependencies needed ✅
+
+**Memory Usage Comparison**:
+
+| Meeting Duration | Current (Buffered) | With Chunking (5min) |
+|------------------|-------------------|----------------------|
+| 5 minutes        | ~5 MB RAM         | ~5 MB RAM            |
+| 30 minutes       | ~30 MB RAM        | ~5 MB RAM ✅          |
+| 60 minutes       | ~60 MB RAM ⚠️      | ~5 MB RAM ✅          |
+| 120 minutes      | ~120 MB RAM ⚠️⚠️   | ~5 MB RAM ✅          |
+
+**Performance Impact**:
+- Disk I/O every 5 minutes: ~5MB write (~0.1 seconds on SSD)
+- Merge time on stop: ~1 second for 60-minute recording
+- Total overhead: Negligible, worth the safety
+
+**Alternative Chunk Intervals**:
+- 2 minutes: More frequent saves, more chunks to merge
+- 5 minutes: **Recommended balance**
+- 10 minutes: Less overhead, but higher risk of data loss
+
+**Success Criteria**:
+- Memory usage stays constant (~5MB) regardless of recording duration
+- Chunks auto-save every 5 minutes without user intervention
+- Merged audio is seamless (no gaps or artifacts)
+- Crash recovery works: incomplete recordings merge on startup
+- UI shows "Last saved: X minutes ago" during recording
+- 60-minute recording completes successfully with <10MB RAM usage
+
+**Next Phase**: Phase 1.4 - Recording Announcement (or combine both as Phase 1.4+1.5)
 
 ---
 
@@ -886,7 +1341,7 @@ Please provide:
 - [ ] Implement search functionality
 - [ ] Add export all data functionality
 - [ ] Implement audio file lifecycle management:
-  - [ ] Delete audio immediately after successful transcription
+  - [ ] Delete audio after successful **summary generation** (not just transcription)
   - [ ] Option to keep audio files (user preference)
   - [ ] If keeping audio: enforce storage quota (default 5GB)
   - [ ] Auto-delete oldest audio files when quota exceeded
@@ -916,12 +1371,17 @@ storage_stats:
 ```
 
 **Audio File Management Strategy**:
-1. **Default behavior**: Delete audio immediately after transcription succeeds
+1. **Default behavior**: Delete audio after **summary generation** succeeds (updated from Phase 1.4)
 2. **Optional retention**: User can enable "Keep audio files" in settings
 3. **Storage quota**: If keeping audio, enforce configurable limit (default 5GB)
 4. **FIFO cleanup**: When quota exceeded, delete oldest audio files first
 5. **User override**: Allow pinning important meetings to prevent deletion
 6. **Storage dashboard**: Show current usage, quota, and cleanup options
+
+**Rationale for deletion after summary** (not transcription):
+- Ensures audio is available if transcription needs to be regenerated
+- Summary is the final deliverable, safe to delete after that point
+- Allows users to regenerate transcripts with different settings if needed
 
 **Testing**:
 - [ ] Test saving new meeting record
@@ -1279,7 +1739,7 @@ meeting-agent/
 - SQLite for simplicity (no server setup required)
 - Encrypt sensitive data (API keys) using `keytar`
 - Smart audio file management:
-  - Default: Delete audio immediately after transcription
+  - Default: Delete audio after summary generation (Phase 1.4)
   - Optional: Keep audio with 5GB quota, FIFO cleanup
   - Allow pinning important meetings to prevent deletion
 
@@ -1385,8 +1845,25 @@ WHISPER_MODEL=small
 
 ## Future Enhancements (Post-MVP)
 
+### Platform Support
 - [ ] Windows 10+ support (electron-audio-loopback already supports it)
 - [ ] Linux support (electron-audio-loopback already supports PulseAudio)
+
+### Cloud Transcription Option
+- [ ] **Hybrid transcription mode**: Add cloud transcription as alternative to local Whisper
+  - **Provider**: AssemblyAI ($0.37/hour for transcription + diarization)
+  - **Use cases**:
+    - Low-end hardware (older Macs without Metal GPU)
+    - Long meetings (2+ hours where local resources are strained)
+    - Batch processing mode (process recordings overnight)
+    - Enterprise users who prefer managed services
+  - **Cost comparison**: $0.385/meeting (cloud) vs $0.015/meeting (local)
+  - **Implementation**: Add `TRANSCRIPTION_MODE=local|cloud` setting
+  - **Benefits**: Zero local compute, potentially better diarization quality
+  - **Tradeoffs**: 25x more expensive, requires network, less private
+- [ ] Batch processing mode: Queue recordings and process during off-hours with Claude Batch API (50% discount)
+
+### Features
 - [ ] Multi-language support
 - [ ] Real-time translation
 - [ ] Slack/Discord integration
@@ -1395,6 +1872,7 @@ WHISPER_MODEL=small
 - [ ] Chrome extension for direct browser capture
 - [ ] Mobile app for remote meeting review
 - [ ] Speaker name mapping from calendar (enhance Phase 1.3 generic labels)
+- [ ] LLM-based speaker attribution: Use Claude to guess speaker identities from transcript context + calendar attendees
 
 ---
 
@@ -1454,6 +1932,8 @@ MIT License - See LICENSE file
 
 ---
 
-**Current Status**: Phase 1.3 Complete ✅ - Speaker diarization working with temporal intersection matching
+**Current Status**: Phase 1.3 Complete ✅ + Robustness Enhancements ✅
 **Last Updated**: 2025-10-13
-**Next Milestone**: Robustness improvements (progress feedback, optional diarization, performance), then Phase 2 - Microsoft Graph Integration
+**Next Milestones**:
+- Phase 1.4 - Recording Announcement (transparency & consent)
+- Phase 1.5 - Chunked Recording with Auto-Save (prevent data loss for long meetings)
