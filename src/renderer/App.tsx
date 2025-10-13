@@ -212,6 +212,52 @@ function App() {
     }
   }
 
+  const handleTranscribeOnly = async () => {
+    if (!savedAudioPath) {
+      setError('No audio file available. Record audio first.')
+      return
+    }
+
+    setError(null)
+    setTranscript(null) // Clear previous transcript
+
+    try {
+      console.log('[DEBUG] Starting transcription only (no diarization)...')
+      setIsTranscribing(true)
+      setTranscriptionProgress({
+        stage: 'loading',
+        progress: 0,
+        message: 'Starting transcription...',
+      })
+
+      // Use transcription-only API (faster)
+      const result = await window.electronAPI.transcribeAudio(savedAudioPath, {
+        language: 'en',
+        temperature: 0.0,
+      })
+      console.log('[DEBUG] Transcription result:', result)
+
+      if (result.success && result.result) {
+        // Add merged: null to match TranscriptionWithDiarizationResult type
+        setTranscript({
+          ...result.result,
+          merged: null
+        })
+        setIsTranscribing(false)
+        setTranscriptionProgress(null)
+        console.log('[DEBUG] Transcription complete:', result.result.text)
+      } else {
+        throw new Error(result.error || 'Transcription failed')
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Transcription failed'
+      setError(message)
+      setIsTranscribing(false)
+      setTranscriptionProgress(null)
+      console.error('[DEBUG] Transcription error:', err)
+    }
+  }
+
   const formatDuration = (seconds: number): string => {
     const mins = Math.floor(seconds / 60)
     const secs = Math.floor(seconds % 60)
@@ -295,13 +341,22 @@ function App() {
                   </button>
                 )}
                 {savedAudioPath && !isRecording && (
-                  <button
-                    onClick={handleTranscribe}
-                    className="btn btn-transcribe"
-                    disabled={isTranscribing}
-                  >
-                    {isTranscribing ? '⏳ Transcribing...' : '📝 Transcribe Audio'}
-                  </button>
+                  <>
+                    <button
+                      onClick={handleTranscribe}
+                      className="btn btn-transcribe"
+                      disabled={isTranscribing}
+                    >
+                      {isTranscribing ? '⏳ Processing...' : '📝 Transcribe + Diarize'}
+                    </button>
+                    <button
+                      onClick={handleTranscribeOnly}
+                      className="btn btn-transcribe-only"
+                      disabled={isTranscribing}
+                    >
+                      ⚡ Transcribe Only (Fast)
+                    </button>
+                  </>
                 )}
               </div>
 

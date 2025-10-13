@@ -37,13 +37,17 @@ def diarize_audio(audio_path: str, hf_token: str) -> Dict[str, List[Dict]]:
         Dictionary with 'segments' key containing list of speaker segments
     """
     # Load the diarization pipeline
+    print("[PROGRESS] Loading pyannote.audio models...", file=sys.stderr, flush=True)
     pipeline = Pipeline.from_pretrained(
         "pyannote/speaker-diarization-3.1",
         token=hf_token
     )
 
     # Run diarization
+    print("[PROGRESS] Analyzing audio for speaker changes...", file=sys.stderr, flush=True)
     output = pipeline(audio_path)
+
+    print("[PROGRESS] Generating speaker segments...", file=sys.stderr, flush=True)
 
     # In pyannote.audio 4.x, the output is a DiarizeOutput object
     # Use speaker_diarization (or exclusive_speaker_diarization for better timestamp reconciliation)

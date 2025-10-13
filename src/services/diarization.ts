@@ -92,9 +92,13 @@ export class DiarizationService {
         const message = data.toString().trim()
         stderrData += message + '\n'
 
-        // Parse progress messages from pyannote (if any)
-        if (message) {
-          onProgress?.({ message })
+        // Parse progress messages from Python script
+        // Look for [PROGRESS] prefix to extract user-facing messages
+        if (message.includes('[PROGRESS]')) {
+          const progressMessage = message.replace(/\[PROGRESS\]\s*/g, '').trim()
+          if (progressMessage) {
+            onProgress?.({ message: progressMessage })
+          }
         }
       })
 

@@ -133,6 +133,15 @@ body {
   background-color: #8e44ad;
 }
 
+.btn-transcribe-only {
+  background-color: #f39c12;
+  margin-top: 12px;
+}
+
+.btn-transcribe-only:hover:not(:disabled) {
+  background-color: #e67e22;
+}
+
 .recording-section {
   text-align: center;
 }
