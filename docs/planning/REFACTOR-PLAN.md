@@ -16,19 +16,20 @@ This document outlines systematic refactoring work identified during Phase 1.3 c
 
 ## Sprint Summary
 
-| Sprint | Focus | Duration | Priority | Before Phase |
-|--------|-------|----------|----------|--------------|
-| Sprint 1 | Critical Bug Fixes | ~3.5 hrs | ⚠️ Critical | 1.4 |
-| Sprint 2 | Architecture Improvements | ~7.5 hrs | 🔥 High | 1.5 |
-| Sprint 3 | Performance & Portability | ~16 hrs | 📦 Medium | 2.1+ |
+| Sprint | Focus | Duration | Priority | Status | Completed |
+|--------|-------|----------|----------|--------|-----------|
+| Sprint 1 | Critical Bug Fixes | ~3.5 hrs | ⚠️ Critical | ✅ Complete | 2025-10-13 |
+| Sprint 2 | Architecture Improvements | ~7.5 hrs | 🔥 High | 🔜 Next | - |
+| Sprint 3 | Performance & Portability | ~16 hrs | 📦 Medium | 📅 Planned | - |
 
 ---
 
-## Sprint 1: Critical Bug Fixes ⚠️
+## Sprint 1: Critical Bug Fixes ✅
 
-**Target**: Complete before Phase 1.4 (Recording Announcement)
+**Completed**: 2025-10-13
 **Duration**: ~3.5 hours
 **Priority**: Critical - These bugs will worsen with usage
+**Status**: All tasks completed and verified
 
 ### Why These Matter
 - Memory leaks compound over time
@@ -341,7 +342,7 @@ return (
 
 ---
 
-## Sprint 1 Success Criteria
+## Sprint 1 Success Criteria ✅ COMPLETE
 
 - ✅ Hot-reload 10 times, no duplicate progress bars
 - ✅ macOS menu bar shows "using microphone" only while recording
@@ -349,6 +350,17 @@ return (
 - ✅ Changing Whisper model in `.env` takes effect
 - ✅ Microphone toggle works before, during, and after initialization
 - ✅ All builds pass: `npm run build && npm run type-check`
+
+**Verification**: Manual testing by user confirmed all functionality works correctly.
+
+**Impact**:
+- Fixed memory leaks (IPC listeners)
+- Fixed lingering macOS indicators (loopback teardown)
+- Fixed disk space accumulation (temp file cleanup)
+- Fixed broken user controls (microphone toggle)
+- Fixed ignored configuration (transcription options)
+
+**Commit**: `8434bb2` - Complete Sprint 1: Critical bug fixes
 
 ---
 

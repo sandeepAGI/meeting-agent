@@ -18,8 +18,8 @@ Meeting Agent is being developed in 10 phases, from foundation to production-rea
 | 1.1 | Audio Capture | ✅ Complete | 2025-10-09 |
 | 1.2 | Transcription | ✅ Complete | 2025-10-13 |
 | 1.3 | Diarization | ✅ Complete | 2025-10-13 |
-| R1 | Refactor Sprint 1 | 🔜 Next | - |
-| R2 | Refactor Sprint 2 | 📅 Planned | - |
+| R1 | Refactor Sprint 1 | ✅ Complete | 2025-10-13 |
+| R2 | Refactor Sprint 2 | 🔜 Next | - |
 | 1.4 | Recording Announcement | 📅 Planned | - |
 | 1.5 | Chunked Recording | 📅 Planned | - |
 | R3 | Refactor Sprint 3 | 📅 Planned | - |
@@ -158,19 +158,26 @@ Identify "who spoke when" and generate speaker-labeled transcripts.
 ### Overview
 Based on code review findings (REFACTOR-CODEX.md), three refactor sprints address technical debt and improve maintainability before continuing with new features.
 
-### Sprint 1: Critical Bug Fixes ⚠️
-**Target**: Before Phase 1.4
+### Sprint 1: Critical Bug Fixes ✅
+**Completed**: 2025-10-13
 **Duration**: ~3.5 hours
 **Priority**: Critical
 
 **Tasks**:
-- [ ] Fix IPC listener leaks (memory leaks during hot-reload)
-- [ ] Ensure loopback teardown (lingering permissions prompts)
-- [ ] Manage temp file cleanup (disk space issues)
-- [ ] Propagate transcription options (model selection doesn't work)
-- [ ] Respect microphone toggle (privacy risk - toggle doesn't work)
+- [x] Fix IPC listener leaks (memory leaks during hot-reload)
+- [x] Ensure loopback teardown (lingering permissions prompts)
+- [x] Manage temp file cleanup (disk space issues)
+- [x] Propagate transcription options (model selection doesn't work)
+- [x] Respect microphone toggle (privacy risk - toggle doesn't work)
 
-**Success Criteria**: Hot-reload works cleanly, mic toggle works, no temp file accumulation
+**Success Criteria**: ✅ Hot-reload works cleanly, mic toggle works, no temp file accumulation
+
+**Results**:
+- Fixed memory leaks from IPC listeners (added unsubscribe functions)
+- Fixed lingering macOS "using microphone" indicator (loopback teardown)
+- Fixed disk space accumulation (temp files now cleaned up in finally block)
+- Fixed transcription options not being honored (constructor + options propagation)
+- Fixed microphone toggle not working after initialization (re-initialize on toggle)
 
 ---
 

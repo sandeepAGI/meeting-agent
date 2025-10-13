@@ -7,14 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### In Progress
-- **Refactor Sprint 1**: Critical bug fixes (before Phase 1.4)
-  - Fix IPC listener leaks (memory leaks during hot-reload)
-  - Ensure loopback teardown (lingering permissions prompts)
-  - Manage temp file cleanup (disk space issues)
-  - Propagate transcription options (model selection)
-  - Respect microphone toggle (privacy fix)
-
 ### Planned
 - **Refactor Sprint 2**: Architecture improvements (during Phase 1.4-1.5)
   - Modularize App.tsx (440 lines → <150 lines)
@@ -40,6 +32,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Documentation
 - Added `docs/planning/REFACTOR-PLAN.md` - Systematic refactoring roadmap based on code review
 - See `REFACTOR-CODEX.md` for detailed analysis
+
+---
+
+## [0.1.4] - 2025-10-13
+
+### Refactor Sprint 1: Critical Bug Fixes
+
+#### Fixed
+- **IPC listener memory leaks**
+  - Added unsubscribe functions to `onTranscriptionProgress` and `onDiarizationProgress`
+  - Updated `ElectronAPI` types to return cleanup handlers: `() => void`
+  - Added proper cleanup in `App.tsx` useEffect to prevent accumulation during hot-reload
+  - Added `'diarizing'` stage to `TranscriptionProgress` type
+
+- **Loopback audio teardown**
+  - Made `AudioCaptureService.stopCapture()` async
+  - Now calls `disableLoopbackAudio()` to release Core Audio tap
+  - Fixes lingering macOS "using microphone" indicator after stopping
+  - Updated `App.tsx` to handle async cleanup
+
+- **Temp file accumulation**
+  - Moved mono WAV conversion to system temp directory (`os.tmpdir()`)
+  - Added unique random filenames using `crypto.randomBytes()`
+  - Added `finally` block for guaranteed cleanup even on errors
+  - Prevents disk space issues on long-term usage
+
+- **Transcription options not honored**
+  - Added constructor options to `TranscriptionService`: `model`, `whisperPath`, `threads`
+  - Auto-detect CPU count and set default threads: `Math.max(1, cpuCount - 3)`
+  - Honor `options.threads` in `transcribe()` calls (can override default)
+  - Added `threads` property to `TranscriptionOptions` interface
+
+- **Microphone toggle broken**
+  - Added `handleMicrophoneToggle()` to re-initialize capture with new setting
+  - Added microphone checkbox to post-initialization UI
+  - Disabled toggle while recording (prevents mid-recording changes)
+  - **Fixes critical privacy issue** where toggle didn't work after initialization
+
+#### Testing
+- ✅ `npm run type-check` passes
+- ✅ `npm run build` succeeds
+- ✅ Manual testing confirms all fixes work correctly
+
+#### Impact
+- Prevents memory leaks during development and hot-reload
+- Fixes broken user controls (microphone toggle)
+- Prevents disk space accumulation
+- Removes lingering system indicators
+- Improves transcription configurability
 
 ---
 
