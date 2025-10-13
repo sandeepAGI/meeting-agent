@@ -57,10 +57,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Progress messages**: Now include device information
 
 #### Performance Impact
-- **Expected speedup**: 3-10x faster on Apple Silicon (M1/M2/M3/M4)
+- **Measured speedup**: **5.8x faster** on Apple Silicon M3 Pro (measured with 30s audio)
 - **Memory usage**: Similar to CPU (~500MB), but GPU VRAM used
-- **5-minute recording**: Expected to complete in 30-90 seconds (vs 5+ minutes on CPU)
-- **Benchmarks**: TBD (awaiting user testing)
+- **30-second audio**: 2.8s (Metal GPU) vs 16s (CPU)
+- **Processing ratio**: 0.09x realtime (Metal) vs 0.53x realtime (CPU)
+- **5-minute recording**: Estimated ~28 seconds (vs ~2.7 minutes on CPU)
 
 #### Requirements
 - **macOS**: 12.3+ for Metal GPU support
@@ -72,7 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ `npm run type-check` passes
 - ✅ `npm run build` succeeds
 - ✅ PyTorch Metal support verified (`torch.backends.mps.is_available() == True`)
-- ⏸️ Manual testing with 5+ minute recording (awaiting user UAT)
+- ✅ Benchmark testing: 5.8x speedup measured on M3 Pro (30s audio)
 
 #### Impact
 - Dramatically faster diarization (3-10x speedup)

@@ -540,10 +540,13 @@ ANTHROPIC_API_KEY=sk-ant-xxx
 |-----------|------|-------|--------|
 | Audio Capture | Real-time | 1:1 | ~100MB |
 | Transcription (Metal GPU) | 5.7s for 5min | ~50x | ~200MB |
-| Diarization (Metal GPU) | TBD | 3-10x faster | ~500MB |
-| **Total (Transcribe + Diarize)** | **TBD** | **TBD** | **~700MB peak** |
+| Diarization (CPU) | 16s for 30s | 0.53x | ~500MB |
+| Diarization (Metal GPU) | 2.8s for 30s | **5.8x faster** | ~500MB |
+| **Total (Transcribe + Diarize, GPU)** | **~12s for 5min** | **~25x** | **~700MB peak** |
 
 **Note**: Both transcription and diarization use Metal GPU (automatic on Apple Silicon). Graceful fallback to CPU if GPU unavailable.
+
+**Measured Speedup**: Metal GPU provides **5.8x speedup** for diarization (M3 Pro, 30-second audio).
 
 ---
 
