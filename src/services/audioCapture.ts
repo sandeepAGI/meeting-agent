@@ -29,6 +29,8 @@ export class AudioCaptureService {
   private chunkIndex = 0
   private lastSaveTime: Date | null = null
   private chunkSaveInterval: number | null = null
+  private isSavingChunk = false  // Prevent concurrent saves
+  private chunkSaveErrors = 0  // Track save failures
 
   private readonly config: AudioConfig = {
     sampleRate: 16000, // Whisper-compatible
@@ -248,11 +250,21 @@ export class AudioCaptureService {
   /**
    * Save current chunk to disk via IPC.
    * Phase 1.5: Auto-save chunks every 5 minutes.
+   * ISSUE 2 FIX: Add error handling and retry logic
+   * ISSUE 4 FIX: Prevent concurrent saves with flag
    */
   private async saveCurrentChunk(): Promise<void> {
     if (this.recordedChunks.length === 0 || !this.sessionId) {
       return
     }
+
+    // ISSUE 4 FIX: Prevent concurrent saves
+    if (this.isSavingChunk) {
+      console.warn('[AudioCapture] Chunk save already in progress, skipping')
+      return
+    }
+
+    this.isSavingChunk = true
 
     try {
       const chunkBlob = new Blob(this.recordedChunks, { type: 'audio/wav' })
@@ -272,11 +284,27 @@ export class AudioCaptureService {
         this.recordedChunks = [] // Clear buffer after successful save
         this.chunkIndex++
         this.lastSaveTime = new Date()
+        this.chunkSaveErrors = 0  // Reset error count on success
       } else {
+        // ISSUE 2 FIX: Track failures and throw error
+        this.chunkSaveErrors++
         console.error(`[AudioCapture] Failed to save chunk ${this.chunkIndex}:`, result.error)
+        console.error(`[AudioCapture] Chunk save failures: ${this.chunkSaveErrors}`)
+
+        if (this.chunkSaveErrors >= 3) {
+          throw new Error(`Failed to save chunks (${this.chunkSaveErrors} failures). Recording may be incomplete.`)
+        }
       }
     } catch (error) {
       console.error('[AudioCapture] Error saving chunk:', error)
+      this.chunkSaveErrors++
+
+      // If we have multiple failures, throw to stop recording
+      if (this.chunkSaveErrors >= 3) {
+        throw error
+      }
+    } finally {
+      this.isSavingChunk = false
     }
   }
 
@@ -335,6 +363,8 @@ export class AudioCaptureService {
           this.chunkIndex = 0
           this.lastSaveTime = null
           this.mediaRecorder = null
+          this.isSavingChunk = false
+          this.chunkSaveErrors = 0
 
           console.log('[AudioCapture] Recording stopped, merged file:', session.filePath)
           resolve(session)
@@ -352,7 +382,7 @@ export class AudioCaptureService {
    * Stop audio capture and cleanup resources
    */
   async stopCapture(): Promise<void> {
-    // ISSUE 4 FIX: Stop active recording first
+    // ISSUE 3 FIX: Stop active recording first and cleanup all state
     if (this.isRecording && this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
       console.warn('Stopping active recording before cleanup')
       this.mediaRecorder.stop()
@@ -360,6 +390,13 @@ export class AudioCaptureService {
       this.startTime = null
       this.recordedChunks = []
       this.mediaRecorder = null
+
+      // ISSUE 3 FIX: Clean up chunk-related state
+      this.sessionId = null
+      this.chunkIndex = 0
+      this.lastSaveTime = null
+      this.isSavingChunk = false
+      this.chunkSaveErrors = 0
     }
 
     // Stop audio level monitoring

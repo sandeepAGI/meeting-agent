@@ -206,29 +206,13 @@ export function useAudioCapture() {
       setIsRecording(false)
       console.log('[DEBUG] Recording stopped, session:', session)
 
-      // Get the recorded blob from session
-      const blob = session.blob
-      console.log('[DEBUG] Got blob, size:', blob?.size)
-
-      if (blob) {
-        const filename = `recording_${session.id.replace(/[:.]/g, '-')}.wav`
-        console.log('[DEBUG] Saving audio file:', filename)
-
-        // Convert blob to ArrayBuffer and save to disk via IPC
-        const arrayBuffer = await blob.arrayBuffer()
-        console.log('[DEBUG] ArrayBuffer size:', arrayBuffer.byteLength)
-
-        const saveResult = await window.electronAPI.saveAudioFile(arrayBuffer, filename)
-        console.log('[DEBUG] Save result:', saveResult)
-
-        if (saveResult.success && saveResult.filePath) {
-          console.log('[DEBUG] Audio saved to:', saveResult.filePath)
-          return { filePath: saveResult.filePath }
-        } else {
-          throw new Error(saveResult.error || 'Failed to save audio file')
-        }
+      // Phase 1.5: filePath is already set by merge process in stopRecording()
+      // No need to save blob - chunks were already saved and merged
+      if (session.filePath) {
+        console.log('[DEBUG] Merged audio file path:', session.filePath)
+        return { filePath: session.filePath }
       } else {
-        console.error('[DEBUG] No blob available')
+        console.error('[DEBUG] No file path available')
         return { filePath: null }
       }
     } catch (err) {

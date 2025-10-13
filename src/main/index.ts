@@ -131,9 +131,10 @@ ipcMain.handle('merge-audio-chunks', async (_event, sessionId: string) => {
     }
 
     // Create concat file list for FFmpeg
+    // ISSUE 1 FIX: Use relative paths in concat file (ffmpeg runs from sessionDir)
     const concatListPath = path.join(sessionDir, 'concat_list.txt')
     const concatContent = chunkFiles
-      .map(file => `file '${path.join(sessionDir, file)}'`)
+      .map(file => `file '${file}'`)  // Relative path, just filename
       .join('\n')
 
     fs.writeFileSync(concatListPath, concatContent)
@@ -145,11 +146,13 @@ ipcMain.handle('merge-audio-chunks', async (_event, sessionId: string) => {
       const ffmpeg = spawn('ffmpeg', [
         '-f', 'concat',
         '-safe', '0',
-        '-i', concatListPath,
+        '-i', 'concat_list.txt',  // Use relative path
         '-c', 'copy',
         '-y',
-        mergedPath
-      ])
+        'merged.wav'  // Use relative filename
+      ], {
+        cwd: sessionDir  // Set working directory to session directory
+      })
 
       let stderr = ''
       ffmpeg.stderr.on('data', (data) => {
