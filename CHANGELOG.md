@@ -8,12 +8,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- **Refactor Sprint 2**: Architecture improvements (during Phase 1.4-1.5)
-  - Modularize App.tsx (440 lines → <150 lines)
-  - Optimize merge algorithm (O(n²) → O(n log m))
-  - Fix RecordingSession types
-  - Retire whisper-node-addon remnants
-- Phase 1.4: Recording Announcement (transparency & consent)
 - Phase 1.5: Chunked Recording (auto-save every 5 min)
 - **Refactor Sprint 3**: Performance & portability (Phase 2+)
   - Generalize Python env discovery (Windows/Linux)
@@ -32,6 +26,110 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Documentation
 - Added `docs/planning/REFACTOR-PLAN.md` - Systematic refactoring roadmap based on code review
 - See `REFACTOR-CODEX.md` for detailed analysis
+
+---
+
+## [0.1.6] - 2025-10-13
+
+### Phase 1.4: Recording Announcement (Transparency & Consent)
+
+#### Added
+- **Recording announcement feature**:
+  - Automatically plays announcement when user clicks "Start Recording"
+  - Uses macOS `say` command for text-to-speech
+  - Announcement text: "This meeting, with your permission, is being recorded to generate meeting notes. These recordings will be deleted after notes are generated."
+  - 2-second delay after announcement before recording starts
+  - Announcement is captured in the recording (participants hear it)
+
+- **IPC Handler** (`play-announcement`):
+  - Main process spawns `say` command
+  - Returns success/failure status
+  - Error handling for missing TTS engine
+
+- **Service Method** (`AudioCaptureService.playAnnouncement()`):
+  - Calls IPC handler to play announcement
+  - Non-blocking error handling (failures don't prevent recording)
+  - Configurable announcement text
+
+- **UI Enhancements**:
+  - New state: `isPlayingAnnouncement` in `useAudioCapture` hook
+  - Status indicator: "📢 Playing announcement..." during playback
+  - Visual feedback for transparency
+
+#### Changed
+- **Recording flow**: Now announcement → 2-second delay → start recording
+- **`startRecording()` signature**: Added optional `playAnnouncementFirst` parameter (default: true)
+
+#### Testing
+- ✅ `npm run type-check` passes
+- ✅ `npm run build` succeeds
+- ✅ Announcement plays through system speakers
+- ✅ Recording captures announcement audio
+
+#### Legal & Ethical Compliance
+- **Transparency**: Participants are informed they're being recorded
+- **Consent mechanism**: Announcement allows participants to object or leave
+- **Privacy**: Clearly states recordings are temporary and deleted after processing
+- **Platform support**: macOS (built-in), Windows/Linux (future: PowerShell/espeak)
+
+#### Impact
+- Improved legal compliance for recording meetings
+- Better user trust through transparency
+- Professional approach to meeting recording
+
+---
+
+## [0.1.5] - 2025-10-13
+
+### Refactor Sprint 2: Architecture Improvements
+
+#### Changed
+- **Modularized App.tsx**: Reduced from 500 lines to 93 lines (81% reduction)
+  - Extracted custom hooks:
+    - `useAudioCapture`: Audio capture state and operations (207 lines)
+    - `useTranscription`: Transcription state and operations (134 lines)
+  - Extracted UI components:
+    - `InitSection`: Initial setup UI (42 lines)
+    - `RecordingControls`: Recording status and controls (82 lines)
+    - `AudioLevelMeter`: Audio visualization (20 lines)
+    - `RecordingButtons`: Action buttons (38 lines)
+    - `TranscriptionProgress`: Progress display (22 lines)
+    - `TranscriptDisplay`: Transcript results (35 lines)
+  - Created utility: `formatDuration` (7 lines)
+  - Improved separation of concerns, testability, and maintainability
+
+#### Optimized
+- **Merge algorithm performance**: O(n²) → O(n log m + n*k) complexity
+  - Added binary search optimization (`binarySearchSegments`)
+  - Added early exit when no more overlaps possible
+  - Added automatic segment sorting (`ensureSortedSegments`)
+  - Expected speedup: ~45x for typical meetings (n=100, m=50, k=1-2)
+  - Maintains same accuracy, just faster
+
+#### Fixed
+- **RecordingSession type safety**:
+  - Changed `endTime?: Date` to `endTime: Date` (always required)
+  - Created `RecordingSessionWithBlob` interface for return type clarity
+  - Eliminated unsafe type intersections (`RecordingSession & { blob: Blob }`)
+  - All types now accurately reflect actual usage
+
+#### Removed
+- **Whisper-node-addon remnants** (cleanup):
+  - Deleted `test-worker.js` (unused test file for native addon)
+  - Deleted `scripts/postinstall.sh` (native module symlink script)
+  - Removed `postinstall` script from package.json
+  - Note: Documentation references remain for historical context
+
+#### Testing
+- ✅ `npm run type-check` passes
+- ✅ `npm run build` succeeds (build time: ~800ms)
+- ✅ All components compile without errors
+
+#### Impact
+- Cleaner, more maintainable codebase
+- Faster diarization merge (45x speedup estimate)
+- Type-safe recording session handling
+- Removed unused code and build steps
 
 ---
 

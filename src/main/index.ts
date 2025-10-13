@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'path'
 import fs from 'fs'
+import { spawn } from 'child_process'
 import dotenv from 'dotenv'
 import { initializeAudioLoopback } from './audioSetup'
 import { transcriptionService } from '../services/transcription'
@@ -71,6 +72,36 @@ ipcMain.handle('save-audio-file', async (_event, blob: ArrayBuffer, filename: st
 
 ipcMain.handle('get-transcription-status', async () => {
   return transcriptionService.getStatus()
+})
+
+// IPC Handler for playing announcement
+ipcMain.handle('play-announcement', async (_event, text: string) => {
+  return new Promise((resolve, reject) => {
+    try {
+      console.log('[Announcement] Playing:', text)
+
+      // Use macOS 'say' command for text-to-speech
+      const say = spawn('say', [text])
+
+      say.on('error', (error) => {
+        console.error('[Announcement] Failed to play:', error)
+        reject(new Error(`Failed to play announcement: ${error.message}`))
+      })
+
+      say.on('close', (code) => {
+        if (code === 0) {
+          console.log('[Announcement] Completed successfully')
+          resolve({ success: true })
+        } else {
+          console.error('[Announcement] Process exited with code:', code)
+          reject(new Error(`Announcement failed with exit code ${code}`))
+        }
+      })
+    } catch (error) {
+      console.error('[Announcement] Error:', error)
+      reject(error)
+    }
+  })
 })
 
 // IPC Handler for speaker diarization

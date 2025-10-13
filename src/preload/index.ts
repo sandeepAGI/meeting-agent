@@ -39,6 +39,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Combined transcription + diarization
   transcribeAndDiarize: (audioFilePath: string, options?: TranscriptionOptions) =>
     ipcRenderer.invoke('transcribe-and-diarize', audioFilePath, options),
+
+  // Recording announcement
+  playAnnouncement: (text: string) =>
+    ipcRenderer.invoke('play-announcement', text),
 })
 
 export {}

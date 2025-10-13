@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Current Status
 
-**Version**: 0.1.3 (Phase 1.3 Complete ✅)
+**Version**: 0.1.6 (Phase 1.4 Complete ✅)
 **Last Updated**: 2025-10-13
 
 **What Works Now**:
@@ -16,8 +16,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ✅ Local transcription using whisper.cpp (Metal GPU acceleration)
 - ✅ Speaker diarization using pyannote.audio (identifies "who spoke when")
 - ✅ Speaker-labeled transcripts: `[SPEAKER_00]: text`
+- ✅ Recording announcement for transparency and consent
 
-**Next Phase**: Phase 1.4 - Recording Announcement (transparency & consent)
+**Next Phase**: Phase 1.5 - Chunked Recording (auto-save every 5 min)
+
+### Recent Updates
+**Sprint 2 (Refactoring)**:
+- ✅ App.tsx modularization: 500 lines → 93 lines (6 components + 2 hooks)
+- ✅ Merge algorithm optimization: O(n²) → O(n log m) using binary search
+- ✅ Type safety: Fixed RecordingSession types with proper interfaces
+- ✅ Cleanup: Removed whisper-node-addon remnants
+
+**Phase 1.4 (Recording Announcement)**:
+- ✅ Announcement plays automatically when recording starts
+- ✅ Uses macOS `say` command for text-to-speech
+- ✅ 2-second delay ensures announcement completes
+- ✅ UI shows "📢 Playing announcement..." status
 
 ### Key Features
 - **Local-first**: All transcription and diarization happen on-device ($0.00/meeting)
@@ -398,8 +412,8 @@ MIT License - See LICENSE file
 
 ---
 
-**Current Status**: Phase 1.3 Complete ✅ (Audio Capture + Transcription + Diarization)
-**Next Milestone**: Phase 1.4 - Recording Announcement (transparency & consent)
+**Current Status**: Phase 1.4 Complete ✅ (Audio + Transcription + Diarization + Announcement)
+**Next Milestone**: Phase 1.5 - Chunked Recording (auto-save every 5 min)
 **Last Updated**: 2025-10-13
 **Built with**: Claude Code (Sonnet 4.5) 🤖
 

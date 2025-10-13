@@ -34,6 +34,9 @@ export interface ElectronAPI {
     audioFilePath: string,
     options?: TranscriptionOptions
   ) => Promise<{ success: boolean; result?: TranscriptionWithDiarizationResult; error?: string }>
+
+  // Recording announcement
+  playAnnouncement: (text: string) => Promise<{ success: boolean }>
 }
 
 declare global {

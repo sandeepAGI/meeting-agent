@@ -1,6 +1,6 @@
 import { MediaRecorder, register, IMediaRecorder } from 'extendable-media-recorder'
 import { connect } from 'extendable-media-recorder-wav-encoder'
-import type { AudioLevel, RecordingSession, AudioConfig } from '../types/audio'
+import type { AudioLevel, RecordingSessionWithBlob, AudioConfig } from '../types/audio'
 
 // Track if WAV encoder has been registered globally
 let wavEncoderRegistered = false
@@ -144,9 +144,54 @@ export class AudioCaptureService {
   }
 
   /**
-   * Start recording audio to WAV file
+   * Play announcement using macOS 'say' command via IPC.
+   * The announcement informs participants that the meeting is being recorded.
+   * Non-blocking - fires and forgets the announcement.
    */
-  async startRecording(): Promise<void> {
+  playAnnouncementNonBlocking(): void {
+    const announcementText =
+      "This meeting, with your permission, is being recorded to generate meeting notes. " +
+      "These recordings will be deleted after notes are generated."
+
+    console.log('[AudioCapture] Starting announcement playback...')
+    // Fire and forget - don't await
+    window.electronAPI.playAnnouncement(announcementText)
+      .then(() => {
+        console.log('[AudioCapture] Announcement completed')
+      })
+      .catch((error) => {
+        console.error('[AudioCapture] Announcement failed:', error)
+      })
+  }
+
+  /**
+   * Play announcement and wait for completion.
+   * Blocking version for when you need to wait.
+   */
+  async playAnnouncement(): Promise<void> {
+    const announcementText =
+      "This meeting, with your permission, is being recorded to generate meeting notes. " +
+      "These recordings will be deleted after notes are generated."
+
+    try {
+      console.log('[AudioCapture] Playing announcement...')
+      await window.electronAPI.playAnnouncement(announcementText)
+      console.log('[AudioCapture] Announcement completed')
+    } catch (error) {
+      console.error('[AudioCapture] Announcement failed:', error)
+      // Don't throw - announcement failure shouldn't prevent recording
+      // Just log the error and continue
+    }
+  }
+
+  /**
+   * Start recording audio to WAV file.
+   * If playAnnouncementFirst is true, starts recording first, then plays announcement.
+   * This ensures the announcement is captured in the recording.
+   *
+   * @param playAnnouncementFirst - Whether to play announcement after starting recording (default: true)
+   */
+  async startRecording(playAnnouncementFirst: boolean = true): Promise<void> {
     if (!this.destinationNode) {
       throw new Error('Audio capture not started. Call startCapture() first.')
     }
@@ -165,11 +210,18 @@ export class AudioCaptureService {
         }
       }
 
+      // Start MediaRecorder FIRST so announcement gets captured
       this.mediaRecorder.start(1000) // Collect data every second
       this.isRecording = true
       this.startTime = new Date()
 
-      console.log('Recording started')
+      console.log('[AudioCapture] Recording started, ready for announcement')
+
+      // Play announcement AFTER recording starts (so it gets captured)
+      // Use non-blocking version to avoid UI delay
+      if (playAnnouncementFirst) {
+        this.playAnnouncementNonBlocking()
+      }
     } catch (error) {
       console.error('Failed to start recording:', error)
       throw error
@@ -179,7 +231,7 @@ export class AudioCaptureService {
   /**
    * Stop recording and return the recorded audio as a Blob
    */
-  async stopRecording(): Promise<RecordingSession & { blob: Blob }> {
+  async stopRecording(): Promise<RecordingSessionWithBlob> {
     return new Promise((resolve, reject) => {
       if (!this.mediaRecorder || !this.startTime) {
         reject(new Error('No active recording'))

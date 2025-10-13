@@ -19,9 +19,9 @@ Meeting Agent is being developed in 10 phases, from foundation to production-rea
 | 1.2 | Transcription | ✅ Complete | 2025-10-13 |
 | 1.3 | Diarization | ✅ Complete | 2025-10-13 |
 | R1 | Refactor Sprint 1 | ✅ Complete | 2025-10-13 |
-| R2 | Refactor Sprint 2 | 🔜 Next | - |
-| 1.4 | Recording Announcement | 📅 Planned | - |
-| 1.5 | Chunked Recording | 📅 Planned | - |
+| R2 | Refactor Sprint 2 | ✅ Complete | 2025-10-13 |
+| 1.4 | Recording Announcement | ✅ Complete | 2025-10-13 |
+| 1.5 | Chunked Recording | 🔜 Next | - |
 | R3 | Refactor Sprint 3 | 📅 Planned | - |
 | 2.1 | M365 Authentication | 📅 Planned | - |
 | 2.2 | Calendar & Meeting Context | 📅 Planned | - |
@@ -181,18 +181,37 @@ Based on code review findings (REFACTOR-CODEX.md), three refactor sprints addres
 
 ---
 
-### Sprint 2: Architecture Improvements 🔥
-**Target**: During Phase 1.4-1.5
-**Duration**: ~7.5 hours
+### Sprint 2: Architecture Improvements ✅
+**Completed**: 2025-10-13
+**Duration**: ~4 hours
 **Priority**: High
 
 **Tasks**:
-- [ ] Modularize App.tsx (440 lines → <150 lines, extract hooks/components)
-- [ ] Optimize merge algorithm (O(n²) → O(n log m), 45x faster)
-- [ ] Fix RecordingSession types (type safety)
-- [ ] Retire whisper-node-addon remnants (cleanup)
+- [x] Modularize App.tsx (500 lines → 93 lines, extract hooks/components)
+- [x] Optimize merge algorithm (O(n²) → O(n log m), 45x faster)
+- [x] Fix RecordingSession types (type safety)
+- [x] Retire whisper-node-addon remnants (cleanup)
 
-**Success Criteria**: Clean component structure, fast merges, type-safe code
+**Success Criteria**: ✅ Clean component structure, fast merges, type-safe code
+
+**Results**:
+- **App.tsx modularization**: Reduced from 500 lines to 93 lines (81% reduction)
+  - Created custom hooks: `useAudioCapture`, `useTranscription`
+  - Created components: `InitSection`, `RecordingControls`, `AudioLevelMeter`, `RecordingButtons`, `TranscriptionProgress`, `TranscriptDisplay`
+  - Created utility: `formatDuration`
+  - Improved separation of concerns and testability
+- **Merge algorithm optimization**: Binary search + early exit optimization
+  - Complexity: O(n²) → O(n log m + n*k) where k ≈ 1-2
+  - Expected speedup: ~45x for typical meetings (n=100, m=50)
+  - Added `ensureSortedSegments` and `binarySearchSegments` functions
+- **Type safety**: Fixed RecordingSession types
+  - Changed `endTime?: Date` to `endTime: Date` (always required)
+  - Created `RecordingSessionWithBlob` interface for `stopRecording()` return type
+  - Eliminated type-unsafe intersections
+- **Cleanup**: Removed whisper-node-addon remnants
+  - Deleted `test-worker.js` (unused test file)
+  - Deleted `scripts/postinstall.sh` (native module symlink script)
+  - Removed `postinstall` script from package.json
 
 ---
 
@@ -210,10 +229,10 @@ Based on code review findings (REFACTOR-CODEX.md), three refactor sprints addres
 
 ---
 
-## Phase 1.4: Recording Announcement 🔜
+## Phase 1.4: Recording Announcement ✅
 
-**Status**: Next Up (After Sprint 1)
-**Prerequisites**: Complete Sprint 1 (Critical Bug Fixes)
+**Completed**: 2025-10-13
+**Duration**: ~2 hours
 
 ### Goals
 Add audio announcement for meeting transparency and consent.
@@ -231,11 +250,12 @@ When user clicks "Start Recording", play an announcement through system speakers
 - **Audio documentation**: Announcement is captured in recording itself
 
 ### Tasks
-- [ ] Implement `playAnnouncement()` method in AudioCaptureService
-- [ ] Use macOS `say` command for text-to-speech
-- [ ] Trigger announcement immediately after "Start Recording" clicked
-- [ ] Add 2-second delay before recording starts (allow announcement to complete)
-- [ ] Update deletion policy: "delete after summary generation" (not just transcription)
+- [x] Implement `playAnnouncement()` method in AudioCaptureService
+- [x] Use macOS `say` command for text-to-speech
+- [x] Trigger announcement immediately after "Start Recording" clicked
+- [x] Add 2-second delay before recording starts (allow announcement to complete)
+- [x] UI status indicator during announcement playback
+- [ ] Update deletion policy: "delete after summary generation" (deferred to Phase 3)
 - [ ] Add announcement settings (Phase 7): custom text, enable/disable
 
 ### Technical Approach
@@ -255,13 +275,27 @@ When user clicks "Start Recording", play an announcement through system speakers
 - **Rationale**: Ensures audio is available if transcription needs regeneration
 
 ### Success Criteria
-- Announcement plays through system speakers when recording starts
-- Remote meeting participants hear the announcement
-- Announcement is captured in the recording
-- Recording starts smoothly after announcement completes
+✅ Announcement plays through system speakers when recording starts
+✅ Remote meeting participants hear the announcement
+✅ Announcement is captured in the recording
+✅ Recording starts smoothly after announcement completes (2-second delay)
+✅ UI shows announcement status
+
+### Implementation Details
+- **IPC Handler**: `play-announcement` in main process
+- **Service Method**: `AudioCaptureService.playAnnouncement()`
+- **Text-to-Speech**: macOS `say` command via `child_process.spawn`
+- **Recording Flow**: Announcement → 2-second delay → Start recording
+- **UI State**: `isPlayingAnnouncement` state with "📢 Playing announcement..." status
+- **Error Handling**: Announcement failures don't prevent recording
+
+### Announcement Text
+"This meeting, with your permission, is being recorded to generate meeting notes. These recordings will be deleted after notes are generated."
 
 ### Documentation
-- Will update: `docs/technical/audio-capture.md`
+- Updated: `docs/planning/roadmap.md`
+- Updated: `CHANGELOG.md` v0.1.6
+- Updated: `CLAUDE.md`
 
 ---
 

@@ -13,9 +13,17 @@ export interface RecordingSession {
   id: string
   filePath: string
   startTime: Date
-  endTime?: Date
+  endTime: Date
   duration: number // seconds
   sizeBytes: number
+}
+
+/**
+ * Extended recording session returned by stopRecording().
+ * Includes the raw audio blob before it's saved to disk.
+ */
+export interface RecordingSessionWithBlob extends RecordingSession {
+  blob: Blob
 }
 
 export interface AudioConfig {
