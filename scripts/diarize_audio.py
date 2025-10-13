@@ -6,7 +6,7 @@ This script takes an audio file and outputs speaker segments with timestamps in 
 It uses the pyannote-speaker-diarization-3.1 model which requires a Hugging Face token.
 
 Usage:
-    python3 scripts/diarize_audio.py <audio_file_path> [--token <hf_token>]
+    python3 scripts/diarize_audio.py <audio_file_path> [--token <hf_token>] [--use-gpu]
 
 Output format:
     {
@@ -22,26 +22,68 @@ import sys
 import json
 import os
 from typing import List, Dict
+import torch
 from pyannote.audio import Pipeline
 
 
-def diarize_audio(audio_path: str, hf_token: str) -> Dict[str, List[Dict]]:
+def get_device(use_gpu: bool = True) -> torch.device:
+    """
+    Get the best available device for PyTorch.
+
+    Args:
+        use_gpu: Whether to attempt GPU acceleration
+
+    Returns:
+        torch.device for computation
+    """
+    if not use_gpu:
+        return torch.device("cpu")
+
+    # Try Metal (macOS Apple Silicon)
+    if torch.backends.mps.is_available():
+        return torch.device("mps")
+
+    # Try CUDA (NVIDIA GPU)
+    if torch.cuda.is_available():
+        return torch.device("cuda")
+
+    # Fallback to CPU
+    return torch.device("cpu")
+
+
+def diarize_audio(audio_path: str, hf_token: str, use_gpu: bool = True) -> Dict[str, List[Dict]]:
     """
     Run speaker diarization on an audio file.
 
     Args:
         audio_path: Path to the audio file (WAV format recommended)
         hf_token: Hugging Face authentication token
+        use_gpu: Whether to use GPU acceleration (default: True)
 
     Returns:
         Dictionary with 'segments' key containing list of speaker segments
     """
+    # Detect device
+    device = get_device(use_gpu)
+    device_name = str(device).upper()
+    if device.type == "mps":
+        device_name = "Metal GPU"
+    elif device.type == "cuda":
+        device_name = f"CUDA GPU ({torch.cuda.get_device_name(0)})"
+
+    print(f"[PROGRESS] Using device: {device_name}", file=sys.stderr, flush=True)
+
     # Load the diarization pipeline
     print("[PROGRESS] Loading pyannote.audio models...", file=sys.stderr, flush=True)
     pipeline = Pipeline.from_pretrained(
         "pyannote/speaker-diarization-3.1",
         token=hf_token
     )
+
+    # Move pipeline to device (GPU if available)
+    if device.type != "cpu":
+        print(f"[PROGRESS] Moving models to {device_name}...", file=sys.stderr, flush=True)
+        pipeline = pipeline.to(device)
 
     # Run diarization
     print("[PROGRESS] Analyzing audio for speaker changes...", file=sys.stderr, flush=True)
@@ -69,7 +111,7 @@ def main():
     """Main entry point for the script."""
     if len(sys.argv) < 2:
         print("Error: Missing audio file path", file=sys.stderr)
-        print(f"Usage: {sys.argv[0]} <audio_file_path> [--token <hf_token>]", file=sys.stderr)
+        print(f"Usage: {sys.argv[0]} <audio_file_path> [--token <hf_token>] [--use-gpu]", file=sys.stderr)
         sys.exit(1)
 
     audio_path = sys.argv[1]
@@ -94,9 +136,12 @@ def main():
         print("Either set HUGGINGFACE_TOKEN environment variable or use --token flag", file=sys.stderr)
         sys.exit(1)
 
+    # Check for GPU flag (default: True for automatic GPU detection)
+    use_gpu = "--no-gpu" not in sys.argv  # GPU enabled by default
+
     try:
         # Run diarization
-        result = diarize_audio(audio_path, hf_token)
+        result = diarize_audio(audio_path, hf_token, use_gpu)
 
         # Output JSON to stdout
         print(json.dumps(result, indent=2))

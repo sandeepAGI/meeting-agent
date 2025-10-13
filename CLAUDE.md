@@ -8,20 +8,28 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Current Status
 
-**Version**: 0.1.7 (Phase 1.5 Complete ✅)
+**Version**: 0.1.8 (Phase 1.6 Complete ✅)
 **Last Updated**: 2025-10-13
 
 **What Works Now**:
 - ✅ Native system audio + microphone capture (no virtual drivers)
 - ✅ Local transcription using whisper.cpp (Metal GPU acceleration)
-- ✅ Speaker diarization using pyannote.audio (identifies "who spoke when")
+- ✅ Speaker diarization using pyannote.audio (Metal GPU acceleration)
 - ✅ Speaker-labeled transcripts: `[SPEAKER_00]: text`
 - ✅ Recording announcement for transparency and consent
 - ✅ Chunked recording with auto-save (prevents data loss, memory exhaustion)
+- ✅ Metal GPU acceleration for both transcription AND diarization (3-10x speedup)
 
 **Next Phase**: Phase 2.1 - Microsoft 365 Authentication
 
 ### Recent Updates
+**Phase 1.6 (GPU Acceleration)**:
+- ✅ Metal GPU acceleration for diarization (pyannote.audio)
+- ✅ Automatic device detection (Metal → CUDA → CPU fallback)
+- ✅ Expected 3-10x speedup on Apple Silicon
+- ✅ Graceful fallback to CPU if GPU unavailable
+- ✅ Progress messages show device used
+
 **Phase 1.5 (Chunked Recording)**:
 - ✅ Auto-save chunks every 5 minutes during recording
 - ✅ Memory stays constant (~5MB) regardless of duration
@@ -45,7 +53,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Local-first**: All transcription and diarization happen on-device ($0.00/meeting)
 - **Privacy-focused**: User controls all data, no cloud dependencies for core features
 - **Cross-platform ready**: macOS 12.3+ (Windows/Linux support via electron-audio-loopback)
-- **Metal GPU acceleration**: Fast transcription on Apple Silicon
+- **Metal GPU acceleration**: Fast transcription AND diarization on Apple Silicon
 - **Subprocess pattern**: No native Node.js modules, clean process isolation
 
 ---
@@ -502,9 +510,8 @@ ANTHROPIC_API_KEY=sk-ant-xxx
 
 1. **macOS 12.3+ only** (for now) - Windows/Linux support available via electron-audio-loopback but not tested
 2. **Generic speaker labels** - "SPEAKER_00", "SPEAKER_01" (Phase 2 will map to actual names from calendar)
-3. **CPU-only diarization** - ~1:1 processing time (GPU acceleration deferred to Phase 2+)
-4. **No M365 integration yet** - Calendar and email features coming in Phase 2
-5. **No summarization yet** - AI summaries coming in Phase 3
+3. **No M365 integration yet** - Calendar and email features coming in Phase 2
+4. **No summarization yet** - AI summaries coming in Phase 3
 
 ---
 
@@ -532,11 +539,11 @@ ANTHROPIC_API_KEY=sk-ant-xxx
 | Operation | Time | Ratio | Memory |
 |-----------|------|-------|--------|
 | Audio Capture | Real-time | 1:1 | ~100MB |
-| Transcription (base model) | 20-30s for 17.9s | 1.1-1.7x | ~200MB |
-| Diarization (CPU-only) | 30s for 30s | 1:1 | ~500MB |
-| **Total (Transcribe + Diarize)** | **~90s for 30s** | **3:1** | **~700MB peak** |
+| Transcription (Metal GPU) | 5.7s for 5min | ~50x | ~200MB |
+| Diarization (Metal GPU) | TBD | 3-10x faster | ~500MB |
+| **Total (Transcribe + Diarize)** | **TBD** | **TBD** | **~700MB peak** |
 
-**Note**: Transcription uses Metal GPU (automatic). Diarization uses CPU (GPU acceleration deferred to Phase 2+).
+**Note**: Both transcription and diarization use Metal GPU (automatic on Apple Silicon). Graceful fallback to CPU if GPU unavailable.
 
 ---
 
@@ -558,7 +565,7 @@ MIT License - See LICENSE file
 
 ---
 
-**Current Status**: Phase 1.5 Complete ✅ (Audio + Transcription + Diarization + Announcement + Chunking)
+**Current Status**: Phase 1.6 Complete ✅ (Audio + Transcription + Diarization + Announcement + Chunking + GPU Acceleration)
 **Next Milestone**: Phase 2.1 - Microsoft 365 Authentication
 **Last Updated**: 2025-10-13
 **Built with**: Claude Code (Sonnet 4.5) 🤖

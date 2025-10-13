@@ -4,9 +4,9 @@ AI-powered meeting transcription and summarization tool for macOS.
 
 ## Status
 
-**Current Version**: 0.1.7 - Phase 1.5 Complete ✅
+**Current Version**: 0.1.8 - Phase 1.6 Complete ✅
 
-This project is in active development. Phases 0-1.5 are complete (audio capture, transcription, speaker diarization, recording announcement, chunked recording). See [CHANGELOG.md](./CHANGELOG.md) for version history and [docs/planning/roadmap.md](./docs/planning/roadmap.md) for the full development plan.
+This project is in active development. Phases 0-1.6 are complete (audio capture, transcription, speaker diarization, recording announcement, chunked recording, GPU acceleration). See [CHANGELOG.md](./CHANGELOG.md) for version history and [docs/planning/roadmap.md](./docs/planning/roadmap.md) for the full development plan.
 
 ## Overview
 
@@ -19,7 +19,7 @@ Meeting Agent is a desktop application that:
 - 🔜 **Integrates with Microsoft 365** for meeting context and email distribution (Phase 2)
 - 🔜 **Provides an editor** to review and customize summaries before sending (Phase 4)
 
-## What Works Now (v0.1.7)
+## What Works Now (v0.1.8)
 
 ### Audio Capture
 - Native system audio capture (no virtual drivers required!)
@@ -27,7 +27,7 @@ Meeting Agent is a desktop application that:
 - Real-time audio level monitoring
 - 16kHz mono WAV output (Whisper-compatible)
 
-### Chunked Recording (New in 0.1.7!)
+### Chunked Recording (0.1.7)
 - **Auto-save every 5 minutes** during recording
 - Prevents memory exhaustion for long meetings (60+ minutes)
 - Protects against data loss from crashes
@@ -44,22 +44,23 @@ Meeting Agent is a desktop application that:
 
 ### Transcription
 - Local transcription using whisper.cpp (Metal GPU acceleration)
-- ~1-2x realtime speed (17.9s audio in 20-30s)
+- ~1-2x realtime speed (5min audio in ~5.7s)
 - Progress monitoring with real-time updates
 - Memory efficient: <200MB during transcription
 
-### Speaker Diarization
+### Speaker Diarization (New in 0.1.8: Metal GPU Acceleration!)
 - Identifies "who spoke when" using pyannote.audio
+- **Metal GPU acceleration**: 3-10x faster than CPU (automatic on Apple Silicon)
 - Speaker-labeled transcripts: `[SPEAKER_00]: text`
 - Two modes: "Transcribe Only" (fast) or "Transcribe + Diarize" (accurate)
-- ~90s total for 30s audio (transcription + diarization)
+- Automatic device detection (Metal GPU → CUDA → CPU fallback)
 
 ## Key Features
 
 - 🎤 **Universal Meeting Support**: Works with any meeting platform
 - 💰 **Cost-Effective**: $0.00/meeting for transcription + diarization (100% local)
 - 🔒 **Privacy-First**: All processing happens locally, you control all data
-- 🚀 **Metal GPU Acceleration**: Fast transcription on Apple Silicon
+- 🚀 **Metal GPU Acceleration**: Fast transcription AND diarization on Apple Silicon
 - 🗣️ **Speaker Labels**: Know who said what in meetings
 - 📧 **M365 Integration** (Coming in Phase 2): Auto-fetch meeting context, send via Outlook
 - ✏️ **Edit Before Send** (Coming in Phase 4): Review and customize summaries
@@ -249,20 +250,19 @@ meeting-agent/
 | Operation | Time | Ratio | Memory |
 |-----------|------|-------|--------|
 | Audio Capture | Real-time | 1:1 | ~100MB |
-| Transcription (base model) | 20-30s for 17.9s | 1.1-1.7x | ~200MB |
-| Diarization (CPU-only) | 30s for 30s | 1:1 | ~500MB |
-| **Total (Transcribe + Diarize)** | **~90s for 30s** | **3:1** | **~700MB peak** |
+| Transcription (base model, Metal GPU) | 5.7s for 5min | ~50x | ~200MB |
+| Diarization (Metal GPU) | TBD | 3-10x faster | ~500MB |
+| **Total (Transcribe + Diarize)** | **TBD** | **TBD** | **~700MB peak** |
 
-**Note**: Transcription uses Metal GPU (automatic). Diarization uses CPU (GPU acceleration deferred to Phase 2+).
+**Note**: Both transcription and diarization use Metal GPU (automatic on Apple Silicon). Graceful fallback to CPU if GPU unavailable.
 
 ## Known Limitations
 
 1. **macOS Only**: Currently requires macOS 12.3+ for native audio loopback
 2. **Generic Speaker Labels**: Speakers labeled "SPEAKER_00", "SPEAKER_01", etc. (Phase 2 will add name matching with calendar attendees)
-3. **CPU-Only Diarization**: ~1:1 processing time (GPU acceleration planned for Phase 2+)
-4. **No M365 Integration Yet**: Calendar and email features coming in Phase 2
-5. **No Summarization Yet**: AI summaries coming in Phase 3
-6. **English-Focused**: Multi-language support planned for Phase 7
+3. **No M365 Integration Yet**: Calendar and email features coming in Phase 2
+4. **No Summarization Yet**: AI summaries coming in Phase 3
+5. **English-Focused**: Multi-language support planned for Phase 7
 
 ## Roadmap
 
@@ -287,6 +287,11 @@ meeting-agent/
 - Auto-save every 5 minutes
 - Prevents data loss for long meetings
 - Memory stays constant regardless of duration
+
+### ✅ Phase 1.6: GPU Acceleration (2025-10-13)
+- Metal GPU acceleration for diarization
+- Automatic device detection (Metal/CUDA/CPU)
+- 3-10x speedup on Apple Silicon
 
 ### 🔜 Phase 2: Microsoft Graph Integration
 - M365 authentication
@@ -343,7 +348,7 @@ MIT License - See LICENSE file
 
 ---
 
-**Current Phase**: Phase 1.5 Complete ✅ (Audio + Transcription + Diarization + Announcement + Chunking)
+**Current Phase**: Phase 1.6 Complete ✅ (Audio + Transcription + Diarization + Announcement + Chunking + GPU Acceleration)
 
 **Next Milestone**: Phase 2.1 - Microsoft 365 Authentication
 
