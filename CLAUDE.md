@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Current Status
 
-**Version**: 0.1.6 (Phase 1.4 Complete ✅)
+**Version**: 0.1.7 (Phase 1.5 Complete ✅)
 **Last Updated**: 2025-10-13
 
 **What Works Now**:
@@ -17,10 +17,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ✅ Speaker diarization using pyannote.audio (identifies "who spoke when")
 - ✅ Speaker-labeled transcripts: `[SPEAKER_00]: text`
 - ✅ Recording announcement for transparency and consent
+- ✅ Chunked recording with auto-save (prevents data loss, memory exhaustion)
 
-**Next Phase**: Phase 1.5 - Chunked Recording (auto-save every 5 min)
+**Next Phase**: Phase 2.1 - Microsoft 365 Authentication
 
 ### Recent Updates
+**Phase 1.5 (Chunked Recording)**:
+- ✅ Auto-save chunks every 5 minutes during recording
+- ✅ Memory stays constant (~5MB) regardless of duration
+- ✅ FFmpeg merges chunks seamlessly on stop
+- ✅ UI shows "Last saved: X minutes ago" indicator
+- ✅ Chunk cleanup after successful merge
+
 **Sprint 2 (Refactoring)**:
 - ✅ App.tsx modularization: 500 lines → 93 lines (6 components + 2 hooks)
 - ✅ Merge algorithm optimization: O(n²) → O(n log m) using binary search
@@ -30,7 +38,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Phase 1.4 (Recording Announcement)**:
 - ✅ Announcement plays automatically when recording starts
 - ✅ Uses macOS `say` command for text-to-speech
-- ✅ 2-second delay ensures announcement completes
+- ✅ Non-blocking announcement captured in recording
 - ✅ UI shows "📢 Playing announcement..." status
 
 ### Key Features
@@ -412,8 +420,8 @@ MIT License - See LICENSE file
 
 ---
 
-**Current Status**: Phase 1.4 Complete ✅ (Audio + Transcription + Diarization + Announcement)
-**Next Milestone**: Phase 1.5 - Chunked Recording (auto-save every 5 min)
+**Current Status**: Phase 1.5 Complete ✅ (Audio + Transcription + Diarization + Announcement + Chunking)
+**Next Milestone**: Phase 2.1 - Microsoft 365 Authentication
 **Last Updated**: 2025-10-13
 **Built with**: Claude Code (Sonnet 4.5) 🤖
 

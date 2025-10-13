@@ -23,6 +23,16 @@ export interface ElectronAPI {
   getTranscriptionStatus: () => Promise<{ isInitialized: boolean; modelPath: string }>
   onTranscriptionProgress: (callback: (progress: TranscriptionProgress) => void) => () => void
 
+  // Phase 1.5: Chunked recording
+  saveAudioChunk: (
+    blob: ArrayBuffer,
+    sessionId: string,
+    filename: string
+  ) => Promise<{ success: boolean; filePath?: string; error?: string }>
+  mergeAudioChunks: (
+    sessionId: string
+  ) => Promise<{ success: boolean; filePath?: string; sizeBytes?: number; error?: string }>
+
   // Diarization
   diarizeAudio: (
     audioFilePath: string

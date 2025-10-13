@@ -18,6 +18,8 @@ interface RecordingControlsProps {
   isTranscribing: boolean
   isInitializing: boolean
   isPlayingAnnouncement: boolean
+  lastSaveTime: Date | null
+  chunkIndex: number
   onMicrophoneToggle: (enabled: boolean) => void
   onStartRecording: () => void
   onStopRecording: () => void
@@ -35,12 +37,24 @@ export function RecordingControls({
   isTranscribing,
   isInitializing,
   isPlayingAnnouncement,
+  lastSaveTime,
+  chunkIndex,
   onMicrophoneToggle,
   onStartRecording,
   onStopRecording,
   onTranscribe,
   onTranscribeOnly,
 }: RecordingControlsProps) {
+  // Calculate time since last save
+  const getTimeSinceLastSave = (): string => {
+    if (!lastSaveTime) return 'Not saved yet'
+    const now = new Date()
+    const diffSeconds = Math.floor((now.getTime() - lastSaveTime.getTime()) / 1000)
+    if (diffSeconds < 60) return `${diffSeconds}s ago`
+    const diffMinutes = Math.floor(diffSeconds / 60)
+    return `${diffMinutes}m ${diffSeconds % 60}s ago`
+  }
+
   return (
     <div className="recording-section">
       <div className="status-bar">
@@ -49,6 +63,20 @@ export function RecordingControls({
           {isPlayingAnnouncement ? '📢 Playing announcement...' : isRecording ? '🔴 Recording...' : '⏸️ Ready'}
         </div>
       </div>
+
+      {/* Phase 1.5: Chunked recording status */}
+      {isRecording && lastSaveTime && (
+        <div className="chunk-status" style={{
+          marginTop: '8px',
+          padding: '8px',
+          background: '#f0f8ff',
+          borderRadius: '4px',
+          fontSize: '14px',
+          color: '#666'
+        }}>
+          💾 Auto-save: Chunk {chunkIndex} | Last saved: {getTimeSinceLastSave()}
+        </div>
+      )}
 
       <div className="checkbox-group">
         <label>

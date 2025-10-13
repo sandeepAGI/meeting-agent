@@ -15,6 +15,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveAudioFile: (blob: ArrayBuffer, filename: string) =>
     ipcRenderer.invoke('save-audio-file', blob, filename),
   getTranscriptionStatus: () => ipcRenderer.invoke('get-transcription-status'),
+
+  // Phase 1.5: Chunked recording
+  saveAudioChunk: (blob: ArrayBuffer, sessionId: string, filename: string) =>
+    ipcRenderer.invoke('save-audio-chunk', blob, sessionId, filename),
+  mergeAudioChunks: (sessionId: string) =>
+    ipcRenderer.invoke('merge-audio-chunks', sessionId),
   onTranscriptionProgress: (callback: (progress: TranscriptionProgress) => void) => {
     const handler = (_event: Electron.IpcRendererEvent, progress: TranscriptionProgress) => callback(progress)
     ipcRenderer.on('transcription-progress', handler)

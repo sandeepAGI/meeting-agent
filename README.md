@@ -4,9 +4,9 @@ AI-powered meeting transcription and summarization tool for macOS.
 
 ## Status
 
-**Current Version**: 0.1.6 - Phase 1.4 Complete ✅
+**Current Version**: 0.1.7 - Phase 1.5 Complete ✅
 
-This project is in active development. Phases 0-1.4 are complete (audio capture, transcription, speaker diarization, recording announcement). See [CHANGELOG.md](./CHANGELOG.md) for version history and [docs/planning/roadmap.md](./docs/planning/roadmap.md) for the full development plan.
+This project is in active development. Phases 0-1.5 are complete (audio capture, transcription, speaker diarization, recording announcement, chunked recording). See [CHANGELOG.md](./CHANGELOG.md) for version history and [docs/planning/roadmap.md](./docs/planning/roadmap.md) for the full development plan.
 
 ## Overview
 
@@ -19,7 +19,7 @@ Meeting Agent is a desktop application that:
 - 🔜 **Integrates with Microsoft 365** for meeting context and email distribution (Phase 2)
 - 🔜 **Provides an editor** to review and customize summaries before sending (Phase 4)
 
-## What Works Now (v0.1.6)
+## What Works Now (v0.1.7)
 
 ### Audio Capture
 - Native system audio capture (no virtual drivers required!)
@@ -27,7 +27,15 @@ Meeting Agent is a desktop application that:
 - Real-time audio level monitoring
 - 16kHz mono WAV output (Whisper-compatible)
 
-### Recording Announcement (New in 0.1.6!)
+### Chunked Recording (New in 0.1.7!)
+- **Auto-save every 5 minutes** during recording
+- Prevents memory exhaustion for long meetings (60+ minutes)
+- Protects against data loss from crashes
+- Memory usage stays constant (~5MB) regardless of duration
+- Seamless FFmpeg merging on stop
+- UI shows "Last saved: X minutes ago" indicator
+
+### Recording Announcement (0.1.6)
 - **Automatic announcement** when recording starts
 - Informs participants: "This meeting, with your permission, is being recorded..."
 - **Legal compliance**: Ensures transparency and consent
@@ -275,9 +283,10 @@ meeting-agent/
 - Automatic announcement for transparency and consent
 - Legal compliance with recording laws
 
-### 🔜 Phase 1.5: Chunked Recording
+### ✅ Phase 1.5: Chunked Recording (2025-10-13)
 - Auto-save every 5 minutes
 - Prevents data loss for long meetings
+- Memory stays constant regardless of duration
 
 ### 🔜 Phase 2: Microsoft Graph Integration
 - M365 authentication
@@ -334,9 +343,9 @@ MIT License - See LICENSE file
 
 ---
 
-**Current Phase**: Phase 1.4 Complete ✅ (Audio + Transcription + Diarization + Announcement)
+**Current Phase**: Phase 1.5 Complete ✅ (Audio + Transcription + Diarization + Announcement + Chunking)
 
-**Next Milestone**: Phase 1.5 - Chunked Recording (auto-save every 5 min)
+**Next Milestone**: Phase 2.1 - Microsoft 365 Authentication
 
 **Last Updated**: 2025-10-13
 

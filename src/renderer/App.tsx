@@ -66,6 +66,8 @@ function App() {
                 isTranscribing={transcriptionState.isTranscribing}
                 isInitializing={audioState.isInitializing}
                 isPlayingAnnouncement={audioState.isPlayingAnnouncement}
+                lastSaveTime={audioState.lastSaveTime}
+                chunkIndex={audioState.chunkIndex}
                 onMicrophoneToggle={handleMicrophoneToggle}
                 onStartRecording={audioActions.handleStartRecording}
                 onStopRecording={handleStopRecording}

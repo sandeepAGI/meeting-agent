@@ -18,6 +18,8 @@ export interface AudioCaptureState {
   captureMicrophone: boolean
   hasMicrophone: boolean
   isPlayingAnnouncement: boolean
+  lastSaveTime: Date | null
+  chunkIndex: number
 }
 
 export interface AudioCaptureActions {
@@ -39,6 +41,8 @@ export function useAudioCapture() {
   const [captureMicrophone, setCaptureMicrophone] = useState(true)
   const [hasMicrophone, setHasMicrophone] = useState(false)
   const [isPlayingAnnouncement, setIsPlayingAnnouncement] = useState(false)
+  const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null)
+  const [chunkIndex, setChunkIndex] = useState(0)
 
   const audioServiceRef = useRef<AudioCaptureService | null>(null)
   const durationIntervalRef = useRef<number | null>(null)
@@ -57,13 +61,15 @@ export function useAudioCapture() {
     }
   }, [])
 
-  // Update duration while recording
+  // Update duration, lastSaveTime, and chunkIndex while recording
   useEffect(() => {
     if (isRecording) {
       durationIntervalRef.current = window.setInterval(() => {
         if (audioServiceRef.current) {
           const state = audioServiceRef.current.getState()
           setDuration(state.duration)
+          setLastSaveTime(state.lastSaveTime)
+          setChunkIndex(state.chunkIndex)
         }
       }, 100)
     } else {
@@ -71,6 +77,9 @@ export function useAudioCapture() {
         clearInterval(durationIntervalRef.current)
         durationIntervalRef.current = null
       }
+      // Reset chunk tracking when not recording
+      setLastSaveTime(null)
+      setChunkIndex(0)
     }
 
     return () => {
@@ -241,6 +250,8 @@ export function useAudioCapture() {
     captureMicrophone,
     hasMicrophone,
     isPlayingAnnouncement,
+    lastSaveTime,
+    chunkIndex,
   }
 
   const actions: AudioCaptureActions = {

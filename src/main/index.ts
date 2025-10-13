@@ -70,6 +70,135 @@ ipcMain.handle('save-audio-file', async (_event, blob: ArrayBuffer, filename: st
   }
 })
 
+// Phase 1.5: Save audio chunk to session directory
+ipcMain.handle('save-audio-chunk', async (_event, blob: ArrayBuffer, sessionId: string, filename: string) => {
+  try {
+    const userDataPath = app.getPath('userData')
+    const sessionDir = path.join(userDataPath, 'recordings', sessionId)
+
+    // Create session directory if it doesn't exist
+    if (!fs.existsSync(sessionDir)) {
+      fs.mkdirSync(sessionDir, { recursive: true })
+    }
+
+    const filePath = path.join(sessionDir, filename)
+
+    // Write chunk data to file
+    fs.writeFileSync(filePath, Buffer.from(blob))
+
+    console.log('[Chunk] Saved:', filePath)
+    return { success: true, filePath }
+  } catch (error) {
+    console.error('[Chunk] Failed to save:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to save chunk',
+    }
+  }
+})
+
+// Phase 1.5: Merge audio chunks using FFmpeg
+ipcMain.handle('merge-audio-chunks', async (_event, sessionId: string) => {
+  try {
+    const userDataPath = app.getPath('userData')
+    const sessionDir = path.join(userDataPath, 'recordings', sessionId)
+
+    // Check if session directory exists
+    if (!fs.existsSync(sessionDir)) {
+      throw new Error(`Session directory not found: ${sessionDir}`)
+    }
+
+    // Get all chunk files
+    const files = fs.readdirSync(sessionDir)
+    const chunkFiles = files
+      .filter(file => file.startsWith('chunk_') && file.endsWith('.wav'))
+      .sort() // Sort alphabetically (chunk_000, chunk_001, etc.)
+
+    if (chunkFiles.length === 0) {
+      throw new Error('No chunks found to merge')
+    }
+
+    console.log(`[Merge] Found ${chunkFiles.length} chunks for session ${sessionId}`)
+
+    // If only one chunk, just rename it
+    if (chunkFiles.length === 1) {
+      const singleChunk = path.join(sessionDir, chunkFiles[0])
+      const mergedPath = path.join(sessionDir, 'merged.wav')
+      fs.renameSync(singleChunk, mergedPath)
+
+      const stats = fs.statSync(mergedPath)
+      return { success: true, filePath: mergedPath, sizeBytes: stats.size }
+    }
+
+    // Create concat file list for FFmpeg
+    const concatListPath = path.join(sessionDir, 'concat_list.txt')
+    const concatContent = chunkFiles
+      .map(file => `file '${path.join(sessionDir, file)}'`)
+      .join('\n')
+
+    fs.writeFileSync(concatListPath, concatContent)
+
+    // Merge chunks using FFmpeg
+    const mergedPath = path.join(sessionDir, 'merged.wav')
+
+    return new Promise((resolve, reject) => {
+      const ffmpeg = spawn('ffmpeg', [
+        '-f', 'concat',
+        '-safe', '0',
+        '-i', concatListPath,
+        '-c', 'copy',
+        '-y',
+        mergedPath
+      ])
+
+      let stderr = ''
+      ffmpeg.stderr.on('data', (data) => {
+        stderr += data.toString()
+      })
+
+      ffmpeg.on('close', (code) => {
+        // Clean up concat list
+        try {
+          fs.unlinkSync(concatListPath)
+        } catch (err) {
+          console.warn('[Merge] Failed to delete concat list:', err)
+        }
+
+        if (code === 0) {
+          // Get merged file size
+          const stats = fs.statSync(mergedPath)
+
+          // Delete individual chunks
+          chunkFiles.forEach(file => {
+            try {
+              fs.unlinkSync(path.join(sessionDir, file))
+            } catch (err) {
+              console.warn(`[Merge] Failed to delete chunk ${file}:`, err)
+            }
+          })
+
+          console.log(`[Merge] Successfully merged ${chunkFiles.length} chunks`)
+          resolve({ success: true, filePath: mergedPath, sizeBytes: stats.size })
+        } else {
+          console.error('[Merge] FFmpeg failed:', stderr)
+          reject(new Error(`FFmpeg merge failed with exit code ${code}`))
+        }
+      })
+
+      ffmpeg.on('error', (error) => {
+        console.error('[Merge] FFmpeg error:', error)
+        reject(new Error(`Failed to spawn FFmpeg: ${error.message}`))
+      })
+    })
+  } catch (error) {
+    console.error('[Merge] Error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to merge chunks',
+    }
+  }
+})
+
 ipcMain.handle('get-transcription-status', async () => {
   return transcriptionService.getStatus()
 })

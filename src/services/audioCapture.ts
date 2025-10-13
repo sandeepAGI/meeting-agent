@@ -24,10 +24,18 @@ export class AudioCaptureService {
 
   private captureMicrophone = true // Default: capture microphone
 
+  // Phase 1.5: Chunked recording
+  private sessionId: string | null = null
+  private chunkIndex = 0
+  private lastSaveTime: Date | null = null
+  private chunkSaveInterval: number | null = null
+
   private readonly config: AudioConfig = {
     sampleRate: 16000, // Whisper-compatible
     channels: 1, // Mono
   }
+
+  private readonly CHUNK_INTERVAL_MS = 5 * 60 * 1000 // 5 minutes
 
   /**
    * Initialize the WAV encoder (must be called before recording)
@@ -189,6 +197,8 @@ export class AudioCaptureService {
    * If playAnnouncementFirst is true, starts recording first, then plays announcement.
    * This ensures the announcement is captured in the recording.
    *
+   * Phase 1.5: Implements chunked recording with auto-save every 5 minutes.
+   *
    * @param playAnnouncementFirst - Whether to play announcement after starting recording (default: true)
    */
   async startRecording(playAnnouncementFirst: boolean = true): Promise<void> {
@@ -198,24 +208,31 @@ export class AudioCaptureService {
 
     try {
       this.recordedChunks = []
+      this.sessionId = new Date().toISOString()
+      this.chunkIndex = 0
+      this.lastSaveTime = new Date()
 
       // Create MediaRecorder with WAV encoding
       this.mediaRecorder = new MediaRecorder(this.destinationNode.stream, {
         mimeType: 'audio/wav',
       })
 
-      this.mediaRecorder.ondataavailable = (event) => {
+      // Phase 1.5: Save chunks automatically
+      this.mediaRecorder.ondataavailable = async (event) => {
         if (event.data.size > 0) {
           this.recordedChunks.push(event.data)
+
+          // Auto-save chunk every 5 minutes
+          await this.saveCurrentChunk()
         }
       }
 
-      // Start MediaRecorder FIRST so announcement gets captured
-      this.mediaRecorder.start(1000) // Collect data every second
+      // Start MediaRecorder with 5-minute chunks
+      this.mediaRecorder.start(this.CHUNK_INTERVAL_MS)
       this.isRecording = true
       this.startTime = new Date()
 
-      console.log('[AudioCapture] Recording started, ready for announcement')
+      console.log('[AudioCapture] Recording started with chunking, session:', this.sessionId)
 
       // Play announcement AFTER recording starts (so it gets captured)
       // Use non-blocking version to avoid UI delay
@@ -229,11 +246,47 @@ export class AudioCaptureService {
   }
 
   /**
-   * Stop recording and return the recorded audio as a Blob
+   * Save current chunk to disk via IPC.
+   * Phase 1.5: Auto-save chunks every 5 minutes.
+   */
+  private async saveCurrentChunk(): Promise<void> {
+    if (this.recordedChunks.length === 0 || !this.sessionId) {
+      return
+    }
+
+    try {
+      const chunkBlob = new Blob(this.recordedChunks, { type: 'audio/wav' })
+      const arrayBuffer = await chunkBlob.arrayBuffer()
+      const filename = `chunk_${String(this.chunkIndex).padStart(3, '0')}.wav`
+
+      console.log(`[AudioCapture] Saving chunk ${this.chunkIndex}, size: ${chunkBlob.size} bytes`)
+
+      const result = await window.electronAPI.saveAudioChunk(
+        arrayBuffer,
+        this.sessionId,
+        filename
+      )
+
+      if (result.success) {
+        console.log(`[AudioCapture] Chunk ${this.chunkIndex} saved successfully`)
+        this.recordedChunks = [] // Clear buffer after successful save
+        this.chunkIndex++
+        this.lastSaveTime = new Date()
+      } else {
+        console.error(`[AudioCapture] Failed to save chunk ${this.chunkIndex}:`, result.error)
+      }
+    } catch (error) {
+      console.error('[AudioCapture] Error saving chunk:', error)
+    }
+  }
+
+  /**
+   * Stop recording and merge all chunks.
+   * Phase 1.5: Returns merged audio file path instead of blob.
    */
   async stopRecording(): Promise<RecordingSessionWithBlob> {
     return new Promise((resolve, reject) => {
-      if (!this.mediaRecorder || !this.startTime) {
+      if (!this.mediaRecorder || !this.startTime || !this.sessionId) {
         reject(new Error('No active recording'))
         return
       }
@@ -244,32 +297,54 @@ export class AudioCaptureService {
         return
       }
 
-      this.mediaRecorder.onstop = () => {
-        const blob = new Blob(this.recordedChunks, { type: 'audio/wav' })
-        const endTime = new Date()
-        const duration = (endTime.getTime() - this.startTime!.getTime()) / 1000
+      this.mediaRecorder.onstop = async () => {
+        try {
+          // Save final chunk if any data remains
+          if (this.recordedChunks.length > 0) {
+            await this.saveCurrentChunk()
+          }
 
-        const session = {
-          id: this.startTime!.toISOString(),
-          filePath: '', // Will be set when saving to disk
-          startTime: this.startTime!,
-          endTime,
-          duration,
-          sizeBytes: blob.size,
-          blob, // Return blob with session
+          // Merge all chunks via IPC
+          console.log('[AudioCapture] Merging chunks for session:', this.sessionId)
+          const mergeResult = await window.electronAPI.mergeAudioChunks(this.sessionId!)
+
+          if (!mergeResult.success) {
+            throw new Error(mergeResult.error || 'Failed to merge chunks')
+          }
+
+          const endTime = new Date()
+          const duration = (endTime.getTime() - this.startTime!.getTime()) / 1000
+
+          // Create a placeholder blob (actual audio is on disk)
+          const blob = new Blob([], { type: 'audio/wav' })
+
+          const session: RecordingSessionWithBlob = {
+            id: this.startTime!.toISOString(),
+            filePath: mergeResult.filePath || '', // Path to merged file
+            startTime: this.startTime!,
+            endTime,
+            duration,
+            sizeBytes: mergeResult.sizeBytes || 0,
+            blob, // Empty blob since audio is on disk
+          }
+
+          this.isRecording = false
+          this.startTime = null
+          this.recordedChunks = []
+          this.sessionId = null
+          this.chunkIndex = 0
+          this.lastSaveTime = null
+          this.mediaRecorder = null
+
+          console.log('[AudioCapture] Recording stopped, merged file:', session.filePath)
+          resolve(session)
+        } catch (error) {
+          reject(error)
         }
-
-        this.isRecording = false
-        this.startTime = null
-        this.recordedChunks = []
-        // ISSUE 2 FIX: Null out mediaRecorder
-        this.mediaRecorder = null
-
-        resolve(session)
       }
 
       this.mediaRecorder.stop()
-      console.log('Recording stopped')
+      console.log('[AudioCapture] Stopping recording...')
     })
   }
 
@@ -406,6 +481,8 @@ export class AudioCaptureService {
       isCaptureActive: this.systemAudioStream !== null,
       hasMicrophone: this.microphoneStream !== null,
       duration: this.startTime ? (Date.now() - this.startTime.getTime()) / 1000 : 0,
+      lastSaveTime: this.lastSaveTime,
+      chunkIndex: this.chunkIndex,
     }
   }
 
