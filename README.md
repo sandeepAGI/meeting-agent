@@ -4,9 +4,9 @@ AI-powered meeting transcription and summarization tool for macOS.
 
 ## Status
 
-**Current Version**: 0.1.3 - Phase 1.3 Complete ✅
+**Current Version**: 0.1.6 - Phase 1.4 Complete ✅
 
-This project is in active development. Phases 0-1.3 are complete (audio capture, transcription, speaker diarization). See [CHANGELOG.md](./CHANGELOG.md) for version history and [docs/planning/roadmap.md](./docs/planning/roadmap.md) for the full development plan.
+This project is in active development. Phases 0-1.4 are complete (audio capture, transcription, speaker diarization, recording announcement). See [CHANGELOG.md](./CHANGELOG.md) for version history and [docs/planning/roadmap.md](./docs/planning/roadmap.md) for the full development plan.
 
 ## Overview
 
@@ -19,13 +19,20 @@ Meeting Agent is a desktop application that:
 - 🔜 **Integrates with Microsoft 365** for meeting context and email distribution (Phase 2)
 - 🔜 **Provides an editor** to review and customize summaries before sending (Phase 4)
 
-## What Works Now (v0.1.3)
+## What Works Now (v0.1.6)
 
 ### Audio Capture
 - Native system audio capture (no virtual drivers required!)
 - Microphone capture with graceful fallback
 - Real-time audio level monitoring
 - 16kHz mono WAV output (Whisper-compatible)
+
+### Recording Announcement (New in 0.1.6!)
+- **Automatic announcement** when recording starts
+- Informs participants: "This meeting, with your permission, is being recorded..."
+- **Legal compliance**: Ensures transparency and consent
+- **Captured in recording**: Announcement is part of the audio file
+- Uses macOS text-to-speech (no delay, immediate feedback)
 
 ### Transcription
 - Local transcription using whisper.cpp (Metal GPU acceleration)
@@ -144,6 +151,8 @@ npm start
 
 1. **Initialize Audio**: Click "Initialize Audio Capture" and grant permissions
 2. **Start Recording**: Click "🎤 Start Recording" when meeting begins
+   - Announcement plays automatically to inform participants
+   - Status shows "📢 Playing announcement..." then "🔴 Recording..."
 3. **Stop Recording**: Click "⏹ Stop Recording" when meeting ends
 4. **Transcribe**: Choose between:
    - "⚡ Transcribe Only" (~30s for 30s audio, no speaker labels)
@@ -180,7 +189,7 @@ npm start
 
 ## Privacy & Ethics
 
-- ⚠️ **User must explicitly inform meeting participants** about recording/transcription
+- ✅ **Automatic announcement** informs participants when recording starts (Phase 1.4)
 - 🔒 All transcription and diarization happen locally on your machine
 - 👤 User reviews and approves summaries before distribution (Phase 4)
 - 🗑️ Configurable data retention and auto-deletion (Phase 6)
@@ -262,6 +271,14 @@ meeting-agent/
 ### ✅ Phase 1.3: Speaker Diarization (2025-10-13)
 - Speaker identification using pyannote.audio
 
+### ✅ Phase 1.4: Recording Announcement (2025-10-13)
+- Automatic announcement for transparency and consent
+- Legal compliance with recording laws
+
+### 🔜 Phase 1.5: Chunked Recording
+- Auto-save every 5 minutes
+- Prevents data loss for long meetings
+
 ### 🔜 Phase 2: Microsoft Graph Integration
 - M365 authentication
 - Calendar integration
@@ -317,9 +334,9 @@ MIT License - See LICENSE file
 
 ---
 
-**Current Phase**: Phase 1.3 Complete ✅ (Audio Capture + Transcription + Diarization)
+**Current Phase**: Phase 1.4 Complete ✅ (Audio + Transcription + Diarization + Announcement)
 
-**Next Milestone**: Phase 2.1 - Microsoft 365 Authentication
+**Next Milestone**: Phase 1.5 - Chunked Recording (auto-save every 5 min)
 
 **Last Updated**: 2025-10-13
 
