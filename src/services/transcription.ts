@@ -1,5 +1,7 @@
 import path from 'path'
 import fs from 'fs'
+import { tmpdir } from 'os'
+import { randomBytes } from 'crypto'
 import { spawn } from 'child_process'
 import type {
   TranscriptionOptions,
@@ -14,27 +16,37 @@ import type {
  */
 export class TranscriptionService {
   private modelPath: string
+  private modelName: string
   private whisperCliPath: string
+  private defaultThreads: number
   private isInitialized = false
 
-  constructor() {
+  constructor(options: { model?: string; whisperPath?: string; threads?: number } = {}) {
     // Default to base model in project directory
-    this.modelPath = path.join(process.cwd(), 'models', 'ggml-base.bin')
-    // whisper-cli should be in PATH (installed via Homebrew)
-    this.whisperCliPath = 'whisper-cli'
+    this.modelName = options.model || 'base'
+    this.modelPath = path.join(process.cwd(), 'models', `ggml-${this.modelName}.bin`)
+    // whisper-cli should be in PATH (installed via Homebrew) or custom path
+    this.whisperCliPath = options.whisperPath || 'whisper-cli'
+    // Default threads: use available CPUs minus 3 for OS/Electron, minimum 1
+    this.defaultThreads = options.threads || Math.max(1, require('os').cpus().length - 3)
   }
 
   /**
    * Initialize Whisper model (must be called before transcription)
+   * @param modelName Optional model name to override constructor option
    */
-  async initialize(modelName: string = 'base'): Promise<void> {
+  async initialize(modelName?: string): Promise<void> {
     if (this.isInitialized) {
       console.log('Whisper model already initialized')
       return
     }
 
     try {
-      this.modelPath = path.join(process.cwd(), 'models', `ggml-${modelName}.bin`)
+      // Use provided model name or fall back to constructor value
+      if (modelName) {
+        this.modelName = modelName
+        this.modelPath = path.join(process.cwd(), 'models', `ggml-${modelName}.bin`)
+      }
 
       // Check if model file exists
       if (!fs.existsSync(this.modelPath)) {
@@ -44,6 +56,7 @@ export class TranscriptionService {
       }
 
       console.log('Whisper model path:', this.modelPath)
+      console.log('Default threads:', this.defaultThreads)
       this.isInitialized = true
       console.log('✅ Whisper service initialized successfully')
     } catch (error) {
@@ -61,9 +74,12 @@ export class TranscriptionService {
   /**
    * Convert audio to proper mono 16kHz WAV using ffmpeg
    * Fixes WAV header issues and ensures mono channel
+   * Uses system temp directory with unique filename
    */
   private async convertToMonoWav(inputPath: string): Promise<string> {
-    const outputPath = inputPath.replace('.wav', '_mono.wav')
+    // Create temp file in system temp directory with unique name
+    const tempId = randomBytes(16).toString('hex')
+    const outputPath = path.join(tmpdir(), `whisper_mono_${tempId}.wav`)
 
     return new Promise((resolve, reject) => {
       const ffmpeg = spawn('ffmpeg', [
@@ -108,7 +124,7 @@ export class TranscriptionService {
     }
 
     const startTime = Date.now()
-    let processedAudioPath = audioPath
+    let monoFilePath: string | null = null
 
     try {
       // Convert to proper mono WAV (fixes header issues and ensures mono)
@@ -118,14 +134,10 @@ export class TranscriptionService {
         message: 'Preparing audio...',
       })
 
-      processedAudioPath = await this.convertToMonoWav(audioPath)
-      console.log('[TranscriptionService] Converted to mono WAV:', processedAudioPath)
-    } catch (error) {
-      console.error('[TranscriptionService] Audio conversion failed:', error)
-      throw error
-    }
+      monoFilePath = await this.convertToMonoWav(audioPath)
+      console.log('[TranscriptionService] Converted to mono WAV:', monoFilePath)
 
-    try {
+      const processedAudioPath = monoFilePath
       // Report loading stage
       onProgress?.({
         stage: 'loading',
@@ -138,11 +150,14 @@ export class TranscriptionService {
       const outputDir = path.dirname(processedAudioPath)
       const outputName = path.basename(processedAudioPath, path.extname(processedAudioPath))
 
+      // Use provided thread count or default
+      const threads = options.threads !== undefined ? options.threads : this.defaultThreads
+
       const args = [
         '-m', this.modelPath,           // Model path
         '-f', processedAudioPath,        // Input audio file (converted mono)
         '-l', options.language || 'en',  // Language
-        '-t', '8',                       // 8 threads (optimized for multi-core)
+        '-t', String(threads),           // Thread count (from options or default)
         '-p', '1',                       // 1 processor (default, but explicit)
         '-oj',                           // Output JSON
         '-of', path.join(outputDir, outputName), // Output file prefix
@@ -270,6 +285,16 @@ export class TranscriptionService {
         message: error instanceof Error ? error.message : 'Transcription failed',
       })
       throw error
+    } finally {
+      // Guaranteed cleanup of temp mono file
+      if (monoFilePath && fs.existsSync(monoFilePath)) {
+        try {
+          fs.unlinkSync(monoFilePath)
+          console.log('[TranscriptionService] Cleaned up temp file:', monoFilePath)
+        } catch (error) {
+          console.error('[TranscriptionService] Failed to clean temp file:', error)
+        }
+      }
     }
   }
 

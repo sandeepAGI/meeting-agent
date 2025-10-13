@@ -21,13 +21,13 @@ export interface ElectronAPI {
     filename: string
   ) => Promise<{ success: boolean; filePath?: string; error?: string }>
   getTranscriptionStatus: () => Promise<{ isInitialized: boolean; modelPath: string }>
-  onTranscriptionProgress: (callback: (progress: TranscriptionProgress) => void) => void
+  onTranscriptionProgress: (callback: (progress: TranscriptionProgress) => void) => () => void
 
   // Diarization
   diarizeAudio: (
     audioFilePath: string
   ) => Promise<{ success: boolean; result?: DiarizationResult; error?: string }>
-  onDiarizationProgress: (callback: (progress: DiarizationProgress) => void) => void
+  onDiarizationProgress: (callback: (progress: DiarizationProgress) => void) => () => void
 
   // Combined transcription + diarization
   transcribeAndDiarize: (

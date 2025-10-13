@@ -224,7 +224,7 @@ export class AudioCaptureService {
   /**
    * Stop audio capture and cleanup resources
    */
-  stopCapture(): void {
+  async stopCapture(): Promise<void> {
     // ISSUE 4 FIX: Stop active recording first
     if (this.isRecording && this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
       console.warn('Stopping active recording before cleanup')
@@ -245,6 +245,16 @@ export class AudioCaptureService {
     if (this.systemAudioStream) {
       this.systemAudioStream.getTracks().forEach((track) => track.stop())
       this.systemAudioStream = null
+    }
+
+    // Disable loopback audio tap
+    if (window.electronAPI && window.electronAPI.disableLoopbackAudio) {
+      try {
+        await window.electronAPI.disableLoopbackAudio()
+        console.log('Loopback audio disabled')
+      } catch (error) {
+        console.error('Failed to disable loopback audio:', error)
+      }
     }
 
     // Stop microphone stream

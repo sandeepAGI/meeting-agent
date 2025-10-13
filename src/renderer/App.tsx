@@ -28,16 +28,30 @@ function App() {
   useEffect(() => {
     audioServiceRef.current = new AudioCaptureService()
 
-    // Set up transcription progress listener
-    window.electronAPI.onTranscriptionProgress((progress) => {
+    // Set up transcription and diarization progress listeners
+    const unsubscribeTranscription = window.electronAPI.onTranscriptionProgress((progress) => {
       setTranscriptionProgress(progress)
+    })
+
+    const unsubscribeDiarization = window.electronAPI.onDiarizationProgress((progress) => {
+      // Update transcription progress with diarization stage
+      setTranscriptionProgress({
+        stage: 'diarizing',
+        progress: progress.progress || 0,
+        message: progress.message
+      })
     })
 
     return () => {
       // Cleanup on unmount
       if (audioServiceRef.current) {
-        audioServiceRef.current.stopCapture()
+        audioServiceRef.current.stopCapture().catch((err) => {
+          console.error('Failed to stop capture on unmount:', err)
+        })
       }
+      // Unsubscribe from IPC listeners
+      unsubscribeTranscription()
+      unsubscribeDiarization()
     }
   }, [])
 
@@ -99,6 +113,41 @@ function App() {
       console.error('Initialization error:', err)
     } finally {
       setIsInitializing(false)
+    }
+  }
+
+  const handleMicrophoneToggle = async (enabled: boolean) => {
+    setCaptureMicrophone(enabled)
+
+    // If already initialized, re-initialize with new setting
+    if (isInitialized && !isRecording) {
+      try {
+        if (!audioServiceRef.current) {
+          throw new Error('Audio service not available')
+        }
+
+        setError(null)
+        setIsInitializing(true)
+
+        // Stop current capture
+        await audioServiceRef.current.stopCapture()
+
+        // Update microphone preference
+        audioServiceRef.current.setCaptureMicrophone(enabled)
+
+        // Restart capture with new settings
+        await audioServiceRef.current.startCapture()
+
+        // Update microphone status
+        const state = audioServiceRef.current.getState()
+        setHasMicrophone(state.hasMicrophone)
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to update microphone setting'
+        setError(message)
+        console.error('Microphone toggle error:', err)
+      } finally {
+        setIsInitializing(false)
+      }
     }
   }
 
@@ -293,7 +342,7 @@ function App() {
                   <input
                     type="checkbox"
                     checked={captureMicrophone}
-                    onChange={(e) => setCaptureMicrophone(e.target.checked)}
+                    onChange={(e) => handleMicrophoneToggle(e.target.checked)}
                     disabled={isInitializing}
                   />
                   Include microphone (uses system default)
@@ -315,6 +364,18 @@ function App() {
                 <div className="status">
                   {isRecording ? '🔴 Recording...' : '⏸️ Ready'}
                 </div>
+              </div>
+
+              <div className="checkbox-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={captureMicrophone}
+                    onChange={(e) => handleMicrophoneToggle(e.target.checked)}
+                    disabled={isRecording || isInitializing}
+                  />
+                  Include microphone
+                </label>
               </div>
 
               {audioLevel && (

@@ -8,6 +8,7 @@ export interface TranscriptionOptions {
   temperature?: number // Sampling temperature (0.0 - 1.0)
   maxLen?: number // Maximum segment length
   speedUp?: boolean // Speed up processing
+  threads?: number // Number of threads to use (default: CPU count - 3)
 }
 
 export interface TranscriptionSegment {
@@ -25,7 +26,7 @@ export interface TranscriptionResult {
 }
 
 export interface TranscriptionProgress {
-  stage: 'loading' | 'processing' | 'complete' | 'error'
+  stage: 'loading' | 'processing' | 'diarizing' | 'complete' | 'error'
   progress: number // 0-100
   message: string
 }

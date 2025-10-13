@@ -16,14 +16,24 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('save-audio-file', blob, filename),
   getTranscriptionStatus: () => ipcRenderer.invoke('get-transcription-status'),
   onTranscriptionProgress: (callback: (progress: TranscriptionProgress) => void) => {
-    ipcRenderer.on('transcription-progress', (_event, progress) => callback(progress))
+    const handler = (_event: Electron.IpcRendererEvent, progress: TranscriptionProgress) => callback(progress)
+    ipcRenderer.on('transcription-progress', handler)
+    // Return unsubscribe function
+    return () => {
+      ipcRenderer.removeListener('transcription-progress', handler)
+    }
   },
 
   // Diarization
   diarizeAudio: (audioFilePath: string) =>
     ipcRenderer.invoke('diarize-audio', audioFilePath),
   onDiarizationProgress: (callback: (progress: DiarizationProgress) => void) => {
-    ipcRenderer.on('diarization-progress', (_event, progress) => callback(progress))
+    const handler = (_event: Electron.IpcRendererEvent, progress: DiarizationProgress) => callback(progress)
+    ipcRenderer.on('diarization-progress', handler)
+    // Return unsubscribe function
+    return () => {
+      ipcRenderer.removeListener('diarization-progress', handler)
+    }
   },
 
   // Combined transcription + diarization
