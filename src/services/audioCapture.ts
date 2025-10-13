@@ -222,9 +222,12 @@ export class AudioCaptureService {
       // Phase 1.5: Save chunks automatically
       this.mediaRecorder.ondataavailable = async (event) => {
         if (event.data.size > 0) {
+          console.log(`[AudioCapture] ondataavailable fired, chunk size: ${event.data.size} bytes`)
           this.recordedChunks.push(event.data)
 
           // Auto-save chunk every 5 minutes
+          // Note: If save is in progress, this will be skipped but saveCurrentChunk
+          // will be called again in onstop handler
           await this.saveCurrentChunk()
         }
       }
@@ -327,6 +330,14 @@ export class AudioCaptureService {
 
       this.mediaRecorder.onstop = async () => {
         try {
+          // Wait for any in-progress chunk save to complete
+          let waitCount = 0
+          while (this.isSavingChunk && waitCount < 50) {
+            console.log('[AudioCapture] Waiting for chunk save to complete...')
+            await new Promise(resolve => setTimeout(resolve, 100))
+            waitCount++
+          }
+
           // Save final chunk if any data remains
           if (this.recordedChunks.length > 0) {
             await this.saveCurrentChunk()
