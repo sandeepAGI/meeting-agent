@@ -429,7 +429,7 @@ make base  # Downloads base model
 
 ---
 
-#### Phase 1.3: Speaker Diarization (Next)
+#### Phase 1.3: Speaker Diarization ✓ (Completed: 2025-10-13)
 **Goal**: Add speaker identification to transcripts for better meeting notes
 
 **Research Phase Complete ✓ (2025-10-13)**
@@ -602,7 +602,92 @@ pip install pyannote.audio
 - Very similar voices may be grouped together
 - Background noise can affect accuracy
 
-**Next Phase**: Phase 2 - Microsoft Graph Integration (use speaker labels with calendar names)
+---
+
+**Implementation Complete ✓ (2025-10-13)**
+
+**Tasks Completed**:
+- [x] Install pyannote.audio 4.0.1 via Python venv
+- [x] Set up Hugging Face token in .env
+- [x] Accept licenses for required models (speaker-diarization-3.1, segmentation-3.0, speaker-diarization-community-1)
+- [x] Create Python diarization script (scripts/diarize_audio.py)
+- [x] Implement DiarizationService TypeScript class
+- [x] Create merge algorithm using temporal intersection (best practice)
+- [x] Update main process with diarization IPC handlers
+- [x] Update UI to display speaker-labeled transcripts
+- [x] Fix pyannote.audio 4.x API changes (`use_auth_token` → `token`, `DiarizeOutput` object structure)
+- [x] Fix timestamp format conversion (Whisper milliseconds → seconds for alignment)
+
+**Testing Completed**:
+- ✅ Two-speaker audio detection working correctly
+- ✅ Speaker labels applied to transcript segments
+- ✅ Temporal intersection matching working properly
+- ✅ Build and type-check pass
+
+**Files Created**:
+- ✅ `scripts/diarize_audio.py` - Python script using pyannote.audio 4.x API
+- ✅ `src/services/diarization.ts` - Diarization service with subprocess execution
+- ✅ `src/types/diarization.ts` - TypeScript interfaces for speaker segments
+- ✅ `src/utils/mergeDiarization.ts` - Temporal intersection merge algorithm
+- ✅ `venv/` - Python virtual environment with pyannote.audio dependencies
+
+**Files Modified**:
+- ✅ `src/main/index.ts` - Added diarization and combined transcribe+diarize IPC handlers
+- ✅ `src/preload/index.ts` - Exposed diarization APIs to renderer
+- ✅ `src/types/electron.d.ts` - Added diarization type definitions
+- ✅ `src/renderer/App.tsx` - Updated UI to use transcribeAndDiarize and display speaker labels
+- ✅ `.env.example` - Added HUGGINGFACE_TOKEN configuration
+
+**Dependencies Added**:
+- ✅ `dotenv` - Environment variable loading
+- ✅ Python venv with:
+  - pyannote.audio 4.0.1
+  - torch 2.8.0 (with Metal support for macOS)
+  - torchaudio 2.8.0
+  - ~40 transitive dependencies
+
+**Architecture Decisions**:
+1. **Python subprocess pattern** - Consistent with Phase 1.2 (Whisper), avoids native module issues
+2. **Temporal intersection matching** - Industry best practice for aligning Whisper + pyannote outputs
+3. **Combined API** - `transcribeAndDiarize` runs both operations with unified progress reporting
+4. **Timestamp normalization** - Converts Whisper's millisecond offsets to seconds for alignment
+
+**Critical Bugs Fixed**:
+1. **pyannote.audio 4.x API changes**:
+   - Changed `use_auth_token` → `token` parameter
+   - Output changed from `Annotation` → `DiarizeOutput` object with `.speaker_diarization` property
+2. **Timestamp format mismatch**:
+   - Whisper outputs `offsets.from/to` in milliseconds
+   - Diarization expects seconds
+   - Added `normalizeWhisperSegment()` function to convert ms → seconds
+3. **Environment variable loading**:
+   - Added `dotenv.config()` to main process to load HUGGINGFACE_TOKEN
+
+**Performance Characteristics**:
+- Whisper transcription: ~1-2x realtime (fast with Metal GPU)
+- pyannote.audio diarization: ~1-2 minutes per minute of audio (Python/CPU)
+- Total for 30-second audio: ~30-60 seconds
+- Merge operation: < 1 second (in-memory)
+
+**Known Issues**:
+1. **Diarization slower than transcription** - pyannote runs on CPU, Whisper uses Metal GPU
+2. **Occasional speaker overdetection** - May detect 3 speakers when only 2 present (voice variation, noise)
+3. **Generic speaker labels** - "SPEAKER_00", "SPEAKER_01" - Phase 2 will map to actual names from calendar
+
+**Success Criteria**: ✅ Phase 1.3 Complete
+- ✅ Multi-speaker audio correctly labeled with speaker IDs
+- ✅ Transcript shows speaker-attributed text
+- ✅ Temporal intersection matching working
+- ✅ Ready for Phase 2 name mapping from calendar data
+
+**Next Phase**: Phase 2 - Microsoft Graph Integration (map speaker labels to attendee names)
+
+---
+
+**Planned Enhancements (Before Phase 2)**:
+1. **Better progress feedback** - Show detailed diarization progress messages
+2. **Optional diarization** - Allow "Transcribe only" for speed
+3. **GPU acceleration** - Explore Metal/CUDA support for pyannote (future optimization)
 
 ---
 
@@ -1369,6 +1454,6 @@ MIT License - See LICENSE file
 
 ---
 
-**Current Status**: Phase 1.2 Complete ✅ - whisper-cli transcription working with proper performance
+**Current Status**: Phase 1.3 Complete ✅ - Speaker diarization working with temporal intersection matching
 **Last Updated**: 2025-10-13
-**Next Milestone**: Phase 1.3 - Speaker Diarization with pyannote.audio
+**Next Milestone**: Robustness improvements (progress feedback, optional diarization, performance), then Phase 2 - Microsoft Graph Integration

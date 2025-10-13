@@ -1,9 +1,19 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'path'
 import fs from 'fs'
+import dotenv from 'dotenv'
 import { initializeAudioLoopback } from './audioSetup'
 import { transcriptionService } from '../services/transcription'
+import { DiarizationService } from '../services/diarization'
+import { mergeDiarizationWithTranscript } from '../utils/mergeDiarization'
 import type { TranscriptionOptions } from '../types/transcription'
+
+// Load environment variables from .env file
+dotenv.config()
+console.log('[ENV] HUGGINGFACE_TOKEN configured:', !!process.env.HUGGINGFACE_TOKEN)
+
+// Initialize diarization service
+const diarizationService = new DiarizationService()
 
 let mainWindow: BrowserWindow | null = null
 
@@ -61,6 +71,124 @@ ipcMain.handle('save-audio-file', async (_event, blob: ArrayBuffer, filename: st
 
 ipcMain.handle('get-transcription-status', async () => {
   return transcriptionService.getStatus()
+})
+
+// IPC Handler for speaker diarization
+ipcMain.handle('diarize-audio', async (event, audioFilePath: string) => {
+  try {
+    // Check if diarization is available
+    const isAvailable = await diarizationService.isAvailable()
+    if (!isAvailable) {
+      return {
+        success: false,
+        error: 'Diarization not available. Install pyannote.audio and set HUGGINGFACE_TOKEN.'
+      }
+    }
+
+    // Run diarization with progress updates
+    const result = await diarizationService.diarize(
+      audioFilePath,
+      (progress) => {
+        // Send progress updates to renderer
+        event.sender.send('diarization-progress', progress)
+      }
+    )
+
+    return { success: true, result }
+  } catch (error) {
+    console.error('Diarization error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Diarization failed'
+    }
+  }
+})
+
+// IPC Handler for transcription + diarization (combined)
+ipcMain.handle('transcribe-and-diarize', async (event, audioFilePath: string, options?: TranscriptionOptions) => {
+  try {
+    // Step 1: Transcribe
+    event.sender.send('transcription-progress', {
+      stage: 'loading',
+      progress: 0,
+      message: 'Starting transcription...'
+    })
+
+    const transcriptionResult = await transcriptionService.transcribe(
+      audioFilePath,
+      options,
+      (progress) => {
+        // Scale progress to 0-50%
+        event.sender.send('transcription-progress', {
+          ...progress,
+          progress: progress.progress / 2
+        })
+      }
+    )
+
+    // Step 2: Diarize (if available)
+    const isAvailable = await diarizationService.isAvailable()
+    if (!isAvailable) {
+      // Return transcription only if diarization not available
+      return {
+        success: true,
+        result: {
+          ...transcriptionResult,
+          merged: null
+        }
+      }
+    }
+
+    event.sender.send('transcription-progress', {
+      stage: 'processing',
+      progress: 50,
+      message: 'Running speaker diarization...'
+    })
+
+    const diarizationResult = await diarizationService.diarize(
+      audioFilePath,
+      (progress) => {
+        // Scale progress to 50-90%
+        event.sender.send('transcription-progress', {
+          stage: 'processing',
+          progress: 50 + (progress.progress || 0) * 0.4,
+          message: progress.message
+        })
+      }
+    )
+
+    // Step 3: Merge transcription + diarization
+    event.sender.send('transcription-progress', {
+      stage: 'processing',
+      progress: 95,
+      message: 'Merging transcription with speaker labels...'
+    })
+
+    const merged = mergeDiarizationWithTranscript(
+      transcriptionResult.segments,
+      diarizationResult
+    )
+
+    event.sender.send('transcription-progress', {
+      stage: 'complete',
+      progress: 100,
+      message: 'Complete!'
+    })
+
+    return {
+      success: true,
+      result: {
+        ...transcriptionResult,
+        merged
+      }
+    }
+  } catch (error) {
+    console.error('Transcription + diarization error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Transcription + diarization failed'
+    }
+  }
 })
 
 function createWindow() {

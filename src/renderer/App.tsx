@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { AudioCaptureService } from '../services/audioCapture'
 import type { AudioLevel } from '../types/audio'
-import type { TranscriptionProgress, TranscriptionResult } from '../types/transcription'
+import type { TranscriptionProgress } from '../types/transcription'
+import type { TranscriptionWithDiarizationResult } from '../types/electron'
 
 function App() {
   const [isInitialized, setIsInitialized] = useState(false)
@@ -17,7 +18,7 @@ function App() {
   // Transcription state
   const [isTranscribing, setIsTranscribing] = useState(false)
   const [transcriptionProgress, setTranscriptionProgress] = useState<TranscriptionProgress | null>(null)
-  const [transcript, setTranscript] = useState<TranscriptionResult | null>(null)
+  const [transcript, setTranscript] = useState<TranscriptionWithDiarizationResult | null>(null)
   const [savedAudioPath, setSavedAudioPath] = useState<string | null>(null)
 
   const audioServiceRef = useRef<AudioCaptureService | null>(null)
@@ -176,7 +177,7 @@ function App() {
     setTranscript(null) // Clear previous transcript
 
     try {
-      console.log('[DEBUG] Starting transcription...')
+      console.log('[DEBUG] Starting transcription + diarization...')
       setIsTranscribing(true)
       setTranscriptionProgress({
         stage: 'loading',
@@ -184,17 +185,21 @@ function App() {
         message: 'Starting transcription...',
       })
 
-      const result = await window.electronAPI.transcribeAudio(savedAudioPath, {
+      // Use combined transcription + diarization API
+      const result = await window.electronAPI.transcribeAndDiarize(savedAudioPath, {
         language: 'en',
         temperature: 0.0,
       })
-      console.log('[DEBUG] Transcription result:', result)
+      console.log('[DEBUG] Transcription + diarization result:', result)
 
       if (result.success && result.result) {
         setTranscript(result.result)
         setIsTranscribing(false)
         setTranscriptionProgress(null)
         console.log('[DEBUG] Transcription complete:', result.result.text)
+        if (result.result.merged) {
+          console.log('[DEBUG] Speaker-labeled transcript:', result.result.merged.fullText)
+        }
       } else {
         throw new Error(result.error || 'Transcription failed')
       }
@@ -347,8 +352,24 @@ function App() {
                       Processing: {transcript.processingTime.toFixed(1)}s
                     </span>
                     <span>Language: {transcript.language}</span>
+                    {transcript.merged && (
+                      <span>Speakers: {transcript.merged.speakerCount}</span>
+                    )}
                   </div>
-                  <div className="transcript-text">{transcript.text}</div>
+                  <div className="transcript-text">
+                    {transcript.merged
+                      ? transcript.merged.fullText
+                      : transcript.text}
+                  </div>
+                  {transcript.merged && (
+                    <div className="info" style={{ marginTop: '16px' }}>
+                      <p><strong>Speaker Diarization:</strong></p>
+                      <p>✅ {transcript.merged.speakerCount} speaker{transcript.merged.speakerCount > 1 ? 's' : ''} detected</p>
+                      <p style={{ fontSize: '0.9em', color: '#666' }}>
+                        Phase 2 will match speaker labels with calendar attendee names.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

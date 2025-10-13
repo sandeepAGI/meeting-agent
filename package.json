@@ -27,6 +27,7 @@
     "db:backup": "echo 'Database backup script will be added'"
   },
   "dependencies": {
+    "dotenv": "^17.2.3",
     "electron": "^38.2.1",
     "electron-audio-loopback": "^1.0.6",
     "extendable-media-recorder": "^9.2.31",

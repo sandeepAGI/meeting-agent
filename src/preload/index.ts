@@ -1,7 +1,8 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type { TranscriptionOptions, TranscriptionProgress } from '../types/transcription'
+import type { DiarizationProgress } from '../types/diarization'
 
-// Expose API for electron-audio-loopback manual mode and transcription
+// Expose API for electron-audio-loopback manual mode, transcription, and diarization
 // IPC handlers are automatically registered by initMain() in audioSetup.ts
 contextBridge.exposeInMainWorld('electronAPI', {
   // Audio loopback
@@ -17,6 +18,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onTranscriptionProgress: (callback: (progress: TranscriptionProgress) => void) => {
     ipcRenderer.on('transcription-progress', (_event, progress) => callback(progress))
   },
+
+  // Diarization
+  diarizeAudio: (audioFilePath: string) =>
+    ipcRenderer.invoke('diarize-audio', audioFilePath),
+  onDiarizationProgress: (callback: (progress: DiarizationProgress) => void) => {
+    ipcRenderer.on('diarization-progress', (_event, progress) => callback(progress))
+  },
+
+  // Combined transcription + diarization
+  transcribeAndDiarize: (audioFilePath: string, options?: TranscriptionOptions) =>
+    ipcRenderer.invoke('transcribe-and-diarize', audioFilePath, options),
 })
 
 export {}
