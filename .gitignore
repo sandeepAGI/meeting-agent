@@ -45,10 +45,11 @@ recordings/
 *.mp3
 *.m4a
 
-# Whisper models (large files)
+# Whisper models and output (large files)
 models/
 *.pt
 *.bin
+recording_*.json  # Whisper transcription output
 
 # OS
 .DS_Store

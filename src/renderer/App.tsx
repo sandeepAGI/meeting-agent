@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { AudioCaptureService } from '../services/audioCapture'
 import type { AudioLevel } from '../types/audio'
+import type { TranscriptionProgress, TranscriptionResult } from '../types/transcription'
 
 function App() {
   const [isInitialized, setIsInitialized] = useState(false)
@@ -13,12 +14,24 @@ function App() {
   const [captureMicrophone, setCaptureMicrophone] = useState(true)
   const [hasMicrophone, setHasMicrophone] = useState(false)
 
+  // Transcription state
+  const [isTranscribing, setIsTranscribing] = useState(false)
+  const [transcriptionProgress, setTranscriptionProgress] = useState<TranscriptionProgress | null>(null)
+  const [transcript, setTranscript] = useState<TranscriptionResult | null>(null)
+  const [savedAudioPath, setSavedAudioPath] = useState<string | null>(null)
+
   const audioServiceRef = useRef<AudioCaptureService | null>(null)
   const durationIntervalRef = useRef<number | null>(null)
 
   // Initialize audio service on mount
   useEffect(() => {
     audioServiceRef.current = new AudioCaptureService()
+
+    // Set up transcription progress listener
+    window.electronAPI.onTranscriptionProgress((progress) => {
+      setTranscriptionProgress(progress)
+    })
+
     return () => {
       // Cleanup on unmount
       if (audioServiceRef.current) {
@@ -108,37 +121,89 @@ function App() {
 
   const handleStopRecording = async () => {
     setError(null)
+    console.log('[DEBUG] Stop recording clicked')
 
     try {
       if (!audioServiceRef.current) {
         throw new Error('Audio service not available')
       }
 
+      console.log('[DEBUG] Stopping recording...')
       const session = await audioServiceRef.current.stopRecording()
       setIsRecording(false)
+      console.log('[DEBUG] Recording stopped, session:', session)
 
-      // Get the recorded blob
-      const blob = audioServiceRef.current.getRecordingBlob()
+      // Get the recorded blob from session
+      const blob = session.blob
+      console.log('[DEBUG] Got blob, size:', blob?.size)
 
       if (blob) {
-        // Create download link
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `recording_${session.id.replace(/[:.]/g, '-')}.wav`
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)
+        const filename = `recording_${session.id.replace(/[:.]/g, '-')}.wav`
+        console.log('[DEBUG] Saving audio file:', filename)
 
-        alert(
-          `Recording saved!\n\nDuration: ${session.duration.toFixed(1)}s\nSize: ${(session.sizeBytes / 1024 / 1024).toFixed(2)} MB\nFormat: WAV (16kHz mono)`
-        )
+        // Convert blob to ArrayBuffer and save to disk via IPC
+        const arrayBuffer = await blob.arrayBuffer()
+        console.log('[DEBUG] ArrayBuffer size:', arrayBuffer.byteLength)
+
+        const saveResult = await window.electronAPI.saveAudioFile(arrayBuffer, filename)
+        console.log('[DEBUG] Save result:', saveResult)
+
+        if (saveResult.success && saveResult.filePath) {
+          console.log('[DEBUG] Audio saved to:', saveResult.filePath)
+          setSavedAudioPath(saveResult.filePath)
+        } else {
+          throw new Error(saveResult.error || 'Failed to save audio file')
+        }
+      } else {
+        console.error('[DEBUG] No blob available')
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to stop recording'
       setError(message)
-      console.error('Stop recording error:', err)
+      setIsTranscribing(false)
+      setTranscriptionProgress(null)
+      console.error('[DEBUG] Stop recording error:', err)
+    }
+  }
+
+  const handleTranscribe = async () => {
+    if (!savedAudioPath) {
+      setError('No audio file available. Record audio first.')
+      return
+    }
+
+    setError(null)
+    setTranscript(null) // Clear previous transcript
+
+    try {
+      console.log('[DEBUG] Starting transcription...')
+      setIsTranscribing(true)
+      setTranscriptionProgress({
+        stage: 'loading',
+        progress: 0,
+        message: 'Starting transcription...',
+      })
+
+      const result = await window.electronAPI.transcribeAudio(savedAudioPath, {
+        language: 'en',
+        temperature: 0.0,
+      })
+      console.log('[DEBUG] Transcription result:', result)
+
+      if (result.success && result.result) {
+        setTranscript(result.result)
+        setIsTranscribing(false)
+        setTranscriptionProgress(null)
+        console.log('[DEBUG] Transcription complete:', result.result.text)
+      } else {
+        throw new Error(result.error || 'Transcription failed')
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Transcription failed'
+      setError(message)
+      setIsTranscribing(false)
+      setTranscriptionProgress(null)
+      console.error('[DEBUG] Transcription error:', err)
     }
   }
 
@@ -224,6 +289,15 @@ function App() {
                     ⏹ Stop Recording
                   </button>
                 )}
+                {savedAudioPath && !isRecording && (
+                  <button
+                    onClick={handleTranscribe}
+                    className="btn btn-transcribe"
+                    disabled={isTranscribing}
+                  >
+                    {isTranscribing ? '⏳ Transcribing...' : '📝 Transcribe Audio'}
+                  </button>
+                )}
               </div>
 
               <div className="info">
@@ -245,8 +319,38 @@ function App() {
                   <li>✅ 16kHz mono WAV output (Whisper-ready)</li>
                   <li>✅ Real-time audio level monitoring</li>
                   <li>✅ No BlackHole installation required</li>
+                  <li>✅ Local Whisper transcription (Phase 1.2)</li>
                 </ul>
               </div>
+
+              {/* Transcription Progress */}
+              {isTranscribing && transcriptionProgress && (
+                <div className="transcription-section">
+                  <h3>Transcribing...</h3>
+                  <div className="progress-bar">
+                    <div
+                      className="progress-fill"
+                      style={{ width: `${transcriptionProgress.progress}%` }}
+                    ></div>
+                  </div>
+                  <p className="progress-message">{transcriptionProgress.message}</p>
+                </div>
+              )}
+
+              {/* Transcript Display */}
+              {transcript && !isTranscribing && (
+                <div className="transcript-section">
+                  <h3>Transcript</h3>
+                  <div className="transcript-stats">
+                    <span>Duration: {transcript.duration.toFixed(1)}s</span>
+                    <span>
+                      Processing: {transcript.processingTime.toFixed(1)}s
+                    </span>
+                    <span>Language: {transcript.language}</span>
+                  </div>
+                  <div className="transcript-text">{transcript.text}</div>
+                </div>
+              )}
             </div>
           )}
         </div>

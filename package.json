@@ -7,6 +7,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
+    "postinstall": "bash scripts/postinstall.sh",
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "preview": "electron-vite preview",
@@ -20,7 +21,7 @@
     "type-check": "tsc --noEmit",
     "package:mac": "npm run build && electron-builder --mac",
     "dist:mac": "npm run build && electron-builder --mac --publish never",
-    "setup:whisper": "echo 'Whisper model download script will be added'",
+    "download-model": "bash scripts/download-whisper-model.sh",
     "db:migrate": "echo 'Database migration script will be added'",
     "db:reset": "echo 'Database reset script will be added'",
     "db:backup": "echo 'Database backup script will be added'"

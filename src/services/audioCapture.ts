@@ -108,21 +108,29 @@ export class AudioCaptureService {
       this.analyser.fftSize = 2048
       this.analyser.smoothingTimeConstant = 0.8
 
-      // 6. Create destination for merged audio
+      // 6. Create channel merger to force MONO output (Whisper requirement)
+      // ChannelMergerNode(context, {numberOfInputs: 2, channelCount: 1})
+      // This will mix all inputs down to mono
+      const channelMerger = this.audioContext.createChannelMerger(1)
+
+      // 7. Create destination for merged audio (will be mono)
       this.destinationNode = this.audioContext.createMediaStreamDestination()
 
-      // 7. Connect nodes: system audio → analyser
+      // 8. Connect nodes: system audio → analyser → channelMerger
       this.systemSourceNode.connect(this.analyser)
+      this.analyser.connect(channelMerger, 0, 0)
 
-      // 8. Connect microphone to analyser (if enabled)
+      // 9. Connect microphone to channelMerger (if enabled)
       if (this.microphoneSourceNode) {
+        // Also connect mic to analyser for level monitoring
         this.microphoneSourceNode.connect(this.analyser)
+        // Note: channelMerger only has 1 input, so both sources mix automatically
       }
 
-      // 9. Connect analyser to destination (receives both system audio and microphone)
-      this.analyser.connect(this.destinationNode)
+      // 10. Connect channelMerger to destination (mono output)
+      channelMerger.connect(this.destinationNode)
 
-      // 10. Start audio level monitoring
+      // 11. Start audio level monitoring
       this.startAudioLevelMonitoring()
 
       console.log('Audio capture started successfully:', {
@@ -171,7 +179,7 @@ export class AudioCaptureService {
   /**
    * Stop recording and return the recorded audio as a Blob
    */
-  async stopRecording(): Promise<RecordingSession> {
+  async stopRecording(): Promise<RecordingSession & { blob: Blob }> {
     return new Promise((resolve, reject) => {
       if (!this.mediaRecorder || !this.startTime) {
         reject(new Error('No active recording'))
@@ -189,13 +197,14 @@ export class AudioCaptureService {
         const endTime = new Date()
         const duration = (endTime.getTime() - this.startTime!.getTime()) / 1000
 
-        const session: RecordingSession = {
+        const session = {
           id: this.startTime!.toISOString(),
           filePath: '', // Will be set when saving to disk
           startTime: this.startTime!,
           endTime,
           duration,
           sizeBytes: blob.size,
+          blob, // Return blob with session
         }
 
         this.isRecording = false
