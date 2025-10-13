@@ -7,7 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### In Progress
+- **Refactor Sprint 1**: Critical bug fixes (before Phase 1.4)
+  - Fix IPC listener leaks (memory leaks during hot-reload)
+  - Ensure loopback teardown (lingering permissions prompts)
+  - Manage temp file cleanup (disk space issues)
+  - Propagate transcription options (model selection)
+  - Respect microphone toggle (privacy fix)
+
 ### Planned
+- **Refactor Sprint 2**: Architecture improvements (during Phase 1.4-1.5)
+  - Modularize App.tsx (440 lines → <150 lines)
+  - Optimize merge algorithm (O(n²) → O(n log m))
+  - Fix RecordingSession types
+  - Retire whisper-node-addon remnants
+- Phase 1.4: Recording Announcement (transparency & consent)
+- Phase 1.5: Chunked Recording (auto-save every 5 min)
+- **Refactor Sprint 3**: Performance & portability (Phase 2+)
+  - Generalize Python env discovery (Windows/Linux)
+  - Real-time mono downmix (eliminate ffmpeg preprocessing)
+  - Warm Python worker (instant subsequent diarizations)
 - Phase 2: Microsoft Graph Integration (M365 authentication, calendar, email)
 - Phase 3: AI Summarization (Claude API integration)
 - Phase 4: GUI Development (meeting list, summary editor)
@@ -17,6 +36,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Phase 8: Error Handling & Logging
 - Phase 9: Performance Optimization
 - Phase 10: Documentation & Packaging
+
+### Documentation
+- Added `docs/planning/REFACTOR-PLAN.md` - Systematic refactoring roadmap based on code review
+- See `REFACTOR-CODEX.md` for detailed analysis
 
 ---
 

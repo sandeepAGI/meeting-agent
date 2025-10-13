@@ -18,8 +18,11 @@ Meeting Agent is being developed in 10 phases, from foundation to production-rea
 | 1.1 | Audio Capture | ✅ Complete | 2025-10-09 |
 | 1.2 | Transcription | ✅ Complete | 2025-10-13 |
 | 1.3 | Diarization | ✅ Complete | 2025-10-13 |
-| 1.4 | Recording Announcement | 🔜 Next | - |
+| R1 | Refactor Sprint 1 | 🔜 Next | - |
+| R2 | Refactor Sprint 2 | 📅 Planned | - |
+| 1.4 | Recording Announcement | 📅 Planned | - |
 | 1.5 | Chunked Recording | 📅 Planned | - |
+| R3 | Refactor Sprint 3 | 📅 Planned | - |
 | 2.1 | M365 Authentication | 📅 Planned | - |
 | 2.2 | Calendar & Meeting Context | 📅 Planned | - |
 | 3 | AI Summarization | 📅 Planned | - |
@@ -147,9 +150,63 @@ Identify "who spoke when" and generate speaker-labeled transcripts.
 
 ---
 
+## Refactor Sprints 🔧
+
+**Status**: In Progress (Sprint 1)
+**Documentation**: See `docs/planning/REFACTOR-PLAN.md`
+
+### Overview
+Based on code review findings (REFACTOR-CODEX.md), three refactor sprints address technical debt and improve maintainability before continuing with new features.
+
+### Sprint 1: Critical Bug Fixes ⚠️
+**Target**: Before Phase 1.4
+**Duration**: ~3.5 hours
+**Priority**: Critical
+
+**Tasks**:
+- [ ] Fix IPC listener leaks (memory leaks during hot-reload)
+- [ ] Ensure loopback teardown (lingering permissions prompts)
+- [ ] Manage temp file cleanup (disk space issues)
+- [ ] Propagate transcription options (model selection doesn't work)
+- [ ] Respect microphone toggle (privacy risk - toggle doesn't work)
+
+**Success Criteria**: Hot-reload works cleanly, mic toggle works, no temp file accumulation
+
+---
+
+### Sprint 2: Architecture Improvements 🔥
+**Target**: During Phase 1.4-1.5
+**Duration**: ~7.5 hours
+**Priority**: High
+
+**Tasks**:
+- [ ] Modularize App.tsx (440 lines → <150 lines, extract hooks/components)
+- [ ] Optimize merge algorithm (O(n²) → O(n log m), 45x faster)
+- [ ] Fix RecordingSession types (type safety)
+- [ ] Retire whisper-node-addon remnants (cleanup)
+
+**Success Criteria**: Clean component structure, fast merges, type-safe code
+
+---
+
+### Sprint 3: Performance & Portability 📦
+**Target**: Phase 2+ (After M365 Integration)
+**Duration**: ~16 hours
+**Priority**: Medium
+
+**Tasks**:
+- [ ] Generalize Python env discovery (Windows/Linux support)
+- [ ] Real-time mono downmix (eliminate ffmpeg preprocessing, 3-5s savings)
+- [ ] Warm Python worker for diarization (instant subsequent runs)
+
+**Success Criteria**: Cross-platform support, faster transcription start, stable memory
+
+---
+
 ## Phase 1.4: Recording Announcement 🔜
 
-**Status**: Next Up
+**Status**: Next Up (After Sprint 1)
+**Prerequisites**: Complete Sprint 1 (Critical Bug Fixes)
 
 ### Goals
 Add audio announcement for meeting transparency and consent.
