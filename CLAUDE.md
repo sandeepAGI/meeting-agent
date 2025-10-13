@@ -133,6 +133,144 @@ Before committing documentation changes:
 
 ---
 
+## Testing Protocol
+
+**CRITICAL**: Never claim a feature is "complete" without following this protocol.
+
+### Why Testing Matters
+
+**Past Issues**: Features claimed "complete" with only type-check/build verification have failed in UAT:
+- Empty blob saved (invalid WAV file)
+- FFmpeg concat with wrong path format
+- Silent chunk save failures
+- Missing state cleanup
+
+**Root Cause**: Type-checking and building only verify code compiles, not that it works correctly.
+
+### Mandatory Testing Levels
+
+**BEFORE claiming any feature is complete, you MUST complete Level 1 + 2 + 3:**
+
+#### **Level 1: Static Analysis (30 seconds)**
+```bash
+npm run type-check  # Type safety
+npm run build       # Compilation
+```
+✅ Verifies: Code compiles without errors
+❌ Does NOT verify: Runtime behavior, logic correctness
+
+#### **Level 2: Logic Review (2-5 minutes)**
+
+**Ask yourself these questions:**
+1. What could go wrong with this code?
+2. What happens if the IPC call fails?
+3. What happens if the file doesn't exist?
+4. What happens if the process crashes mid-operation?
+5. Did I clean up all state properly?
+6. Are there race conditions?
+7. Did I test error handling paths?
+
+**Check these areas:**
+- ✓ Error handling for all async operations
+- ✓ State cleanup in all exit paths
+- ✓ Edge cases (empty input, null values, concurrent calls)
+- ✓ Resource cleanup (file handles, intervals, listeners)
+
+#### **Level 3: Manual Testing (5-10 minutes)**
+
+**MANDATORY before claiming "complete":**
+
+```bash
+# Start the application
+npm run dev
+```
+
+**Happy Path Testing:**
+1. Test the primary user flow
+2. Verify outputs are created
+3. Validate file/data integrity
+4. Test the feature end-to-end
+
+**Edge Case Testing:**
+3. Test with minimal input (1 second recording)
+4. Test stop immediately after start
+5. Test operation without prerequisites
+6. Test re-initialization/restart flows
+
+**File Output Validation (if applicable):**
+```bash
+# For audio files
+ffmpeg -v error -i <file> -f null -
+ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 <file>
+
+# For WAV files specifically
+file <file>  # Should show "RIFF (little-endian) data, WAVE audio"
+
+# Play file to verify audio is valid
+afplay <file>  # macOS
+```
+
+### Feature-Specific Test Checklists
+
+#### **Audio Recording Features:**
+- [ ] Initialize audio → Succeeds without errors
+- [ ] Start recording → Recording indicator shows
+- [ ] Stop recording → File created in expected location
+- [ ] Verify file with `file <path>` → Shows valid WAV
+- [ ] Verify file with `ffmpeg -i <path>` → No errors
+- [ ] Play file with `afplay <path>` → Audio plays correctly
+- [ ] Check file size → Not 0 bytes, reasonable for duration
+
+#### **Chunked Recording (Phase 1.5):**
+- [ ] Record >5 minutes → Chunks created in session dir
+- [ ] Stop recording → merged.wav created
+- [ ] Verify merged file size ≈ sum of chunk sizes
+- [ ] Verify individual chunks deleted after merge
+- [ ] Transcribe merged file → Works correctly
+- [ ] Check session directory → Only merged.wav remains
+
+#### **Transcription Features:**
+- [ ] Transcribe audio → Progress updates show
+- [ ] Transcription completes → Transcript returned
+- [ ] Verify transcript not empty
+- [ ] Check timing → Within expected range (1-2x realtime)
+
+#### **IPC Features:**
+- [ ] Call IPC handler → Returns result
+- [ ] Verify result structure → Has expected fields
+- [ ] Test error case → Returns error message
+- [ ] Check console logs → No unexpected errors
+
+### When to Skip Manual Testing
+
+**Only skip Level 3 if:**
+- Pure refactoring with no behavior changes
+- Documentation-only changes
+- Type definition changes
+- Configuration changes with no runtime impact
+
+**When in doubt, always do Level 3.**
+
+### Reporting Test Results
+
+**Before committing, always report:**
+
+```
+Testing:
+✅ Level 1: npm run type-check passes
+✅ Level 1: npm run build succeeds
+✅ Level 2: Logic review - error handling verified, state cleanup verified
+✅ Level 3: Manual testing complete
+  - Happy path: Record 10s → Stop → File valid → Transcription works
+  - Edge case: Stop immediately → Graceful handling
+  - File validation: ffmpeg verified, audio plays correctly
+⏸️ Level 3: Manual testing required but not completed (ONLY if impossible to test)
+```
+
+**Never say "tests pass" if you only ran Level 1.**
+
+---
+
 ## Critical Development Patterns
 
 ### 1. Subprocess Pattern (Preferred for ML Models)
