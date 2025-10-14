@@ -22,7 +22,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ✅ Microsoft 365 authentication with OAuth2 and secure token storage
 - ✅ Today's calendar meetings display with attendees and meeting details
 
-**Next Phase**: Phase 2.3 - Speaker Name Mapping
+**Next Phase**: Phase 2.3-3 - LLM-Based Meeting Intelligence (Combined)
 
 ### Recent Updates
 **Phase 2.2 (Calendar & Meeting Context)**:
@@ -103,26 +103,44 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### When to Update Documentation
 
-Update documentation **immediately after**:
+Documentation updates should happen **as part of the same commit** that makes the code change. Never commit code without updating the relevant documentation.
 
-1. **Phase completion** → Update roadmap.md, CHANGELOG.md, README.md (status), CLAUDE.md (status)
-2. **Bug fixes** → Update technical docs with root cause and fix
-3. **Architecture changes** → Update architecture.md
-4. **New dependencies** → Update technical docs and README.md (setup section)
-5. **Performance improvements** → Update technical docs with benchmarks
-6. **API changes** → Update architecture.md (IPC patterns)
-7. **Configuration changes** → Update README.md (environment variables)
+**Timing Guidelines:**
+
+1. **Phase completion** → Update ALL of these BEFORE committing:
+   - `CHANGELOG.md` - Add new version entry with all changes
+   - `docs/planning/roadmap.md` - Mark phase as complete, update dates
+   - `README.md` - Update "What Works Now" section
+   - `CLAUDE.md` - Update "Current Status" and "Recent Updates" sections
+   - **Git commit message**: Include reference to phase completion
+
+2. **Bug fixes** → Update technical docs with root cause and fix, add to CHANGELOG.md
+3. **Architecture changes** → Update architecture.md BEFORE committing
+4. **New dependencies** → Update technical docs and README.md (setup section) BEFORE committing
+5. **Performance improvements** → Update technical docs with benchmarks BEFORE committing
+6. **API changes** → Update architecture.md (IPC patterns) BEFORE committing
+7. **Configuration changes** → Update README.md (environment variables) BEFORE committing
+
+**CHANGELOG.md Update Policy:**
+- **MUST update** for: Phase completion, new features, bug fixes, breaking changes
+- **SHOULD update** for: Performance improvements, new dependencies
+- **CAN skip** for: Documentation-only changes, refactoring with no behavioral changes
+- **Format**: Follow [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format
+- **Versioning**: Follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
+  - Major (X.0.0): Breaking changes
+  - Minor (0.X.0): New features (Phase completions)
+  - Patch (0.0.X): Bug fixes
 
 ### What to Update
 
 | Change Type | Files to Update |
 |-------------|-----------------|
-| Phase complete | `docs/planning/roadmap.md`, `CHANGELOG.md`, `README.md` (status), `CLAUDE.md` (status) |
-| Critical bug fix | `docs/technical/{phase}.md` (Known Issues section), `CHANGELOG.md` |
-| New service/feature | `docs/developer/architecture.md`, `docs/technical/{phase}.md` |
-| Dependency added | `docs/technical/{phase}.md` (Dependencies section), `README.md` (Installation) |
-| Performance change | `docs/technical/{phase}.md` (Performance section), `README.md` (Performance) |
-| New IPC handler | `docs/developer/architecture.md` (IPC Handler Pattern) |
+| Phase complete | `CHANGELOG.md` (new version), `docs/planning/roadmap.md`, `README.md` (status), `CLAUDE.md` (status) |
+| Critical bug fix | `CHANGELOG.md` (patch version), `docs/technical/{phase}.md` (Known Issues section) |
+| New service/feature | `CHANGELOG.md` (minor version), `docs/developer/architecture.md`, `docs/technical/{phase}.md` |
+| Dependency added | `CHANGELOG.md`, `docs/technical/{phase}.md` (Dependencies section), `README.md` (Installation) |
+| Performance change | `CHANGELOG.md`, `docs/technical/{phase}.md` (Performance section), `README.md` (Performance) |
+| New IPC handler | `CHANGELOG.md`, `docs/developer/architecture.md` (IPC Handler Pattern) |
 
 ### How to Verify
 
@@ -531,8 +549,8 @@ ANTHROPIC_API_KEY=sk-ant-xxx
 ## Known Limitations
 
 1. **macOS 12.3+ only** (for now) - Windows/Linux support available via electron-audio-loopback but not tested
-2. **Generic speaker labels** - "SPEAKER_00", "SPEAKER_01" (Phase 2.3 will map to actual names from calendar attendees)
-3. **No AI summarization yet** - Meeting summaries with action items coming in Phase 3
+2. **Generic speaker labels** - "SPEAKER_00", "SPEAKER_01" (Phase 2.3-3 will use LLM to map speakers based on meeting context and email history)
+3. **No AI summarization yet** - Intelligent meeting summaries with speaker identification and action items coming in Phase 2.3-3
 
 ---
 
@@ -576,10 +594,14 @@ ANTHROPIC_API_KEY=sk-ant-xxx
 When contributing:
 
 1. **Follow the subprocess pattern** for external tools (avoid native Node.js modules)
-2. **Update documentation immediately** after code changes (see protocol above)
-3. **Add tests** for new functionality
-4. **Reference roadmap.md** for planned features (don't duplicate here)
-5. **Update CHANGELOG.md** when completing features or fixing bugs
+2. **Update documentation BEFORE committing** - Never commit code without updating docs (see protocol above)
+3. **Update CHANGELOG.md AS PART OF your commit** for:
+   - Phase completions (new minor version)
+   - New features (minor version)
+   - Bug fixes (patch version)
+   - Breaking changes (major version)
+4. **Add tests** for new functionality (follow Testing Protocol above)
+5. **Reference roadmap.md** for planned features (don't duplicate in CLAUDE.md)
 
 ---
 
@@ -590,7 +612,7 @@ MIT License - See LICENSE file
 ---
 
 **Current Status**: Phase 2.2 Complete ✅ (Audio + Transcription + Diarization + GPU Acceleration + M365 Auth + Calendar)
-**Next Milestone**: Phase 2.3 - Speaker Name Mapping
+**Next Milestone**: Phase 2.3-3 - LLM-Based Meeting Intelligence (speaker identification + summarization)
 **Last Updated**: 2025-10-14
 **Built with**: Claude Code (Sonnet 4.5) 🤖
 

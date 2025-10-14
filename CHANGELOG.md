@@ -12,8 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Generalize Python env discovery (Windows/Linux)
   - Real-time mono downmix (eliminate ffmpeg preprocessing)
   - Warm Python worker (instant subsequent diarizations)
-- Phase 2: Microsoft Graph Integration (M365 authentication, calendar, email)
-- Phase 3: AI Summarization (Claude API integration)
+- **Phase 2.3-3**: LLM-Based Meeting Intelligence (Combined)
+  - Meeting selection from calendar
+  - Email context collection (recent threads with participants)
+  - LLM-based speaker identification (Claude API)
+  - Intelligent meeting summarization with action items
 - Phase 4: GUI Development (meeting list, summary editor)
 - Phase 5: Email Distribution (send summaries via M365)
 - Phase 6: Data Management (SQLite, storage quotas)
@@ -25,6 +28,134 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Documentation
 - Added `docs/planning/REFACTOR-PLAN.md` - Systematic refactoring roadmap based on code review
 - See `REFACTOR-CODEX.md` for detailed analysis
+
+---
+
+## [0.2.1] - 2025-10-14
+
+### Phase 2.2: Calendar & Meeting Context
+
+#### Added
+- **Microsoft Graph API calendar integration**:
+  - `GraphApiService` with calendar operations
+  - Fetch today's meetings via `/me/calendarview` endpoint
+  - Display meetings with time, location, attendees, and join links
+  - Proper timezone handling (UTC to local conversion)
+  - Visual indicators for active/upcoming meetings
+  - MSAL cache persistence for automatic token refresh
+
+- **Calendar UI Component** (`CalendarSection.tsx`):
+  - Today's meetings display with refresh functionality
+  - Meeting cards showing time, duration, location, attendees
+  - Active meeting indicator ("In Progress" badge)
+  - Upcoming meeting indicator ("Starting Soon" for meetings within 15 min)
+  - Online meeting indicator and join links
+  - Attendee list with truncation for large meetings
+  - Organizer information display
+
+- **IPC Handlers**:
+  - `graph-get-todays-meetings`: Fetch today's calendar events
+  - `graph-get-upcoming-meetings`: Get meetings starting within N minutes
+  - `graph-get-meeting-by-id`: Fetch specific meeting details
+
+- **Custom Hook** (`useCalendar.tsx`):
+  - Calendar state management (meetings, loading, error)
+  - Actions: `fetchTodaysMeetings`, `fetchUpcomingMeetings`, `getMeetingById`
+  - Integration with M365 auth state
+
+#### Changed
+- **Meeting data structure**: Added `MeetingInfo` interface with full calendar details
+- **Attendee types**: Organizer, required, optional attendees distinguished
+- **Timezone handling**: Graph API times converted from UTC to local display
+
+#### Performance Impact
+- **API calls**: ~1-2 seconds for today's meetings (depends on meeting count)
+- **Memory usage**: Negligible (~5-10KB per meeting)
+- **Caching**: MSAL token cache reduces auth overhead
+
+#### Testing
+- ✅ `npm run type-check` passes
+- ✅ `npm run build` succeeds
+- ✅ Calendar fetch works with M365 authentication
+- ✅ Meeting display with proper timezone conversion
+- ✅ Active/upcoming meeting indicators function correctly
+
+#### Impact
+- Users can see today's meetings without leaving the app
+- Meeting context available for future speaker identification (Phase 2.3)
+- Attendee information ready for speaker mapping
+- Foundation for email context fetching (Phase 2.3)
+
+---
+
+## [0.2.0] - 2025-10-13
+
+### Phase 2.1: M365 Authentication
+
+#### Added
+- **Microsoft 365 OAuth2 authentication**:
+  - `M365AuthService` with MSAL Node integration
+  - Interactive browser login flow
+  - Secure token storage in system keychain (keytar)
+  - Automatic token refresh with MSAL cache persistence
+  - Login/logout functionality with session management
+
+- **Authentication UI Component** (`M365AuthSection.tsx`):
+  - Login/logout buttons
+  - User profile display (name, email)
+  - Authentication state indicators
+  - Error messaging for auth failures
+
+- **IPC Handlers**:
+  - `m365-auth-initialize`: Initialize auth service with cached tokens
+  - `m365-auth-login`: Interactive browser login
+  - `m365-auth-logout`: Clear tokens and session
+  - `m365-auth-get-state`: Get current auth state
+  - `m365-auth-get-token`: Get valid access token
+  - `m365-auth-refresh-token`: Manually refresh token
+
+- **Custom Hook** (`useM365Auth.tsx`):
+  - Auth state management (isAuthenticated, user info, error)
+  - Actions: `initialize`, `login`, `logout`, `refreshToken`
+  - Automatic initialization on mount
+
+- **Dependencies**:
+  - `@azure/msal-node` 3.8.0 - OAuth2 authentication
+  - `@microsoft/microsoft-graph-client` 3.0.7 - Graph API client
+  - `keytar` 7.9.0 - Secure token storage
+
+#### Security
+- **Token storage**: System keychain (macOS Keychain, Windows Credential Manager)
+- **Token refresh**: Automatic via MSAL cache persistence
+- **Permissions requested**:
+  - `User.Read` - Read user profile
+  - `Calendars.Read` - Read calendar events
+  - `Calendars.ReadWrite` - Create calendar events
+  - `Mail.Send` - Send emails
+  - `offline_access` - Refresh tokens
+
+#### Configuration
+- **Environment variables**:
+  - `AZURE_CLIENT_ID` - Azure AD app registration client ID
+  - `AZURE_TENANT_ID` - Azure AD tenant ID (or 'common')
+
+#### Documentation
+- Created `docs/guides/azure-ad-setup.md` - Complete Azure AD app registration guide
+- Updated `.env.example` with Azure credentials
+
+#### Testing
+- ✅ `npm run type-check` passes
+- ✅ `npm run build` succeeds
+- ✅ Login flow works via system browser
+- ✅ Tokens stored securely in keychain
+- ✅ Token refresh happens automatically
+- ✅ Logout clears tokens and session
+
+#### Impact
+- Enables Microsoft Graph API access for calendar and email
+- Foundation for Phase 2.2 (calendar integration)
+- Secure, production-ready authentication flow
+- No plaintext token storage
 
 ---
 
@@ -510,21 +641,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Release Notes
 
-### Version 0.1.3 (Current)
+### Version 0.2.1 (Current)
 **Meeting Agent** can now:
 - ✅ Capture system audio + microphone (native, no virtual drivers)
 - ✅ Transcribe audio locally using Whisper (Metal GPU acceleration)
-- ✅ Identify speakers with diarization (pyannote.audio)
+- ✅ Identify speakers with diarization (pyannote.audio, Metal GPU acceleration)
 - ✅ Generate speaker-labeled transcripts
+- ✅ Authenticate with Microsoft 365 (OAuth2, secure token storage)
+- ✅ Display today's calendar meetings with attendees
 
-**What's Next**: Phase 2 will add Microsoft 365 integration for meeting context and email distribution.
+**What's Next**: Phase 2.3-3 (combined) will add LLM-based speaker identification and intelligent meeting summarization using Claude API.
 
 ### Cost Analysis (Current)
 - Transcription: $0.00 (local Whisper)
 - Diarization: $0.00 (local pyannote.audio)
+- M365 Calendar: $0.00 (included with M365 subscription)
 - Total: **$0.00 per meeting** 🎉
 
 ---
 
 **Maintained by**: Claude Code (Sonnet 4.5)
-**Last Updated**: 2025-10-13
+**Last Updated**: 2025-10-14

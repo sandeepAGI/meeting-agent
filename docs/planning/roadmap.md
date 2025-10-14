@@ -1,12 +1,12 @@
 # Development Roadmap
 
 **Project**: Meeting Agent
-**Version**: 0.1.3
-**Last Updated**: 2025-10-13
+**Version**: 0.2.1
+**Last Updated**: 2025-10-14
 
 ## Overview
 
-Meeting Agent is being developed in 10 phases, from foundation to production-ready application. Current status: **Phase 1.3 Complete** (Audio Capture + Transcription + Diarization).
+Meeting Agent is being developed in 10 phases, from foundation to production-ready application. Current status: **Phase 2.2 Complete** (Audio + Transcription + Diarization + M365 Auth + Calendar).
 
 ---
 
@@ -25,8 +25,8 @@ Meeting Agent is being developed in 10 phases, from foundation to production-rea
 | 1.6 | GPU Acceleration | ✅ Complete | 2025-10-13 |
 | R3 | Refactor Sprint 3 | 📅 Planned | - |
 | 2.1 | M365 Authentication | ✅ Complete | 2025-10-13 |
-| 2.2 | Calendar & Meeting Context | 📅 Planned | - |
-| 3 | AI Summarization | 📅 Planned | - |
+| 2.2 | Calendar & Meeting Context | ✅ Complete | 2025-10-14 |
+| 2.3-3 | LLM-Based Meeting Intelligence | 📅 Planned | - |
 | 4 | GUI Development | 📅 Planned | - |
 | 5 | Email Distribution | 📅 Planned | - |
 | 6 | Data Management | 📅 Planned | - |
@@ -422,45 +422,85 @@ Implement Microsoft 365 OAuth2 authentication with secure token storage.
 
 ---
 
-## Phase 2: Microsoft Graph Integration 📅
+## Phase 2: Microsoft Graph Integration ✅
 
-**Status**: In Progress (Phase 2.1 Complete)
+**Status**: Phases 2.1 and 2.2 Complete
 
 ---
 
-### Phase 2.2: Calendar & Meeting Context
+### Phase 2.2: Calendar & Meeting Context ✅
+
+**Completed**: 2025-10-14
 
 **Goals**:
 - Fetch today's meetings
 - Extract attendee names and email addresses
 
 **Tasks**:
-- [ ] Implement Graph API service
-- [ ] Fetch calendar events
-- [ ] Extract meeting metadata
-- [ ] Cache calendar data locally
-- [ ] Display meetings in UI
+- [x] Implement Graph API service
+- [x] Fetch calendar events
+- [x] Extract meeting metadata
+- [x] Cache calendar data locally
+- [x] Display meetings in UI
 
-**Success Criteria**: GUI shows today's M365 meetings with attendees
+**Success Criteria**: ✅ GUI shows today's M365 meetings with attendees
+
+**Delivered**:
+- GraphApiService with calendar operations
+- Today's meetings display with attendees, time, location
+- Active/upcoming meeting indicators
+- Meeting selection foundation for Phase 2.3-3
 
 ---
 
-## Phase 3: AI Summarization 📅
+## Phase 2.3-3: LLM-Based Meeting Intelligence 📅
+
+**Status**: Planned
+
+**Approach**: Combined phase leveraging LLM for both speaker identification and summarization
 
 **Goals**:
-- Generate intelligent meeting summaries using Claude API
-- Extract action items and decisions
+- Use meeting context (attendees, emails) + transcript for intelligent analysis
+- LLM identifies speakers based on context, not naive positional mapping
+- Generate meeting summaries with properly identified speakers and action items
 
 **Tasks**:
-- [ ] Set up Anthropic API client
-- [ ] Design summary prompt template
-- [ ] Implement summarization service
-- [ ] Extract action items
+- [ ] Meeting selection UI
+  - Date range filter (default: Today, option: Last 7 Days)
+  - Simple dropdown/list of meetings for selected range
+  - Manual selection (no automatic linking until Phase 6)
+- [ ] Email context fetching (last 10 emails with participants via Graph API)
+- [ ] Claude API integration (Anthropic SDK)
+- [ ] Prompt engineering for speaker identification
+  - Input: Meeting metadata + email context + transcript with SPEAKER_00 labels
+  - Output: Speaker mapping (SPEAKER_00 → John Smith) with confidence
+- [ ] Prompt engineering for meeting summarization
+  - Generate summary with identified speakers
+  - Extract action items with assignments
+  - Identify key decisions and follow-ups
+- [ ] UI for summary display and editing
 - [ ] Handle API errors and retries
 
-**Estimated Cost**: ~$0.015 per 60-min meeting
+**Why This Approach**:
+- **More accurate**: LLM analyzes content, roles, topics to identify speakers
+- **Rich context**: Email history provides conversation patterns and participant dynamics
+- **Single workflow**: Speaker ID + summarization in one LLM call (more efficient)
+- **Better output**: "John suggested..." vs "SPEAKER_00 suggested..."
 
-**Success Criteria**: Generate coherent summary with action items
+**Estimated Cost**: ~$0.02-0.03 per 60-min meeting (Claude API for context + transcript)
+
+**Success Criteria**:
+- User selects meeting from calendar (Today or Last 7 Days)
+- System fetches meeting context (metadata + recent emails)
+- LLM correctly identifies 80%+ of speakers
+- Summary includes speaker names, action items, decisions
+- Editable summary before distribution (Phase 5)
+
+**Future Enhancement (Phase 6)**:
+- Automatic meeting-recording linkage via database
+- Search meetings by subject/attendee
+- Extended date ranges (30 days, custom range)
+- Remember which recording belongs to which meeting
 
 ---
 
@@ -625,15 +665,10 @@ Implement Microsoft 365 OAuth2 authentication with secure token storage.
 - [ ] Cost: $0.385/meeting (cloud) vs $0.015/meeting (local)
 - [ ] Implementation: `TRANSCRIPTION_MODE=local|cloud` setting
 
-### LLM-Based Speaker Attribution
-- [ ] Use Claude API to match speaker labels with attendee names
-- [ ] Input: Generic labels + attendee list
-- [ ] Output: "John Smith" instead of "SPEAKER_00"
-
 ### GPU Acceleration for Diarization
-- [ ] PyTorch Metal (MPS) support for Apple Silicon
+- [x] PyTorch Metal (MPS) support for Apple Silicon (Phase 1.6 Complete)
 - [ ] CUDA support for Windows/Linux with NVIDIA GPUs
-- [ ] Expected speedup: 3-10x (30s audio in 3-10s)
+- ✅ Measured speedup: 5.8x on M3 Pro
 
 ### Cross-Platform Support
 - [ ] Windows 10+ (electron-audio-loopback supports it)
@@ -651,16 +686,24 @@ Implement Microsoft 365 OAuth2 authentication with secure token storage.
 ## Cost Estimate (Current MVP)
 
 ### Per-Meeting Cost (60 minutes)
+
+**Current (Phase 2.2)**:
 - **Transcription**: $0.00 (local Whisper)
 - **Diarization**: $0.00 (local pyannote.audio)
-- **Summarization**: $0.015 (Claude API, Phase 3)
-- **M365 API**: $0.00 (included with subscription)
+- **M365 Calendar**: $0.00 (included with subscription)
+- **Total**: **$0.00 per meeting** 🎉
 
-**Total**: ~$0.015 per meeting (~$0.30/month for 20 meetings)
+**After Phase 2.3-3 (LLM Intelligence)**:
+- **Transcription**: $0.00 (local Whisper)
+- **Diarization**: $0.00 (local pyannote.audio)
+- **Speaker ID + Summarization**: $0.02-0.03 (Claude API, combined)
+- **M365 API**: $0.00 (included with subscription)
+- **Total**: **~$0.02-0.03 per meeting** (~$0.40-0.60/month for 20 meetings)
 
 ### Comparison vs Cloud-Only
 - Azure Speech + Azure OpenAI: ~$2.50/meeting = $50/month
-- **Savings**: 99% 🎉
+- **Meeting Agent**: ~$0.02-0.03/meeting = $0.40-0.60/month
+- **Savings**: 98-99% 💰
 
 ---
 
@@ -718,4 +761,4 @@ Electron App
 ---
 
 **Maintained by**: Claude Code (Sonnet 4.5)
-**Last Updated**: 2025-10-13
+**Last Updated**: 2025-10-14
