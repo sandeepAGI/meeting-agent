@@ -51,22 +51,14 @@ export class DatabaseService {
     const schemaPath = path.join(__dirname, '../database/schema.sql')
     const schema = fs.readFileSync(schemaPath, 'utf-8')
 
-    // Execute schema (split by statement, filter out empty/comments)
-    const statements = schema
-      .split(';')
-      .map((s) => s.trim())
-      .filter((s) => s && !s.startsWith('--'))
-
-    for (const statement of statements) {
-      try {
-        this.db.exec(statement)
-      } catch (error) {
-        console.error('Schema execution error:', statement.substring(0, 100))
-        throw error
-      }
+    try {
+      // Execute entire schema at once - better-sqlite3 handles multiple statements
+      this.db.exec(schema)
+      console.log(`Database initialized at: ${this.dbPath}`)
+    } catch (error) {
+      console.error('Schema execution error:', error)
+      throw error
     }
-
-    console.log(`Database initialized at: ${this.dbPath}`)
   }
 
   // ===========================================================================
