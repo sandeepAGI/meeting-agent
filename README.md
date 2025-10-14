@@ -4,9 +4,9 @@ AI-powered meeting transcription and summarization tool for macOS.
 
 ## Status
 
-**Current Version**: 0.1.8 - Phase 1.6 Complete ✅
+**Current Version**: 0.3.0-alpha - Phase 2.3-3 Backend Complete ✅
 
-This project is in active development. Phases 0-1.6 are complete (audio capture, transcription, speaker diarization, recording announcement, chunked recording, GPU acceleration). See [CHANGELOG.md](./CHANGELOG.md) for version history and [docs/planning/roadmap.md](./docs/planning/roadmap.md) for the full development plan.
+This project is in active development. Phases 0-2.2 are complete (audio capture, transcription, speaker diarization, M365 integration, calendar context), and Phase 2.3-3 backend is complete (LLM-based meeting intelligence infrastructure). See [CHANGELOG.md](./CHANGELOG.md) for version history and [docs/planning/roadmap.md](./docs/planning/roadmap.md) for the full development plan.
 
 ## Overview
 
@@ -15,56 +15,65 @@ Meeting Agent is a desktop application that:
 - ✅ **Captures audio** from online meetings (Teams, Zoom, Google Meet, etc.)
 - ✅ **Transcribes audio locally** using OpenAI Whisper (free, runs on your machine)
 - ✅ **Identifies speakers** using pyannote.audio speaker diarization
-- 🔜 **Generates AI summaries** with action items using Claude API (Phase 3)
-- 🔜 **Integrates with Microsoft 365** for meeting context and email distribution (Phase 2)
+- ✅ **Integrates with Microsoft 365** for meeting context, calendar, and email
+- 🚧 **Generates AI summaries** with speaker identification and action items using Claude API (Backend complete, UI in progress)
 - 🔜 **Provides an editor** to review and customize summaries before sending (Phase 4)
 
-## What Works Now (v0.1.8)
+## What Works Now (v0.3.0-alpha)
 
 ### Audio Capture
 - Native system audio capture (no virtual drivers required!)
 - Microphone capture with graceful fallback
 - Real-time audio level monitoring
 - 16kHz mono WAV output (Whisper-compatible)
-
-### Chunked Recording (0.1.7)
 - **Auto-save every 5 minutes** during recording
 - Prevents memory exhaustion for long meetings (60+ minutes)
-- Protects against data loss from crashes
-- Memory usage stays constant (~5MB) regardless of duration
-- Seamless FFmpeg merging on stop
-- UI shows "Last saved: X minutes ago" indicator
 
-### Recording Announcement (0.1.6)
+### Recording Announcement
 - **Automatic announcement** when recording starts
 - Informs participants: "This meeting, with your permission, is being recorded..."
 - **Legal compliance**: Ensures transparency and consent
 - **Captured in recording**: Announcement is part of the audio file
-- Uses macOS text-to-speech (no delay, immediate feedback)
 
-### Transcription
+### Transcription & Diarization
 - Local transcription using whisper.cpp (Metal GPU acceleration)
-- ~1-2x realtime speed (5min audio in ~5.7s)
-- Progress monitoring with real-time updates
-- Memory efficient: <200MB during transcription
-
-### Speaker Diarization (New in 0.1.8: Metal GPU Acceleration!)
-- Identifies "who spoke when" using pyannote.audio
+- ~50x realtime speed (5min audio in ~5.7s)
+- Speaker identification using pyannote.audio
 - **Metal GPU acceleration**: 3-10x faster than CPU (automatic on Apple Silicon)
 - Speaker-labeled transcripts: `[SPEAKER_00]: text`
-- Two modes: "Transcribe Only" (fast) or "Transcribe + Diarize" (accurate)
-- Automatic device detection (Metal GPU → CUDA → CPU fallback)
+- Progress monitoring with real-time updates
+- Memory efficient: <700MB peak during transcription + diarization
+
+### Microsoft 365 Integration (Phase 2.1-2.2)
+- **OAuth2 authentication** with MSAL Node
+- **Secure token storage** in system keychain
+- **Today's calendar meetings** with attendees, times, and join links
+- **Automatic token refresh** for seamless authentication
+- Visual indicators for active/upcoming meetings
+
+### Meeting Intelligence Backend (Phase 2.3-3)
+- **Two-pass LLM workflow** for high-quality summaries
+  - Pass 1: Speaker identification + initial summary
+  - Pass 2: Validation and refinement
+- **Batch API integration** (50% cost savings)
+- **Email context fetching** with smart caching (7-day expiration)
+- **SQLite database** for meeting persistence
+- **Adaptive polling** (5min → 30sec intervals)
+- **Background processing** (non-blocking)
+- **Cost**: ~$0.09 per 60-min meeting (96% savings vs cloud alternatives)
 
 ## Key Features
 
 - 🎤 **Universal Meeting Support**: Works with any meeting platform
-- 💰 **Cost-Effective**: $0.00/meeting for transcription + diarization (100% local)
-- 🔒 **Privacy-First**: All processing happens locally, you control all data
+- 💰 **Cost-Effective**: ~$0.09/meeting (100% local transcription + diarization, cloud summarization)
+- 🔒 **Privacy-First**: All transcription and diarization happen locally, you control all data
 - 🚀 **Metal GPU Acceleration**: Fast transcription AND diarization on Apple Silicon
-- 🗣️ **Speaker Labels**: Know who said what in meetings
-- 📧 **M365 Integration** (Coming in Phase 2): Auto-fetch meeting context, send via Outlook
-- ✏️ **Edit Before Send** (Coming in Phase 4): Review and customize summaries
-- 💾 **Smart Storage** (Coming in Phase 6): Auto-delete audio after transcription
+- 🗣️ **Speaker Identification**: AI-powered speaker mapping with meeting context
+- 📧 **M365 Integration**: Calendar context, email history, and attendee information
+- 🧠 **Two-Pass LLM Workflow**: Initial summary + validation for high accuracy
+- 💾 **Smart Caching**: Email context caching reduces API calls
+- ✏️ **Edit Before Send** (Coming soon): Review and customize summaries
+- 💾 **Smart Storage** (Coming soon): Auto-delete audio after transcription
 
 ## Tech Stack
 
@@ -72,8 +81,9 @@ Meeting Agent is a desktop application that:
 - **UI**: React 19
 - **Transcription**: whisper.cpp (local, Metal GPU)
 - **Diarization**: pyannote.audio (local, Python)
-- **Summarization**: Anthropic Claude API (Phase 3)
-- **Database**: SQLite (Phase 6)
+- **Summarization**: Anthropic Claude API (Batch API with 50% cost savings)
+- **Database**: SQLite (better-sqlite3)
+- **M365**: @azure/msal-node + @microsoft/microsoft-graph-client
 - **Audio**: electron-audio-loopback (no BlackHole required!)
 
 ## Installation & Setup
@@ -128,15 +138,26 @@ pip install pyannote.audio torch torchaudio python-dotenv
 # Copy environment template
 cp .env.example .env
 
-# Edit .env and add your Hugging Face token
-# Get token from: https://huggingface.co/settings/tokens
+# Edit .env and add your tokens
+# Get HF token from: https://huggingface.co/settings/tokens
 # Accept model license: https://huggingface.co/pyannote/speaker-diarization-3.1
+# Get Anthropic key from: https://console.anthropic.com/
 nano .env
 ```
 
 Add to `.env`:
 ```bash
 HUGGINGFACE_TOKEN=hf_xxx
+ANTHROPIC_API_KEY=sk-ant-xxx
+ANTHROPIC_MODEL=claude-sonnet-4-20250514
+
+# Azure AD (for M365 integration)
+AZURE_CLIENT_ID=your_client_id
+AZURE_TENANT_ID=your_tenant_id
+
+# Optional: Customize email context
+EMAIL_BODY_MAX_LENGTH=2000
+EMAIL_CONTEXT_MAX_COUNT=10
 ```
 
 ### 5. Install Node Dependencies
@@ -181,20 +202,20 @@ npm start
 
 ## Cost Estimate
 
-### Current (Phases 1.1-1.3)
+### Current (Phase 2.3-3 Backend)
 - **Transcription**: $0.00 (local Whisper)
 - **Diarization**: $0.00 (local pyannote.audio)
-- **Total**: **$0.00 per meeting** 🎉
-
-### Future (Phase 3+)
-- **Summarization**: ~$0.015 per 60-min meeting (Claude API)
+- **Summarization (Two-Pass)**: ~$0.09 per 60-min meeting (Claude Batch API)
+  - Pass 1: $0.045 (speaker ID + initial summary)
+  - Pass 2: $0.048 (validation + refinement)
 - **Microsoft Graph API**: $0.00 (included with M365 subscription)
-- **Estimated Monthly**: ~$0.30 for 20 meetings
+- **Total per meeting**: **$0.09** 💰
+- **Estimated Monthly** (20 meetings): **~$1.86**
 
 ### Comparison
-- **Cloud-only alternative**: Azure Speech + Azure OpenAI = ~$2.50/meeting = $50/month
-- **Meeting Agent**: ~$0.015/meeting = $0.30/month
-- **Savings**: 99% 💰
+- **Cloud-only alternative**: Azure Speech + GPT-4 = ~$2.50/meeting = $50/month
+- **Meeting Agent**: ~$0.09/meeting = $1.86/month
+- **Savings**: 96% 💰
 
 ## Privacy & Ethics
 
@@ -262,10 +283,9 @@ meeting-agent/
 ## Known Limitations
 
 1. **macOS Only**: Currently requires macOS 12.3+ for native audio loopback
-2. **Generic Speaker Labels**: Speakers labeled "SPEAKER_00", "SPEAKER_01", etc. (Phase 2 will add name matching with calendar attendees)
-3. **No M365 Integration Yet**: Calendar and email features coming in Phase 2
-4. **No Summarization Yet**: AI summaries coming in Phase 3
-5. **English-Focused**: Multi-language support planned for Phase 7
+2. **Backend Only (Phase 2.3-3)**: Meeting intelligence UI components are in development
+3. **Batch Processing Latency**: Summaries take 30-60 minutes to generate (due to 50% cost savings)
+4. **English-Focused**: Multi-language support planned for Phase 7
 
 ## Roadmap
 
@@ -296,15 +316,23 @@ meeting-agent/
 - Automatic device detection (Metal/CUDA/CPU)
 - 3-10x speedup on Apple Silicon
 
-### 🔜 Phase 2: Microsoft Graph Integration
-- M365 authentication
-- Calendar integration
-- Meeting context
+### ✅ Phase 2.1: M365 Authentication (2025-10-14)
+- OAuth2 authentication with MSAL Node
+- Secure token storage in system keychain
+- Automatic token refresh
 
-### 📅 Phase 3: AI Summarization
-- Claude API integration
-- Action item extraction
-- Decision tracking
+### ✅ Phase 2.2: Calendar Integration (2025-10-14)
+- Today's calendar meetings display
+- Meeting attendees and metadata
+- Join links and location info
+
+### 🚧 Phase 2.3-3: Meeting Intelligence (Backend Complete)
+- Two-pass LLM workflow for summaries
+- Batch API integration (50% cost savings)
+- Email context fetching with smart caching
+- SQLite database persistence
+- Background async processing
+- **UI components in development**
 
 ### 📅 Phase 4: GUI Development
 - Meeting list UI
@@ -351,10 +379,10 @@ MIT License - See LICENSE file
 
 ---
 
-**Current Phase**: Phase 1.6 Complete ✅ (Audio + Transcription + Diarization + Announcement + Chunking + GPU Acceleration)
+**Current Phase**: Phase 2.3-3 Backend Complete ✅ (Audio + Transcription + Diarization + M365 + Calendar + LLM Intelligence Backend)
 
-**Next Milestone**: Phase 2.1 - Microsoft 365 Authentication
+**Next Milestone**: Phase 2.3-3 UI - Meeting Intelligence Components
 
-**Last Updated**: 2025-10-13
+**Last Updated**: 2025-01-14
 
 **Built with**: Claude Code (Sonnet 4.5) 🤖

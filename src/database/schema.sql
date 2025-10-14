@@ -1,19 +1,14 @@
--- Meeting Agent Database Schema
--- SQLite database for Phase 2.3-3: LLM-Based Meeting Intelligence
---
--- This schema stores:
--- - Meeting metadata from Microsoft Graph
--- - Recording and transcription data
--- - Speaker diarization results
--- - LLM-generated summaries (Pass 1, Pass 2, user edits)
--- - Batch job tracking
--- - Email context cache
+-- Phase 2.3-3: LLM-Based Meeting Intelligence
+-- Database schema for SQLite
+-- Created: 2025-01-14
 
 -- Enable foreign key constraints
 PRAGMA foreign_keys = ON;
 
--- Meetings table
--- Stores Microsoft 365 calendar events
+-- =============================================================================
+-- Table: meetings
+-- Stores Microsoft Graph calendar events
+-- =============================================================================
 CREATE TABLE IF NOT EXISTS meetings (
   id TEXT PRIMARY KEY,              -- Microsoft Graph event ID
   subject TEXT NOT NULL,
@@ -21,44 +16,52 @@ CREATE TABLE IF NOT EXISTS meetings (
   end_time DATETIME NOT NULL,
   organizer_name TEXT,
   organizer_email TEXT,
-  attendees_json TEXT,              -- JSON array of {name, email, type}
+  attendees_json TEXT,              -- JSON array of attendees
   is_online_meeting BOOLEAN DEFAULT 0,
   online_meeting_url TEXT,
   location TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  body_preview TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_meetings_start_time ON meetings(start_time DESC);
+CREATE INDEX IF NOT EXISTS idx_meetings_start_time ON meetings(start_time);
 CREATE INDEX IF NOT EXISTS idx_meetings_organizer_email ON meetings(organizer_email);
 
--- Recordings table
--- Stores audio file metadata
+-- =============================================================================
+-- Table: recordings
+-- Stores audio recording metadata
+-- =============================================================================
 CREATE TABLE IF NOT EXISTS recordings (
   id TEXT PRIMARY KEY,              -- UUID
-  meeting_id TEXT,                  -- NULL if recording not linked to meeting yet
-  audio_file_path TEXT NOT NULL,
-  duration_seconds INTEGER,
+  meeting_id TEXT,                  -- Foreign key to meetings (nullable if not linked)
+  file_path TEXT NOT NULL,
   file_size_bytes INTEGER,
+  duration_seconds REAL,
   sample_rate INTEGER DEFAULT 16000,
   channels INTEGER DEFAULT 1,
+  format TEXT DEFAULT 'wav',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
   FOREIGN KEY (meeting_id) REFERENCES meetings(id) ON DELETE SET NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_recordings_meeting_id ON recordings(meeting_id);
-CREATE INDEX IF NOT EXISTS idx_recordings_created_at ON recordings(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_recordings_created_at ON recordings(created_at);
 
--- Transcripts table
+-- =============================================================================
+-- Table: transcripts
 -- Stores Whisper transcription results
+-- =============================================================================
 CREATE TABLE IF NOT EXISTS transcripts (
   id TEXT PRIMARY KEY,              -- UUID
   recording_id TEXT NOT NULL,
-  transcript_text TEXT NOT NULL,
-  segments_json TEXT,               -- JSON array of {start, end, text}
-  language TEXT DEFAULT 'en',
+  transcript_text TEXT NOT NULL,    -- Full transcript
+  segments_json TEXT,               -- JSON array of segments with timestamps
+  language TEXT,
+  confidence_avg REAL,
   processing_time_seconds REAL,
-  model_name TEXT,                  -- e.g., 'base', 'small', 'medium'
+  model_used TEXT DEFAULT 'base',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
   FOREIGN KEY (recording_id) REFERENCES recordings(id) ON DELETE CASCADE
@@ -66,14 +69,17 @@ CREATE TABLE IF NOT EXISTS transcripts (
 
 CREATE INDEX IF NOT EXISTS idx_transcripts_recording_id ON transcripts(recording_id);
 
--- Diarization results table
--- Stores pyannote.audio speaker segmentation
+-- =============================================================================
+-- Table: diarization_results
+-- Stores pyannote.audio speaker diarization segments
+-- =============================================================================
 CREATE TABLE IF NOT EXISTS diarization_results (
   id TEXT PRIMARY KEY,              -- UUID
   transcript_id TEXT NOT NULL,
-  segments_json TEXT NOT NULL,      -- JSON array of {start, end, speaker}
-  speaker_count INTEGER,
+  segments_json TEXT NOT NULL,      -- JSON array: [{speaker, start, end}]
+  num_speakers INTEGER,
   processing_time_seconds REAL,
+  device_used TEXT DEFAULT 'cpu',   -- 'cpu', 'mps', 'cuda'
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
   FOREIGN KEY (transcript_id) REFERENCES transcripts(id) ON DELETE CASCADE
@@ -81,74 +87,74 @@ CREATE TABLE IF NOT EXISTS diarization_results (
 
 CREATE INDEX IF NOT EXISTS idx_diarization_transcript_id ON diarization_results(transcript_id);
 
--- Meeting summaries table
+-- =============================================================================
+-- Table: meeting_summaries
 -- Stores LLM-generated summaries (Pass 1, Pass 2, user edits)
+-- =============================================================================
 CREATE TABLE IF NOT EXISTS meeting_summaries (
   id TEXT PRIMARY KEY,              -- UUID
   meeting_id TEXT NOT NULL,
   transcript_id TEXT NOT NULL,
-  diarization_id TEXT,              -- Optional: NULL if no diarization
 
-  -- Pass 1 data
+  -- Pass 1: Initial speaker identification + summary
   pass1_batch_id TEXT,
-  pass1_status TEXT CHECK(pass1_status IN ('pending', 'processing', 'complete', 'error')),
-  pass1_speaker_mappings_json TEXT, -- JSON array of {label, name, confidence, reasoning}
+  pass1_status TEXT,                -- 'pending', 'processing', 'complete', 'error'
+  pass1_speaker_mappings_json TEXT, -- JSON: [{label, name, confidence, reasoning}]
   pass1_summary TEXT,
-  pass1_action_items_json TEXT,     -- JSON array of {description, assignee, priority, dueDate}
-  pass1_key_decisions_json TEXT,    -- JSON array of strings
-  pass1_started_at DATETIME,
+  pass1_action_items_json TEXT,     -- JSON: [{description, assignee, priority}]
+  pass1_key_decisions_json TEXT,    -- JSON: [string]
   pass1_completed_at DATETIME,
   pass1_error_message TEXT,
 
-  -- Pass 2 data
+  -- Pass 2: Validation and refinement
   pass2_batch_id TEXT,
-  pass2_status TEXT CHECK(pass2_status IN ('pending', 'processing', 'complete', 'error')),
+  pass2_status TEXT,
   pass2_refined_summary TEXT,
-  pass2_validated_speakers_json TEXT, -- JSON array of {label, name, confidence, reasoning}
-  pass2_validated_actions_json TEXT,  -- JSON array of action items
-  pass2_corrections_json TEXT,        -- JSON array of correction descriptions
-  pass2_started_at DATETIME,
+  pass2_validated_speakers_json TEXT,
+  pass2_validated_action_items_json TEXT,
+  pass2_validated_key_decisions_json TEXT,
+  pass2_corrections_json TEXT,      -- JSON: [string] - list of corrections made
   pass2_completed_at DATETIME,
   pass2_error_message TEXT,
 
-  -- User edits
-  final_summary TEXT,               -- User-edited final version
-  final_speakers_json TEXT,         -- User-corrected speaker mappings
-  final_actions_json TEXT,          -- User-edited action items
+  -- User edits (final version)
+  final_summary TEXT,
+  final_speakers_json TEXT,
+  final_action_items_json TEXT,
+  final_key_decisions_json TEXT,
   edited_at DATETIME,
 
   -- Overall status
-  overall_status TEXT DEFAULT 'pending'
-    CHECK(overall_status IN ('pending', 'pass1_processing', 'pass1_complete',
-                              'pass2_processing', 'pass2_complete', 'complete', 'error')),
+  overall_status TEXT DEFAULT 'pending',
 
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
   FOREIGN KEY (meeting_id) REFERENCES meetings(id) ON DELETE CASCADE,
-  FOREIGN KEY (transcript_id) REFERENCES transcripts(id) ON DELETE CASCADE,
-  FOREIGN KEY (diarization_id) REFERENCES diarization_results(id) ON DELETE SET NULL
+  FOREIGN KEY (transcript_id) REFERENCES transcripts(id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_summaries_meeting_id ON meeting_summaries(meeting_id);
+CREATE INDEX IF NOT EXISTS idx_summaries_transcript_id ON meeting_summaries(transcript_id);
 CREATE INDEX IF NOT EXISTS idx_summaries_overall_status ON meeting_summaries(overall_status);
-CREATE INDEX IF NOT EXISTS idx_summaries_created_at ON meeting_summaries(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_summaries_created_at ON meeting_summaries(created_at);
 
--- Batch jobs table
--- Tracks Anthropic batch API jobs
+-- =============================================================================
+-- Table: batch_jobs
+-- Tracks Anthropic batch job lifecycle
+-- =============================================================================
 CREATE TABLE IF NOT EXISTS batch_jobs (
   id TEXT PRIMARY KEY,              -- Anthropic batch_id
   summary_id TEXT NOT NULL,
-  pass_number INTEGER NOT NULL CHECK(pass_number IN (1, 2)),
-  status TEXT NOT NULL CHECK(status IN ('in_progress', 'ended', 'canceled', 'error')),
-  request_json TEXT,                -- Original request for debugging
-  response_json TEXT,               -- Full response from Anthropic
-  request_counts_json TEXT,         -- JSON {processing, succeeded, errored, canceled}
-  results_url TEXT,                 -- Anthropic results URL
-  submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  completed_at DATETIME,
-  expires_at DATETIME,              -- Results expire after 29 days
-  error_message TEXT,
+  pass_number INTEGER NOT NULL,     -- 1 or 2
+  status TEXT NOT NULL,             -- 'in_progress', 'canceling', 'ended'
+  request_counts_json TEXT,         -- JSON: {processing, succeeded, errored, canceled, expired}
+  results_url TEXT,
+  submitted_at DATETIME NOT NULL,
+  ended_at DATETIME,
+  expires_at DATETIME,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
   FOREIGN KEY (summary_id) REFERENCES meeting_summaries(id) ON DELETE CASCADE
 );
@@ -156,46 +162,44 @@ CREATE TABLE IF NOT EXISTS batch_jobs (
 CREATE INDEX IF NOT EXISTS idx_batch_jobs_summary_id ON batch_jobs(summary_id);
 CREATE INDEX IF NOT EXISTS idx_batch_jobs_status ON batch_jobs(status);
 
--- Email context cache
--- Caches email context to avoid repeated Graph API calls
+-- =============================================================================
+-- Table: email_context_cache
+-- Caches email context for faster regeneration
+-- =============================================================================
 CREATE TABLE IF NOT EXISTS email_context_cache (
-  id TEXT PRIMARY KEY,              -- UUID
-  meeting_id TEXT NOT NULL,
-  participant_email TEXT NOT NULL,
-  emails_json TEXT,                 -- JSON array of recent emails
-  email_count INTEGER DEFAULT 0,
-  fetched_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  expires_at DATETIME,              -- Cache for 7 days
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  meeting_id TEXT NOT NULL UNIQUE,
+  emails_json TEXT NOT NULL,        -- JSON array of EmailContext
+  fetched_at DATETIME NOT NULL,
+  expires_at DATETIME NOT NULL,     -- Cache expires after 7 days
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
-  FOREIGN KEY (meeting_id) REFERENCES meetings(id) ON DELETE CASCADE,
-
-  UNIQUE(meeting_id, participant_email)
+  FOREIGN KEY (meeting_id) REFERENCES meetings(id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_email_cache_meeting_id ON email_context_cache(meeting_id);
 CREATE INDEX IF NOT EXISTS idx_email_cache_expires_at ON email_context_cache(expires_at);
 
--- Trigger to update updated_at timestamp on meeting_summaries
-CREATE TRIGGER IF NOT EXISTS update_meeting_summaries_timestamp
-AFTER UPDATE ON meeting_summaries
-FOR EACH ROW
+-- =============================================================================
+-- Triggers for updated_at timestamp
+-- =============================================================================
+CREATE TRIGGER IF NOT EXISTS update_meetings_timestamp
+  AFTER UPDATE ON meetings
+  FOR EACH ROW
+BEGIN
+  UPDATE meetings SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS update_summaries_timestamp
+  AFTER UPDATE ON meeting_summaries
+  FOR EACH ROW
 BEGIN
   UPDATE meeting_summaries SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;
 
--- View: Recent summaries with meeting details
-CREATE VIEW IF NOT EXISTS recent_summaries AS
-SELECT
-  ms.id,
-  ms.overall_status,
-  m.subject AS meeting_subject,
-  m.start_time,
-  m.organizer_name,
-  ms.final_summary,
-  ms.pass2_refined_summary,
-  ms.pass1_summary,
-  ms.created_at,
-  ms.updated_at
-FROM meeting_summaries ms
-JOIN meetings m ON ms.meeting_id = m.id
-ORDER BY ms.created_at DESC;
+CREATE TRIGGER IF NOT EXISTS update_batch_jobs_timestamp
+  AFTER UPDATE ON batch_jobs
+  FOR EACH ROW
+BEGIN
+  UPDATE batch_jobs SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;

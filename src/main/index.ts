@@ -8,6 +8,10 @@ import { transcriptionService } from '../services/transcription'
 import { DiarizationService } from '../services/diarization'
 import { M365AuthService } from '../services/m365Auth'
 import { GraphApiService } from '../services/graphApi'
+import { DatabaseService } from '../services/database'
+import { ClaudeBatchService } from '../services/claudeBatch'
+import { EmailContextService } from '../services/emailContext'
+import { MeetingIntelligenceService } from '../services/meetingIntelligence'
 import { mergeDiarizationWithTranscript } from '../utils/mergeDiarization'
 import type { TranscriptionOptions } from '../types/transcription'
 
@@ -15,6 +19,7 @@ import type { TranscriptionOptions } from '../types/transcription'
 dotenv.config()
 console.log('[ENV] HUGGINGFACE_TOKEN configured:', !!process.env.HUGGINGFACE_TOKEN)
 console.log('[ENV] AZURE_CLIENT_ID configured:', !!process.env.AZURE_CLIENT_ID)
+console.log('[ENV] ANTHROPIC_API_KEY configured:', !!process.env.ANTHROPIC_API_KEY)
 
 // Initialize diarization service
 const diarizationService = new DiarizationService()
@@ -30,6 +35,22 @@ if (process.env.AZURE_CLIENT_ID) {
 
 // Initialize Graph API service
 const graphApiService = new GraphApiService()
+
+// Initialize Database service (Phase 2.3-3)
+const dbService = new DatabaseService()
+
+// Initialize Meeting Intelligence services (Phase 2.3-3)
+let claudeService: ClaudeBatchService | null = null
+let emailService: EmailContextService | null = null
+let intelligenceService: MeetingIntelligenceService | null = null
+
+if (process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_API_KEY !== 'sk-ant-xxx') {
+  claudeService = new ClaudeBatchService(
+    process.env.ANTHROPIC_API_KEY,
+    process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514'
+  )
+  console.log('[MeetingIntelligence] Claude Batch API initialized')
+}
 
 let mainWindow: BrowserWindow | null = null
 
@@ -595,6 +616,160 @@ ipcMain.handle('graph-get-meeting-by-id', async (_event, eventId: string) => {
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to fetch meeting'
+    }
+  }
+})
+
+// ===== Phase 2.3-3: Meeting Intelligence IPC Handlers =====
+
+// Helper to ensure intelligence service is initialized
+function ensureIntelligenceService(): MeetingIntelligenceService {
+  if (!intelligenceService) {
+    if (!claudeService) {
+      throw new Error('Claude API not configured. Set ANTHROPIC_API_KEY in .env file.')
+    }
+    if (!m365AuthService) {
+      throw new Error('Microsoft 365 not configured.')
+    }
+
+    // Initialize email service (requires Graph API client)
+    const graphClient = graphApiService.getClient()
+    if (!graphClient) {
+      throw new Error('Graph API client not initialized. Please log in first.')
+    }
+
+    emailService = new EmailContextService(graphClient, dbService)
+    intelligenceService = new MeetingIntelligenceService(
+      claudeService,
+      emailService,
+      dbService
+    )
+    console.log('[MeetingIntelligence] Service initialized')
+  }
+
+  return intelligenceService
+}
+
+// Start summary generation
+ipcMain.handle('meeting-intelligence-start', async (_event, meetingId: string, transcriptId: string) => {
+  try {
+    const service = ensureIntelligenceService()
+    const summaryId = await service.generateSummary(meetingId, transcriptId)
+
+    console.log(`[MeetingIntelligence] Started summary generation: ${summaryId}`)
+    return { success: true, summaryId }
+  } catch (error) {
+    console.error('[MeetingIntelligence] Start failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to start summary generation'
+    }
+  }
+})
+
+// Get summary status
+ipcMain.handle('meeting-intelligence-status', async (_event, summaryId: string) => {
+  try {
+    const service = ensureIntelligenceService()
+    const status = await service.getSummaryStatus(summaryId)
+
+    return { success: true, status }
+  } catch (error) {
+    console.error('[MeetingIntelligence] Get status failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get summary status'
+    }
+  }
+})
+
+// Get summary result
+ipcMain.handle('meeting-intelligence-get-summary', async (_event, summaryId: string) => {
+  try {
+    const summary = dbService.getSummary(summaryId)
+
+    if (!summary) {
+      return {
+        success: false,
+        error: `Summary not found: ${summaryId}`
+      }
+    }
+
+    return { success: true, summary }
+  } catch (error) {
+    console.error('[MeetingIntelligence] Get summary failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get summary'
+    }
+  }
+})
+
+// Update summary (user edits)
+ipcMain.handle('meeting-intelligence-update-summary', async (_event, summaryId: string, updates: any) => {
+  try {
+    dbService.updateSummaryFinal(summaryId, updates)
+
+    console.log(`[MeetingIntelligence] Updated summary: ${summaryId}`)
+    return { success: true }
+  } catch (error) {
+    console.error('[MeetingIntelligence] Update summary failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update summary'
+    }
+  }
+})
+
+// Cancel summary generation
+ipcMain.handle('meeting-intelligence-cancel', async (_event, summaryId: string) => {
+  try {
+    const service = ensureIntelligenceService()
+    await service.cancelSummary(summaryId)
+
+    console.log(`[MeetingIntelligence] Cancelled summary: ${summaryId}`)
+    return { success: true }
+  } catch (error) {
+    console.error('[MeetingIntelligence] Cancel failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to cancel summary'
+    }
+  }
+})
+
+// Regenerate summary
+ipcMain.handle('meeting-intelligence-regenerate', async (_event, summaryId: string) => {
+  try {
+    const service = ensureIntelligenceService()
+    await service.regenerateSummary(summaryId)
+
+    console.log(`[MeetingIntelligence] Regenerating summary: ${summaryId}`)
+    return { success: true }
+  } catch (error) {
+    console.error('[MeetingIntelligence] Regenerate failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to regenerate summary'
+    }
+  }
+})
+
+// Fetch email context for a meeting
+ipcMain.handle('meeting-intelligence-fetch-emails', async (_event, meetingId: string, participantEmails: string[]) => {
+  try {
+    if (!emailService) {
+      throw new Error('Email service not initialized')
+    }
+
+    const emails = await emailService.getEmailsForMeeting(meetingId, participantEmails)
+
+    return { success: true, emails }
+  } catch (error) {
+    console.error('[MeetingIntelligence] Fetch emails failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch emails'
     }
   }
 })

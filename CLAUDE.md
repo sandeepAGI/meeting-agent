@@ -8,8 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Current Status
 
-**Version**: 0.2.1 (Phase 2.2 Complete ✅)
-**Last Updated**: 2025-10-14
+**Version**: 0.3.0-alpha (Phase 2.3-3 Backend Complete ✅)
+**Last Updated**: 2025-01-14
 
 **What Works Now**:
 - ✅ Native system audio + microphone capture (no virtual drivers)
@@ -21,19 +21,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ✅ Metal GPU acceleration for both transcription AND diarization (3-10x speedup)
 - ✅ Microsoft 365 authentication with OAuth2 and secure token storage
 - ✅ Today's calendar meetings display with attendees and meeting details
+- ✅ Meeting intelligence backend (two-pass LLM workflow, email context, database, batch processing)
 
-**Next Phase**: Phase 2.3-3 - LLM-Based Meeting Intelligence (Planning Complete, Ready for Implementation)
+**Next Phase**: Phase 2.3-3 UI - Meeting Intelligence Components (MeetingSelector, SummaryProcessing, SummaryDisplay)
 
 ### Recent Updates
-**Phase 2.3-3 Planning (January 2025)**:
-- ✅ Two-pass LLM workflow designed (Pass 1: Initial summary, Pass 2: Validation)
-- ✅ Batch API integration planned (50% cost savings, 30-60min latency acceptable)
-- ✅ SQLite database schema created (moving from Phase 6 to Phase 2.3-3)
-- ✅ Email context service designed (full body with 2000 char limit)
-- ✅ Adaptive polling strategy defined (5min → 30sec intervals)
-- ✅ Technical documentation complete (`docs/technical/llm-intelligence.md`)
-- ✅ Cost analysis updated: $0.09 per meeting (96% savings vs cloud alternatives)
-- 📅 Implementation: ~29 hours estimated (4-5 days)
+**Phase 2.3-3 Backend Implementation (January 2025)**:
+- ✅ **Complete backend infrastructure** for intelligent meeting summarization
+- ✅ **DatabaseService**: SQLite with 7 tables (meetings, recordings, transcripts, diarization_results, meeting_summaries, batch_jobs, email_context_cache)
+- ✅ **ClaudeBatchService**: Anthropic Batch API integration with adaptive polling (5min → 30sec)
+- ✅ **EmailContextService**: Graph API email fetching with HTML stripping, 2000-char truncation, 7-day caching
+- ✅ **MeetingIntelligenceService**: Two-pass orchestrator (Pass 1: speaker ID + summary, Pass 2: validation)
+- ✅ **PromptLoader**: Template loading and variable substitution utility
+- ✅ **Prompt Templates**: Pass 1 (initial summary) and Pass 2 (validation) templates
+- ✅ **7 IPC Handlers**: Complete main ↔ renderer communication layer
+- ✅ **Background Processing**: Non-blocking async workflow with database persistence
+- ✅ **Cost**: $0.09 per 60-min meeting (96% savings vs cloud alternatives)
+- 📅 **Next**: UI components (MeetingSelector, SummaryProcessing, SummaryDisplay)
 
 **Phase 2.2 (Calendar & Meeting Context)**:
 - ✅ Microsoft Graph API service for calendar operations
@@ -511,7 +515,10 @@ npm run format
   - **@azure/msal-node** 3.8.0 - OAuth2 authentication
   - **@microsoft/microsoft-graph-client** 3.0.7 - Graph API client
   - **keytar** 7.9.0 - Secure token storage (system keychain)
-- **Anthropic Claude API** (summarization, Phase 3)
+- **Anthropic Claude API** (summarization, Phase 2.3-3)
+  - **@anthropic-ai/sdk** ^0.65.0 - Batch API client
+- **Database**
+  - **better-sqlite3** ^12.4.1 - SQLite bindings
 
 ---
 
@@ -548,10 +555,15 @@ Required in `.env`:
 # Phase 1.3: Speaker Diarization
 HUGGINGFACE_TOKEN=hf_xxx  # Required for pyannote.audio models
 
-# Future Phases
+# Phase 2.1: M365 Integration
 AZURE_CLIENT_ID=your_app_client_id
 AZURE_TENANT_ID=your_tenant_id
+
+# Phase 2.3-3: Meeting Intelligence
 ANTHROPIC_API_KEY=sk-ant-xxx
+ANTHROPIC_MODEL=claude-sonnet-4-20250514
+EMAIL_BODY_MAX_LENGTH=2000
+EMAIL_CONTEXT_MAX_COUNT=10
 ```
 
 ---
@@ -559,8 +571,8 @@ ANTHROPIC_API_KEY=sk-ant-xxx
 ## Known Limitations
 
 1. **macOS 12.3+ only** (for now) - Windows/Linux support available via electron-audio-loopback but not tested
-2. **Generic speaker labels** - "SPEAKER_00", "SPEAKER_01" (Phase 2.3-3 will use LLM to map speakers based on meeting context and email history)
-3. **No AI summarization yet** - Intelligent meeting summaries with speaker identification and action items coming in Phase 2.3-3
+2. **Backend only (Phase 2.3-3)** - Meeting intelligence UI components are in development
+3. **Batch processing latency** - Summaries take 30-60 minutes to generate (tradeoff for 50% cost savings)
 
 ---
 
@@ -625,9 +637,9 @@ MIT License - See LICENSE file
 
 ---
 
-**Current Status**: Phase 2.2 Complete ✅ (Audio + Transcription + Diarization + GPU Acceleration + M365 Auth + Calendar)
-**Next Milestone**: Phase 2.3-3 - LLM-Based Meeting Intelligence (speaker identification + summarization)
-**Last Updated**: 2025-10-14
+**Current Status**: Phase 2.3-3 Backend Complete ✅ (Audio + Transcription + Diarization + GPU Acceleration + M365 Auth + Calendar + LLM Intelligence Backend)
+**Next Milestone**: Phase 2.3-3 UI - Meeting Intelligence Components
+**Last Updated**: 2025-01-14
 **Built with**: Claude Code (Sonnet 4.5) 🤖
 
 ---

@@ -239,4 +239,11 @@ export class GraphApiService {
       throw new Error('Failed to fetch upcoming meetings')
     }
   }
+
+  /**
+   * Get the initialized Graph API client (for EmailContextService)
+   */
+  getClient(): Client | null {
+    return this.client
+  }
 }
