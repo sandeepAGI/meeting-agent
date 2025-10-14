@@ -107,7 +107,7 @@ export class DatabaseService {
 
   getMeetingsByDateRange(startDate: string, endDate: string) {
     const stmt = this.db.prepare(`
-      SELECT * FROM meetings 
+      SELECT * FROM meetings
       WHERE start_time >= ? AND start_time < ?
       ORDER BY start_time DESC
     `)
@@ -115,11 +115,185 @@ export class DatabaseService {
   }
 
   // ===========================================================================
+  // Recordings
+  // ===========================================================================
+
+  saveRecording(recording: {
+    id: string
+    meeting_id?: string
+    file_path: string
+    file_size_bytes?: number
+    duration_seconds?: number
+    sample_rate?: number
+    channels?: number
+    format?: string
+  }): void {
+    const stmt = this.db.prepare(`
+      INSERT INTO recordings (
+        id, meeting_id, file_path, file_size_bytes, duration_seconds,
+        sample_rate, channels, format
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `)
+
+    stmt.run(
+      recording.id,
+      recording.meeting_id || null,
+      recording.file_path,
+      recording.file_size_bytes || null,
+      recording.duration_seconds || null,
+      recording.sample_rate || 16000,
+      recording.channels || 1,
+      recording.format || 'wav'
+    )
+  }
+
+  getRecording(recordingId: string) {
+    const stmt = this.db.prepare('SELECT * FROM recordings WHERE id = ?')
+    return stmt.get(recordingId) as any
+  }
+
+  getRecentRecordings(limit: number = 20) {
+    const stmt = this.db.prepare(`
+      SELECT * FROM recordings
+      ORDER BY created_at DESC
+      LIMIT ?
+    `)
+    return stmt.all(limit) as any[]
+  }
+
+  // ===========================================================================
+  // Transcripts
+  // ===========================================================================
+
+  saveTranscript(transcript: {
+    id: string
+    recording_id: string
+    transcript_text: string
+    segments_json?: string
+    language?: string
+    confidence_avg?: number
+    processing_time_seconds?: number
+    model_used?: string
+  }): void {
+    const stmt = this.db.prepare(`
+      INSERT INTO transcripts (
+        id, recording_id, transcript_text, segments_json, language,
+        confidence_avg, processing_time_seconds, model_used
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `)
+
+    stmt.run(
+      transcript.id,
+      transcript.recording_id,
+      transcript.transcript_text,
+      transcript.segments_json || null,
+      transcript.language || null,
+      transcript.confidence_avg || null,
+      transcript.processing_time_seconds || null,
+      transcript.model_used || 'base'
+    )
+  }
+
+  getTranscript(transcriptId: string) {
+    const stmt = this.db.prepare('SELECT * FROM transcripts WHERE id = ?')
+    return stmt.get(transcriptId) as any
+  }
+
+  getTranscriptByRecordingId(recordingId: string) {
+    const stmt = this.db.prepare(`
+      SELECT * FROM transcripts
+      WHERE recording_id = ?
+      ORDER BY created_at DESC
+      LIMIT 1
+    `)
+    return stmt.get(recordingId) as any
+  }
+
+  // ===========================================================================
+  // Diarization Results
+  // ===========================================================================
+
+  saveDiarizationResult(diarization: {
+    id: string
+    transcript_id: string
+    segments_json: string
+    num_speakers?: number
+    processing_time_seconds?: number
+    device_used?: string
+  }): void {
+    const stmt = this.db.prepare(`
+      INSERT INTO diarization_results (
+        id, transcript_id, segments_json, num_speakers,
+        processing_time_seconds, device_used
+      ) VALUES (?, ?, ?, ?, ?, ?)
+    `)
+
+    stmt.run(
+      diarization.id,
+      diarization.transcript_id,
+      diarization.segments_json,
+      diarization.num_speakers || null,
+      diarization.processing_time_seconds || null,
+      diarization.device_used || 'cpu'
+    )
+  }
+
+  getDiarizationResult(diarizationId: string) {
+    const stmt = this.db.prepare('SELECT * FROM diarization_results WHERE id = ?')
+    return stmt.get(diarizationId) as any
+  }
+
+  getDiarizationByTranscriptId(transcriptId: string) {
+    const stmt = this.db.prepare(`
+      SELECT * FROM diarization_results
+      WHERE transcript_id = ?
+      ORDER BY created_at DESC
+      LIMIT 1
+    `)
+    return stmt.get(transcriptId) as any
+  }
+
+  // ===========================================================================
+  // Joined Queries (for UI)
+  // ===========================================================================
+
+  /**
+   * Get recordings with their transcripts and diarization results
+   * Used for MeetingSelector UI
+   */
+  getRecordingsWithTranscripts(limit: number = 20) {
+    const stmt = this.db.prepare(`
+      SELECT
+        r.id as recording_id,
+        r.file_path,
+        r.duration_seconds,
+        r.created_at as recording_created_at,
+        t.id as transcript_id,
+        t.transcript_text,
+        t.created_at as transcript_created_at,
+        d.id as diarization_id,
+        d.num_speakers,
+        d.created_at as diarization_created_at,
+        m.id as meeting_id,
+        m.subject as meeting_subject,
+        m.start_time as meeting_start_time
+      FROM recordings r
+      LEFT JOIN transcripts t ON t.recording_id = r.id
+      LEFT JOIN diarization_results d ON d.transcript_id = t.id
+      LEFT JOIN meetings m ON m.id = r.meeting_id
+      WHERE t.id IS NOT NULL
+      ORDER BY r.created_at DESC
+      LIMIT ?
+    `)
+    return stmt.all(limit) as any[]
+  }
+
+  // ===========================================================================
   // Meeting Summaries
   // ===========================================================================
 
   createSummary(data: {
-    meeting_id: string
+    meeting_id?: string | null
     transcript_id: string
   }): string {
     const summaryId = randomUUID()
@@ -130,7 +304,7 @@ export class DatabaseService {
       ) VALUES (?, ?, ?, 'pending')
     `)
 
-    stmt.run(summaryId, data.meeting_id, data.transcript_id)
+    stmt.run(summaryId, data.meeting_id || null, data.transcript_id)
     return summaryId
   }
 

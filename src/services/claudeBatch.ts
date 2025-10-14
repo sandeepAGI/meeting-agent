@@ -150,8 +150,14 @@ export class ClaudeBatchService {
         throw new Error('Batch complete but no results URL available')
       }
 
-      // Fetch results from URL
-      const response = await fetch(batch.results_url)
+      // Fetch results from URL (requires authentication)
+      const apiKey = this.client.apiKey || ''
+      const response = await fetch(batch.results_url, {
+        headers: {
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01'
+        }
+      })
       if (!response.ok) {
         throw new Error(`Failed to fetch results: ${response.statusText}`)
       }
@@ -225,16 +231,16 @@ export class ClaudeBatchService {
    * @returns Interval in milliseconds
    */
   private getPollingInterval(elapsedMinutes: number): number {
-    // 0-30 min: every 5 minutes
+    // 0-30 min: every 5 minutes (most batches take 30-60 min, start slow)
     if (elapsedMinutes < 30) return 5 * 60 * 1000
 
-    // 30-45 min: every 3 minutes
+    // 30-45 min: every 3 minutes (accelerate)
     if (elapsedMinutes < 45) return 3 * 60 * 1000
 
-    // 45-55 min: every 1 minute
+    // 45-55 min: every 1 minute (accelerate more as we approach 1 hour)
     if (elapsedMinutes < 55) return 1 * 60 * 1000
 
-    // 55+ min: every 30 seconds (accelerate near 1-hour mark)
+    // 55+ min: every 30 seconds (very fast near expected completion time)
     return 30 * 1000
   }
 

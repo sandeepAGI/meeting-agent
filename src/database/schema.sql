@@ -93,7 +93,7 @@ CREATE INDEX IF NOT EXISTS idx_diarization_transcript_id ON diarization_results(
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS meeting_summaries (
   id TEXT PRIMARY KEY,              -- UUID
-  meeting_id TEXT NOT NULL,
+  meeting_id TEXT,                  -- Foreign key to meetings (nullable if recording not linked)
   transcript_id TEXT NOT NULL,
 
   -- Pass 1: Initial speaker identification + summary

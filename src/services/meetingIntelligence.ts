@@ -13,6 +13,7 @@ import { ClaudeBatchService } from './claudeBatch'
 import { EmailContextService } from './emailContext'
 import { DatabaseService } from './database'
 import { PromptLoader } from '../utils/promptLoader'
+import { mergeDiarizationWithTranscript } from '../utils/mergeDiarization'
 import type {
   MeetingContext,
   MeetingSummary,
@@ -83,38 +84,69 @@ export class MeetingIntelligenceService {
 
   /**
    * Gather all context needed for LLM prompts
+   * Supports both calendar-linked meetings and standalone recordings
    */
   private async gatherContext(
     meetingId: string,
     transcriptId: string
   ): Promise<MeetingContext> {
-    // Fetch meeting info
-    const meeting = this.db.getMeeting(meetingId)
-    if (!meeting) {
-      throw new Error(`Meeting not found: ${meetingId}`)
-    }
-
-    // Fetch transcript
-    const transcript = this.db.getSummary(transcriptId) // TODO: Need to fetch actual transcript text
+    // Fetch transcript (required)
+    const transcript = this.db.getTranscript(transcriptId)
     if (!transcript) {
       throw new Error(`Transcript not found: ${transcriptId}`)
     }
 
-    // Parse attendees
-    const attendees = meeting.attendees_json
-      ? JSON.parse(meeting.attendees_json)
-      : []
-    const participantEmails = attendees.map((a: any) => a.email)
+    // Fetch diarization and reconstruct speaker-labeled transcript
+    const diarization = this.db.getDiarizationByTranscriptId(transcriptId)
+    let mergedTranscript = transcript.transcript_text
 
-    // Fetch emails (with caching)
-    const emails = await this.emailService.getEmailsForMeeting(
-      meetingId,
-      participantEmails
-    )
-    const emailsFormatted = this.emailService.formatEmailsForPrompt(emails)
+    if (diarization && transcript.segments_json) {
+      try {
+        // Parse segments from database
+        const transcriptSegments = JSON.parse(transcript.segments_json)
+        const diarizationSegments = JSON.parse(diarization.segments_json)
 
-    return {
-      meeting: {
+        // Merge using the utility function
+        const merged = mergeDiarizationWithTranscript(transcriptSegments, {
+          segments: diarizationSegments
+        })
+
+        // Use the full text with speaker labels
+        mergedTranscript = merged.fullText
+        console.log(`Reconstructed transcript with ${merged.speakerCount} speakers`)
+      } catch (error) {
+        console.warn('Failed to merge transcript with diarization:', error)
+        // Fall back to plain transcript
+        mergedTranscript = transcript.transcript_text
+      }
+    }
+
+    // Try to fetch meeting info (optional - may not exist for standalone recordings)
+    const meeting = meetingId ? this.db.getMeeting(meetingId) : null
+
+    let meetingContext
+    let emailsFormatted = 'No email context available (standalone recording).'
+
+    if (meeting) {
+      // Full meeting context available
+      const attendees = meeting.attendees_json
+        ? JSON.parse(meeting.attendees_json)
+        : []
+      const participantEmails = attendees.map((a: any) => a.email)
+
+      // Fetch emails (with caching)
+      try {
+        const emails = await this.emailService.getEmailsForMeeting(
+          meetingId,
+          participantEmails
+        )
+        emailsFormatted = this.emailService.formatEmailsForPrompt(emails)
+      } catch (error) {
+        console.warn('Failed to fetch email context:', error)
+        emailsFormatted = 'Email context unavailable.'
+      }
+
+      meetingContext = {
         id: meeting.id,
         subject: meeting.subject,
         date: new Date(meeting.start_time).toLocaleDateString(),
@@ -129,8 +161,27 @@ export class MeetingIntelligenceService {
           email: a.email || '',
           type: a.type || 'required'
         }))
-      },
-      transcript: 'TODO: Fetch actual transcript text with speaker labels',
+      }
+    } else {
+      // Standalone recording - use fallback values
+      const recordingDate = new Date(transcript.created_at)
+      meetingContext = {
+        id: '',
+        subject: 'Untitled Recording',
+        date: recordingDate.toLocaleDateString(),
+        startTime: recordingDate.toLocaleTimeString(),
+        endTime: 'Unknown',
+        organizer: {
+          name: 'Unknown',
+          email: ''
+        },
+        attendees: []
+      }
+    }
+
+    return {
+      meeting: meetingContext,
+      transcript: mergedTranscript,
       emails: emailsFormatted
     }
   }
@@ -395,8 +446,8 @@ export class MeetingIntelligenceService {
 
     console.log(`Regenerating summary ${summaryId}`)
 
-    // Gather context again
-    const context = await this.gatherContext(summary.meeting_id, summary.transcript_id)
+    // Gather context again (meeting_id may be null for standalone recordings)
+    const context = await this.gatherContext(summary.meeting_id || '', summary.transcript_id)
 
     // Reset status
     this.db.updateSummaryStatus(summaryId, 'pending')

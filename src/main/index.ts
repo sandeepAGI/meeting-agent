@@ -374,6 +374,60 @@ ipcMain.handle('transcribe-and-diarize', async (event, audioFilePath: string, op
       message: 'Complete!'
     })
 
+    // Step 4: Save to database
+    try {
+      const { randomUUID } = await import('crypto')
+
+      // Get file stats
+      const stats = fs.statSync(audioFilePath)
+
+      // Save recording
+      const recordingId = randomUUID()
+      dbService.saveRecording({
+        id: recordingId,
+        file_path: audioFilePath,
+        file_size_bytes: stats.size,
+        duration_seconds: transcriptionResult.duration,
+        sample_rate: 16000,
+        channels: 1,
+        format: 'wav'
+      })
+
+      // Save transcript
+      const transcriptId = randomUUID()
+      const fullTranscript = transcriptionResult.segments.map(s => s.text).join(' ')
+      dbService.saveTranscript({
+        id: transcriptId,
+        recording_id: recordingId,
+        transcript_text: fullTranscript,
+        segments_json: JSON.stringify(transcriptionResult.segments),
+        processing_time_seconds: transcriptionResult.processingTime
+      })
+
+      // Save diarization
+      if (diarizationResult && diarizationResult.segments) {
+        const diarizationId = randomUUID()
+        const speakerNumbers = diarizationResult.segments.map(d =>
+          parseInt(d.speaker.replace('SPEAKER_', ''))
+        )
+        const numSpeakers = speakerNumbers.length > 0
+          ? Math.max(...speakerNumbers) + 1
+          : 0
+
+        dbService.saveDiarizationResult({
+          id: diarizationId,
+          transcript_id: transcriptId,
+          segments_json: JSON.stringify(diarizationResult.segments),
+          num_speakers: numSpeakers
+        })
+      }
+
+      console.log(`[Database] Saved recording ${recordingId}, transcript ${transcriptId}`)
+    } catch (dbError) {
+      console.error('[Database] Failed to save to database:', dbError)
+      // Don't fail the entire operation if database save fails
+    }
+
     return {
       success: true,
       result: {
@@ -668,7 +722,7 @@ ipcMain.handle('meeting-intelligence-start', async (_event, meetingId: string, t
 })
 
 // Get summary status
-ipcMain.handle('meeting-intelligence-status', async (_event, summaryId: string) => {
+ipcMain.handle('meeting-intelligence-get-status', async (_event, summaryId: string) => {
   try {
     const service = ensureIntelligenceService()
     const status = await service.getSummaryStatus(summaryId)
@@ -770,6 +824,25 @@ ipcMain.handle('meeting-intelligence-fetch-emails', async (_event, meetingId: st
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to fetch emails'
+    }
+  }
+})
+
+// ===== Database Query IPC Handlers =====
+
+// Get recordings with transcripts (for UI)
+ipcMain.handle('db-get-recordings-with-transcripts', async (_event, limit: number = 20) => {
+  try {
+    console.log('[Database] Fetching recordings with transcripts, limit:', limit)
+    const recordings = dbService.getRecordingsWithTranscripts(limit)
+    console.log('[Database] Found recordings:', recordings.length)
+    console.log('[Database] First recording:', recordings[0])
+    return { success: true, recordings }
+  } catch (error) {
+    console.error('[Database] Get recordings with transcripts failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get recordings'
     }
   }
 })

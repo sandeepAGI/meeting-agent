@@ -46,6 +46,100 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, isUpdating }: 
     setIsEditing(false)
   }
 
+  const handleExport = () => {
+    // Format summary data for export
+    const exportData = {
+      summary: editedSummary,
+      speakers: speakers.map(s => ({
+        label: s.label,
+        name: s.name,
+        email: s.email,
+        confidence: s.confidence,
+        reasoning: s.reasoning
+      })),
+      actionItems: actionItems.map(a => ({
+        description: a.description,
+        assignee: a.assignee,
+        dueDate: a.dueDate,
+        priority: a.priority
+      })),
+      keyDecisions: keyDecisions,
+      metadata: {
+        created: summary.created_at,
+        pass1Completed: summary.pass1_completed_at,
+        pass2Completed: summary.pass2_completed_at,
+        edited: summary.edited_at
+      }
+    }
+
+    // Create formatted text version
+    let textContent = '# Meeting Summary\n\n'
+
+    // Summary
+    textContent += `## Summary\n${editedSummary}\n\n`
+
+    // Speakers
+    if (speakers.length > 0) {
+      textContent += `## Speaker Identification (${speakers.length})\n`
+      speakers.forEach(speaker => {
+        textContent += `- ${speaker.label} → ${speaker.name}`
+        if (speaker.email) textContent += ` (${speaker.email})`
+        textContent += ` [Confidence: ${speaker.confidence}]\n`
+        textContent += `  ${speaker.reasoning}\n`
+      })
+      textContent += '\n'
+    }
+
+    // Action Items
+    if (actionItems.length > 0) {
+      textContent += `## Action Items (${actionItems.length})\n`
+      actionItems.forEach((item, i) => {
+        textContent += `${i + 1}. ${item.description}\n`
+        if (item.assignee) textContent += `   Assignee: ${item.assignee}\n`
+        if (item.dueDate) textContent += `   Due: ${new Date(item.dueDate).toLocaleDateString()}\n`
+        textContent += `   Priority: ${item.priority}\n`
+      })
+      textContent += '\n'
+    }
+
+    // Key Decisions
+    if (keyDecisions.length > 0) {
+      textContent += `## Key Decisions (${keyDecisions.length})\n`
+      keyDecisions.forEach((decision, i) => {
+        textContent += `${i + 1}. ${decision}\n`
+      })
+      textContent += '\n'
+    }
+
+    // Metadata
+    textContent += '## Metadata\n'
+    textContent += `Created: ${new Date(summary.created_at).toLocaleString()}\n`
+    if (summary.pass1_completed_at) {
+      textContent += `Pass 1 Complete: ${new Date(summary.pass1_completed_at).toLocaleString()}\n`
+    }
+    if (summary.pass2_completed_at) {
+      textContent += `Pass 2 Complete: ${new Date(summary.pass2_completed_at).toLocaleString()}\n`
+    }
+
+    // Create downloadable blob
+    const blob = new Blob([textContent], { type: 'text/markdown' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `meeting-summary-${new Date().toISOString().split('T')[0]}.md`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+
+    // Also copy to clipboard
+    navigator.clipboard.writeText(textContent).then(() => {
+      console.log('Summary copied to clipboard')
+    }).catch(err => {
+      console.error('Failed to copy to clipboard:', err)
+    })
+  }
+
   const getPriorityBadgeClass = (priority: string) => {
     switch (priority) {
       case 'high': return 'badge-priority-high'
@@ -69,6 +163,13 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, isUpdating }: 
       <div className="summary-header">
         <h3>📝 Meeting Summary</h3>
         <div className="summary-actions">
+          <button
+            onClick={handleExport}
+            className="btn btn-primary"
+            title="Export summary as markdown file and copy to clipboard"
+          >
+            💾 Export
+          </button>
           <button
             onClick={onRegenerate}
             disabled={isUpdating}

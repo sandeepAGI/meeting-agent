@@ -1,17 +1,27 @@
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
-import { copyFileSync, mkdirSync } from 'fs'
+import { copyFileSync, mkdirSync, readdirSync } from 'fs'
 
 export default defineConfig({
   main: {
     plugins: [
       externalizeDepsPlugin(),
       {
-        name: 'copy-sql-files',
+        name: 'copy-static-files',
         closeBundle() {
+          // Copy database schema
           mkdirSync('dist/database', { recursive: true })
           copyFileSync('src/database/schema.sql', 'dist/database/schema.sql')
+
+          // Copy prompt templates
+          mkdirSync('dist/prompts', { recursive: true })
+          const promptFiles = readdirSync('src/prompts')
+          for (const file of promptFiles) {
+            if (file.endsWith('.txt')) {
+              copyFileSync(`src/prompts/${file}`, `dist/prompts/${file}`)
+            }
+          }
         }
       }
     ],

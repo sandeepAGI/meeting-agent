@@ -81,6 +81,11 @@ export interface ElectronAPI {
     regenerate: (summaryId: string) => Promise<{ success: boolean; summaryId?: string; error?: string }>
     listSummaries: (meetingId?: string) => Promise<{ success: boolean; summaries?: MeetingSummary[]; error?: string }>
   }
+
+  // Database queries
+  database: {
+    getRecordingsWithTranscripts: (limit?: number) => Promise<{ success: boolean; recordings?: any[]; error?: string }>
+  }
 }
 
 export interface M365AuthState {

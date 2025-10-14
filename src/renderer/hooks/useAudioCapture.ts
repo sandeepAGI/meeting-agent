@@ -24,6 +24,7 @@ export interface AudioCaptureState {
 
 export interface AudioCaptureActions {
   handleInitialize: () => Promise<void>
+  handleDeinitialize: () => Promise<void>
   handleMicrophoneToggle: (enabled: boolean) => Promise<void>
   handleStartRecording: () => Promise<void>
   handleStopRecording: () => Promise<{ filePath: string | null }>
@@ -122,6 +123,35 @@ export function useAudioCapture() {
       const message = err instanceof Error ? err.message : 'Failed to initialize audio'
       setError(message)
       console.error('Initialization error:', err)
+    } finally {
+      setIsInitializing(false)
+    }
+  }
+
+  const handleDeinitialize = async () => {
+    setError(null)
+    setIsInitializing(true)
+
+    try {
+      if (!audioServiceRef.current) {
+        throw new Error('Audio service not available')
+      }
+
+      // Stop audio capture
+      await audioServiceRef.current.stopCapture()
+
+      // Reset all state
+      setIsInitialized(false)
+      setIsCaptureActive(false)
+      setAudioLevel(null)
+      setHasMicrophone(false)
+      setDuration(0)
+
+      console.log('Audio capture deinitialized successfully')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to stop audio capture'
+      setError(message)
+      console.error('Deinitialization error:', err)
     } finally {
       setIsInitializing(false)
     }
@@ -240,6 +270,7 @@ export function useAudioCapture() {
 
   const actions: AudioCaptureActions = {
     handleInitialize,
+    handleDeinitialize,
     handleMicrophoneToggle,
     handleStartRecording,
     handleStopRecording,

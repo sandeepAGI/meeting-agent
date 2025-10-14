@@ -23,6 +23,7 @@ interface RecordingControlsProps {
   onMicrophoneToggle: (enabled: boolean) => void
   onStartRecording: () => void
   onStopRecording: () => void
+  onDeinitialize: () => void
   onTranscribe: () => void
   onTranscribeOnly: () => void
 }
@@ -42,6 +43,7 @@ export function RecordingControls({
   onMicrophoneToggle,
   onStartRecording,
   onStopRecording,
+  onDeinitialize,
   onTranscribe,
   onTranscribeOnly,
 }: RecordingControlsProps) {
@@ -101,6 +103,23 @@ export function RecordingControls({
         onTranscribe={onTranscribe}
         onTranscribeOnly={onTranscribeOnly}
       />
+
+      {/* Stop Audio Capture button - only show when not recording */}
+      {!isRecording && (
+        <div style={{ marginTop: '16px' }}>
+          <button
+            onClick={onDeinitialize}
+            disabled={isInitializing}
+            className="btn btn-secondary"
+            style={{ width: '100%' }}
+          >
+            ⏹️ Stop Audio Capture
+          </button>
+          <p style={{ fontSize: '12px', color: '#666', marginTop: '8px', textAlign: 'center' }}>
+            Stop capturing audio to free system resources
+          </p>
+        </div>
+      )}
 
       <div className="info">
         <p>

@@ -83,6 +83,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.invoke('meeting-intelligence-regenerate', summaryId),
     listSummaries: (meetingId?: string) =>
       ipcRenderer.invoke('meeting-intelligence-list-summaries', meetingId)
+  },
+
+  // Database queries
+  database: {
+    getRecordingsWithTranscripts: (limit?: number) =>
+      ipcRenderer.invoke('db-get-recordings-with-transcripts', limit)
   }
 })
 

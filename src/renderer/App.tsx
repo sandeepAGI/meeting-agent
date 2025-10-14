@@ -18,6 +18,7 @@ import { SummaryProcessing } from './components/SummaryProcessing'
 import { SummaryDisplay } from './components/SummaryDisplay'
 
 function App() {
+  console.log('[App] Component rendering...')
   const [error, setError] = useState<string | null>(null)
 
   // Audio capture hook
@@ -80,6 +81,7 @@ function App() {
                 onMicrophoneToggle={handleMicrophoneToggle}
                 onStartRecording={audioActions.handleStartRecording}
                 onStopRecording={handleStopRecording}
+                onDeinitialize={audioActions.handleDeinitialize}
                 onTranscribe={transcriptionActions.handleTranscribe}
                 onTranscribeOnly={transcriptionActions.handleTranscribeOnly}
               />
@@ -93,52 +95,52 @@ function App() {
               {transcriptionState.transcript && !transcriptionState.isTranscribing && (
                 <TranscriptDisplay transcript={transcriptionState.transcript} />
               )}
-
-              {/* Phase 2.1: M365 Authentication Section */}
-              <M365AuthSection />
-
-              {/* Phase 2.2: Calendar Section */}
-              <CalendarSection />
-
-              {/* Phase 2.3-3: Meeting Intelligence Section */}
-              <div className="meeting-intelligence-section">
-                <h2>Meeting Intelligence</h2>
-
-                {/* Step 1: Select Meeting */}
-                {!intelligenceState.summaryId && (
-                  <MeetingSelector
-                    onStartSummary={intelligenceActions.startSummary}
-                    isLoading={intelligenceState.isLoading}
-                  />
-                )}
-
-                {/* Step 2: Show Processing Status */}
-                {intelligenceState.summaryId && intelligenceState.status && !intelligenceState.summary && (
-                  <SummaryProcessing
-                    status={intelligenceState.status}
-                    onCancel={() => intelligenceActions.cancel(intelligenceState.summaryId!)}
-                  />
-                )}
-
-                {/* Step 3: Show Summary (when complete) */}
-                {intelligenceState.summary && (
-                  <SummaryDisplay
-                    summary={intelligenceState.summary}
-                    onUpdate={(updates) => intelligenceActions.updateSummary(intelligenceState.summaryId!, updates)}
-                    onRegenerate={() => intelligenceActions.regenerate(intelligenceState.summaryId!)}
-                    isUpdating={intelligenceState.isLoading}
-                  />
-                )}
-
-                {/* Error Display */}
-                {intelligenceState.error && (
-                  <div className="error-message intelligence-error">
-                    {intelligenceState.error}
-                  </div>
-                )}
-              </div>
             </>
           )}
+
+          {/* Phase 2.1: M365 Authentication Section - Always visible */}
+          <M365AuthSection />
+
+          {/* Phase 2.2: Calendar Section - Always visible */}
+          <CalendarSection />
+
+          {/* Phase 2.3-3: Meeting Intelligence Section - Always visible */}
+          <div className="meeting-intelligence-section">
+            <h2>Meeting Intelligence</h2>
+
+            {/* Step 1: Select Meeting */}
+            {!intelligenceState.summaryId && (
+              <MeetingSelector
+                onStartSummary={intelligenceActions.startSummary}
+                isLoading={intelligenceState.isLoading}
+              />
+            )}
+
+            {/* Step 2: Show Processing Status */}
+            {intelligenceState.summaryId && intelligenceState.status && !intelligenceState.summary && (
+              <SummaryProcessing
+                status={intelligenceState.status}
+                onCancel={() => intelligenceActions.cancel(intelligenceState.summaryId!)}
+              />
+            )}
+
+            {/* Step 3: Show Summary (when complete) */}
+            {intelligenceState.summary && (
+              <SummaryDisplay
+                summary={intelligenceState.summary}
+                onUpdate={(updates) => intelligenceActions.updateSummary(intelligenceState.summaryId!, updates)}
+                onRegenerate={() => intelligenceActions.regenerate(intelligenceState.summaryId!)}
+                isUpdating={intelligenceState.isLoading}
+              />
+            )}
+
+            {/* Error Display */}
+            {intelligenceState.error && (
+              <div className="error-message intelligence-error">
+                {intelligenceState.error}
+              </div>
+            )}
+          </div>
         </div>
       </main>
     </div>
