@@ -65,6 +65,24 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getTodaysMeetings: () => ipcRenderer.invoke('graph-get-todays-meetings'),
     getUpcomingMeetings: (minutesAhead?: number) => ipcRenderer.invoke('graph-get-upcoming-meetings', minutesAhead),
     getMeetingById: (eventId: string) => ipcRenderer.invoke('graph-get-meeting-by-id', eventId)
+  },
+
+  // Phase 2.3-3: Meeting Intelligence
+  meetingIntelligence: {
+    start: (meetingId: string, transcriptId: string) =>
+      ipcRenderer.invoke('meeting-intelligence-start', meetingId, transcriptId),
+    getStatus: (summaryId: string) =>
+      ipcRenderer.invoke('meeting-intelligence-get-status', summaryId),
+    getSummary: (summaryId: string) =>
+      ipcRenderer.invoke('meeting-intelligence-get-summary', summaryId),
+    updateSummary: (summaryId: string, updates: any) =>
+      ipcRenderer.invoke('meeting-intelligence-update-summary', summaryId, updates),
+    cancel: (summaryId: string) =>
+      ipcRenderer.invoke('meeting-intelligence-cancel', summaryId),
+    regenerate: (summaryId: string) =>
+      ipcRenderer.invoke('meeting-intelligence-regenerate', summaryId),
+    listSummaries: (meetingId?: string) =>
+      ipcRenderer.invoke('meeting-intelligence-list-summaries', meetingId)
   }
 })
 

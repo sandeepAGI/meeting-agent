@@ -1,6 +1,7 @@
 import type { TranscriptionOptions, TranscriptionProgress, TranscriptionResult } from './transcription'
 import type { DiarizationProgress, DiarizationResult } from './diarization'
 import type { MergedTranscript } from '../utils/mergeDiarization'
+import type { MeetingSummary, SummaryStatusDisplay, SpeakerMapping, ActionItem } from './meetingSummary'
 
 export interface TranscriptionWithDiarizationResult extends TranscriptionResult {
   merged: MergedTranscript | null
@@ -63,6 +64,22 @@ export interface ElectronAPI {
     getTodaysMeetings: () => Promise<{ success: boolean; meetings?: MeetingInfo[]; error?: string }>
     getUpcomingMeetings: (minutesAhead?: number) => Promise<{ success: boolean; meetings?: MeetingInfo[]; error?: string }>
     getMeetingById: (eventId: string) => Promise<{ success: boolean; meeting?: MeetingInfo; error?: string }>
+  }
+
+  // Phase 2.3-3: Meeting Intelligence
+  meetingIntelligence: {
+    start: (meetingId: string, transcriptId: string) => Promise<{ success: boolean; summaryId?: string; error?: string }>
+    getStatus: (summaryId: string) => Promise<{ success: boolean; status?: SummaryStatusDisplay; error?: string }>
+    getSummary: (summaryId: string) => Promise<{ success: boolean; summary?: MeetingSummary; error?: string }>
+    updateSummary: (summaryId: string, updates: {
+      summary?: string
+      speakers?: SpeakerMapping[]
+      actionItems?: ActionItem[]
+      keyDecisions?: string[]
+    }) => Promise<{ success: boolean; summary?: MeetingSummary; error?: string }>
+    cancel: (summaryId: string) => Promise<{ success: boolean; error?: string }>
+    regenerate: (summaryId: string) => Promise<{ success: boolean; summaryId?: string; error?: string }>
+    listSummaries: (meetingId?: string) => Promise<{ success: boolean; summaries?: MeetingSummary[]; error?: string }>
   }
 }
 
