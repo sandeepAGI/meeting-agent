@@ -18,9 +18,128 @@ export class EmailContextService {
   private graphClient: Client
   private db: DatabaseService
 
+  // Common stop words to filter out from meeting titles
+  private readonly STOP_WORDS = new Set([
+    'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from',
+    'has', 'he', 'in', 'is', 'it', 'its', 'of', 'on', 'that', 'the',
+    'to', 'was', 'will', 'with', 'meeting', 'call', 'sync', 'chat',
+    '1:1', '1-1', 'weekly', 'daily', 'monthly', 'catch', 'up', 'catchup'
+  ])
+
   constructor(graphClient: Client, db: DatabaseService) {
     this.graphClient = graphClient
     this.db = db
+  }
+
+  /**
+   * Extract meaningful keywords from meeting title
+   * Removes stop words, common meeting terms, and short words
+   *
+   * @param title Meeting title
+   * @returns Array of keywords (lowercase)
+   */
+  private extractKeywords(title: string): string[] {
+    if (!title) return []
+
+    // Normalize: lowercase, remove special chars, split on whitespace
+    const words = title
+      .toLowerCase()
+      .replace(/[^\w\s]/g, ' ') // Replace punctuation with spaces
+      .split(/\s+/)
+      .filter(word => word.length > 2) // Filter short words
+      .filter(word => !this.STOP_WORDS.has(word)) // Filter stop words
+
+    // Deduplicate
+    return [...new Set(words)]
+  }
+
+  /**
+   * Fetch topic-relevant emails with meeting participants
+   * Searches for emails matching BOTH participants AND topic keywords
+   *
+   * @param participantEmails Array of participant email addresses
+   * @param keywords Array of topic keywords to search for
+   * @param options Fetch options
+   * @returns Array of email contexts matching topic
+   */
+  async getTopicRelevantEmails(
+    participantEmails: string[],
+    keywords: string[],
+    options?: EmailFetchOptions
+  ): Promise<EmailContext[]> {
+    if (keywords.length === 0) return []
+
+    const opts = {
+      maxEmails: options?.maxEmails || 10,
+      maxBodyLength: options?.maxBodyLength || 2000,
+      includeBody: options?.includeBody !== false,
+      daysBack: options?.daysBack || 30
+    }
+
+    try {
+      // Build filter for participants
+      const participantFilters = participantEmails
+        .map((email) => `from/emailAddress/address eq '${email}' or recipients/any(r:r/emailAddress/address eq '${email}')`)
+        .join(' or ')
+
+      // Build filter for topic keywords in subject
+      // Search for ANY keyword in the subject line
+      const topicFilters = keywords
+        .map((keyword) => `contains(subject, '${keyword}')`)
+        .join(' or ')
+
+      // Date filter: last N days
+      const dateThreshold = new Date()
+      dateThreshold.setDate(dateThreshold.getDate() - opts.daysBack)
+      const dateFilter = `receivedDateTime ge ${dateThreshold.toISOString()}`
+
+      // Combined filter: (participants) AND (topic keywords) AND (date)
+      const filter = `(${participantFilters}) and (${topicFilters}) and ${dateFilter}`
+
+      console.log(`[EmailContext] Topic search filter: participants=${participantEmails.length}, keywords=[${keywords.join(', ')}]`)
+
+      // Fetch emails
+      const response = await this.graphClient
+        .api('/me/messages')
+        .filter(filter)
+        .select('id,subject,from,toRecipients,receivedDateTime,bodyPreview,body,hasAttachments')
+        .orderby('receivedDateTime desc')
+        .top(opts.maxEmails)
+        .get()
+
+      const emails: EmailContext[] = response.value.map((email: any) => {
+        const body = opts.includeBody ? (email.body?.content || '') : ''
+        const truncatedBody = opts.includeBody
+          ? this.truncateBody(body, opts.maxBodyLength)
+          : ''
+
+        return {
+          id: email.id,
+          subject: email.subject || '(No subject)',
+          from: {
+            name: email.from?.emailAddress?.name || 'Unknown',
+            email: email.from?.emailAddress?.address || ''
+          },
+          to: (email.toRecipients || []).map((r: any) => ({
+            name: r.emailAddress?.name || 'Unknown',
+            email: r.emailAddress?.address || ''
+          })),
+          receivedDateTime: email.receivedDateTime,
+          bodyPreview: email.bodyPreview || '',
+          body: body,
+          truncatedBody: truncatedBody,
+          hasAttachments: email.hasAttachments || false
+        }
+      })
+
+      console.log(`[EmailContext] Fetched ${emails.length} topic-relevant emails`)
+
+      return emails
+    } catch (error: any) {
+      console.error('[EmailContext] Failed to fetch topic-relevant emails:', error)
+      // Don't throw - graceful degradation
+      return []
+    }
   }
 
   /**
@@ -200,31 +319,71 @@ ${email.truncatedBody}
 
   /**
    * Fetch or get cached emails for meeting participants
+   * Uses TWO-TIER SEARCH STRATEGY:
+   * 1. Prioritize emails matching BOTH participants AND topic keywords
+   * 2. Fill remainder with any emails from participants (up to maxEmails)
+   *
    * Uses cache if available and not expired
    *
    * @param meetingId Meeting ID (for caching)
    * @param participantEmails Participant email addresses
    * @param options Fetch options
-   * @returns Array of email contexts
+   * @param meetingTitle Optional meeting title for topic-based search
+   * @returns Array of email contexts (topic-relevant first, then participants)
    */
   async getEmailsForMeeting(
     meetingId: string,
     participantEmails: string[],
-    options?: EmailFetchOptions
+    options?: EmailFetchOptions,
+    meetingTitle?: string
   ): Promise<EmailContext[]> {
     // Check cache first
     const cached = await this.getCachedEmails(meetingId)
     if (cached) {
-      console.log(`Using cached emails for meeting ${meetingId}`)
+      console.log(`[EmailContext] Using cached emails for meeting ${meetingId}`)
       return cached
     }
 
-    // Fetch fresh emails
-    console.log(`Fetching fresh emails for meeting ${meetingId}`)
-    const emails = await this.getRecentEmailsWithParticipants(
-      participantEmails,
-      options
-    )
+    const maxEmails = options?.maxEmails || 10
+    let emails: EmailContext[] = []
+
+    // TIER 1: Fetch topic-relevant emails (if meeting title provided)
+    if (meetingTitle) {
+      const keywords = this.extractKeywords(meetingTitle)
+
+      if (keywords.length > 0) {
+        console.log(`[EmailContext] TIER 1: Fetching topic-relevant emails for "${meetingTitle}" (keywords: ${keywords.join(', ')})`)
+
+        const topicEmails = await this.getTopicRelevantEmails(
+          participantEmails,
+          keywords,
+          { ...options, maxEmails }
+        )
+
+        emails.push(...topicEmails)
+        console.log(`[EmailContext] TIER 1: Found ${topicEmails.length} topic-relevant emails`)
+      }
+    }
+
+    // TIER 2: Fill remainder with participant-only emails
+    const remaining = maxEmails - emails.length
+    if (remaining > 0) {
+      console.log(`[EmailContext] TIER 2: Fetching ${remaining} additional participant emails`)
+
+      const participantEmails2 = await this.getRecentEmailsWithParticipants(
+        participantEmails,
+        { ...options, maxEmails: remaining }
+      )
+
+      // Deduplicate: only add emails not already in the list
+      const existingIds = new Set(emails.map(e => e.id))
+      const newEmails = participantEmails2.filter(e => !existingIds.has(e.id))
+
+      emails.push(...newEmails)
+      console.log(`[EmailContext] TIER 2: Added ${newEmails.length} additional emails (deduplicated)`)
+    }
+
+    console.log(`[EmailContext] Total emails fetched: ${emails.length} (topic-relevant: ${meetingTitle ? emails.filter((_, i) => i < maxEmails - remaining).length : 0}, participants: ${remaining > 0 ? emails.length - (maxEmails - remaining) : 0})`)
 
     // Cache for future use
     if (emails.length > 0) {

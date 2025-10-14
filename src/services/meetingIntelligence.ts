@@ -134,11 +134,13 @@ export class MeetingIntelligenceService {
         : []
       const participantEmails = attendees.map((a: any) => a.email)
 
-      // Fetch emails (with caching)
+      // Fetch emails (with caching and topic prioritization)
       try {
         const emails = await this.emailService.getEmailsForMeeting(
           meetingId,
-          participantEmails
+          participantEmails,
+          undefined, // Use default options
+          meeting.subject // Pass meeting title for topic-based search
         )
         emailsFormatted = this.emailService.formatEmailsForPrompt(emails)
       } catch (error) {

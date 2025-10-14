@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **EmailContextService - Two-Tier Email Search**:
+  - Enhanced email search to prioritize topic-relevant emails
+  - TIER 1: Fetch emails matching BOTH participants AND meeting keywords
+  - TIER 2: Fill remainder with participant-only emails (up to maxEmails)
+  - Keyword extraction from meeting titles (removes stop words, filters short words)
+  - Automatic deduplication between tiers
+  - Better context for AI summaries (relevant emails first)
+  - Example: Meeting titled "Q4 Budget Review" prioritizes emails containing "q4" or "budget"
+  - Backward compatible (falls back to participant-only if no meeting title provided)
+
 ### Planned
 - **Refactor Sprint 3**: Performance & portability (Phase 2+)
   - Generalize Python env discovery (Windows/Linux)

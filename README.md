@@ -64,7 +64,10 @@ Meeting Agent is a desktop application that:
 - **Export functionality**: Download as markdown + copy to clipboard
 - **Standalone recordings**: Works without calendar meetings
 - **Batch API integration** (50% cost savings)
-- **Email context fetching** with smart caching (7-day expiration)
+- **Two-tier email search**: Prioritizes topic-relevant emails for better AI context
+  - TIER 1: Emails matching meeting topic + participants
+  - TIER 2: All participant emails (fills remainder)
+- **Smart caching**: 7-day email context expiration
 - **SQLite database** for meeting persistence
 - **Adaptive polling** (5min → 30sec intervals)
 - **Background processing** (non-blocking)
@@ -79,6 +82,7 @@ Meeting Agent is a desktop application that:
 - 🗣️ **Speaker Identification**: AI-powered speaker mapping with meeting context
 - 📧 **M365 Integration**: Calendar context, email history, and attendee information
 - 🧠 **Two-Pass LLM Workflow**: Initial summary + validation for high accuracy
+- 💾 **Smart Email Search**: Two-tier search prioritizes topic-relevant emails for better context
 - 💾 **Smart Caching**: Email context caching reduces API calls
 - ✏️ **Edit Before Send** (Coming soon): Review and customize summaries
 - 💾 **Smart Storage** (Coming soon): Auto-delete audio after transcription
