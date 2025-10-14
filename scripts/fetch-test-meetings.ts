@@ -11,10 +11,19 @@
  *   tests/fixtures/real-meetings.json
  */
 
+import { config } from 'dotenv'
 import { Client } from '@microsoft/microsoft-graph-client'
 import { readFileSync, writeFileSync, mkdirSync } from 'fs'
-import { join } from 'path'
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
 import * as msal from '@azure/msal-node'
+
+// ES module __dirname equivalent
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+// Load environment variables from .env
+config()
 
 interface MeetingData {
   id: string

@@ -27,6 +27,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Fetches last 30 days of meetings from Microsoft Graph API
     - Auto-categorizes: Technical, Business, Generic, Edge Cases
     - Saves to `tests/fixtures/real-meetings.json` for testing
+  - Keyword extraction analysis script: `scripts/analyze-keyword-extraction.ts`
+    - Validates keyword extraction logic against real meeting titles
+    - Filters to meetings with >2 participants for realistic testing
+    - Replicates EmailContextService logic: stop words, short word filtering, deduplication
+    - Evaluates extraction quality: Good, Needs Review, Poor
+    - Provides summary statistics and examples for test case creation
   - 3-day execution plan with clear success criteria
   - Ensures critical email search functionality works correctly with real-world data
 

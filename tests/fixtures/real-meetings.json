@@ -1,0 +1,1217 @@
+{
+  "fetchedAt": "2025-10-14T20:56:16.783Z",
+  "totalMeetings": 52,
+  "categories": {
+    "technical": [],
+    "business": [
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADYmpolAAA=",
+        "subject": "Matrix (Lior, CEO, Ronen Sales) + Aileron Group (Sandeep, Gil )  - Introductions (Immediate and future opps)",
+        "startTime": "2025-10-06T12:30:00.0000000",
+        "endTime": "2025-10-06T13:00:00.0000000",
+        "organizer": {
+          "name": "Idan Keret",
+          "email": "IKeret@matrix-globalservices.com"
+        },
+        "attendees": [
+          {
+            "name": "Idan Keret",
+            "email": "IKeret@matrix-globalservices.com",
+            "type": "required"
+          },
+          {
+            "name": "Ronen Engler",
+            "email": "REngler@matrix-globalservices.com",
+            "type": "required"
+          },
+          {
+            "name": "Lior Blik (Matrix-IFS)",
+            "email": "lior.blik@matrix-ifs.com",
+            "type": "required"
+          },
+          {
+            "name": "Ronen Engler",
+            "email": "rengler@matrix.co.il",
+            "type": "required"
+          },
+          {
+            "name": "Sandeep Mangaraj",
+            "email": "Sandeep@aileron-group.com",
+            "type": "required"
+          },
+          {
+            "name": "Lior Blik",
+            "email": "lblik@matrix-globalservices.com",
+            "type": "required"
+          },
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADNSSeJAAA=",
+        "subject": "HOLD: Aileron Executive Briefing - A smarter path to Generative AI in your business",
+        "startTime": "2025-09-25T19:00:00.0000000",
+        "endTime": "2025-09-25T20:15:00.0000000",
+        "organizer": {
+          "name": "Emily Nordquist",
+          "email": "ENordquist@c200.org"
+        },
+        "attendees": [
+          {
+            "name": "Emily Nordquist",
+            "email": "ENordquist@c200.org",
+            "type": "required"
+          },
+          {
+            "name": "Sandeep Mangaraj",
+            "email": "Sandeep@aileron-group.com",
+            "type": "required"
+          },
+          {
+            "name": "Internal Calendar",
+            "email": "internalcalendar@c200.org",
+            "type": "required"
+          },
+          {
+            "name": "Sarah Ringwood",
+            "email": "SRingwood@c200.org",
+            "type": "required"
+          }
+        ],
+        "location": "",
+        "isOnlineMeeting": false
+      }
+    ],
+    "generic": [
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgFRAAgI3gnrc_wAAEYAAAAAa100r2ST30Sy4ixTFV6zDgcAROjL7hQPAEamyxKNPiI8HwAAAAABDQAAROjL7hQPAEamyxKNPiI8HwAAVDi3dAAAEA==",
+        "subject": "The Aileron Compass Hour - members only monthly call!",
+        "startTime": "2025-10-13T20:30:00.0000000",
+        "endTime": "2025-10-13T21:30:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADZnpnvAAA=",
+        "subject": "Paul, Sandeep Sync",
+        "startTime": "2025-10-10T20:00:00.0000000",
+        "endTime": "2025-10-10T20:30:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "pamirand@microsoft.com",
+            "email": "pamirand@microsoft.com",
+            "type": "required"
+          }
+        ],
+        "location": "TBD, Near 11TS",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgFRAAgI3geP9K7AAEYAAAAAa100r2ST30Sy4ixTFV6zDgcAROjL7hQPAEamyxKNPiI8HwAAAAABDQAAROjL7hQPAEamyxKNPiI8HwAAd563OAAAEA==",
+        "subject": "Weekly Sync with Trish",
+        "startTime": "2025-10-10T15:00:00.0000000",
+        "endTime": "2025-10-10T15:30:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          },
+          {
+            "name": "Trish@bearvirtual.com",
+            "email": "Trish@bearvirtual.com",
+            "type": "required"
+          },
+          {
+            "name": "Trish Roberts",
+            "email": "hello@bearvirtual.com",
+            "type": "optional"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADZnpnzAAA=",
+        "subject": "Catch up with Sandeep <> Amrit ",
+        "startTime": "2025-10-09T20:00:00.0000000",
+        "endTime": "2025-10-09T21:00:00.0000000",
+        "organizer": {
+          "name": "Amrit Kang",
+          "email": "akang@londonandpartners.com"
+        },
+        "attendees": [
+          {
+            "name": "Amrit Kang",
+            "email": "akang@londonandpartners.com",
+            "type": "required"
+          },
+          {
+            "name": "Sandeep Mangaraj",
+            "email": "Sandeep@aileron-group.com",
+            "type": "required"
+          }
+        ],
+        "location": "Bibble & Sip 253 W 51st",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADfAxQeAAA=",
+        "subject": "Sync on NYL - follow up",
+        "startTime": "2025-10-09T18:00:00.0000000",
+        "endTime": "2025-10-09T18:30:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "ojaspatel",
+            "email": "ojaspatel@gmail.com",
+            "type": "required"
+          },
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADdPsatAAA=",
+        "subject": "Theo, Sandeep Sync",
+        "startTime": "2025-10-09T17:15:00.0000000",
+        "endTime": "2025-10-09T18:00:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "Theodora Lau",
+            "email": "theo@unconventionalventures.com",
+            "type": "required"
+          }
+        ],
+        "location": "Theo to call Sandeep",
+        "isOnlineMeeting": false
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgFRAAgI3gU0dXGAAEYAAAAAa100r2ST30Sy4ixTFV6zDgcAROjL7hQPAEamyxKNPiI8HwAAAAABDQAAROjL7hQPAEamyxKNPiI8HwAAaMjvQgAAEA==",
+        "subject": "Sync on Weekly GTM ",
+        "startTime": "2025-10-07T19:30:00.0000000",
+        "endTime": "2025-10-07T20:00:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADdPsasAAA=",
+        "subject": "Sync #3",
+        "startTime": "2025-10-07T18:00:00.0000000",
+        "endTime": "2025-10-07T19:00:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          },
+          {
+            "name": "ojaspatel",
+            "email": "ojaspatel@gmail.com",
+            "type": "required"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADbkE5LAAA=",
+        "subject": "NYPL Sync #2",
+        "startTime": "2025-10-06T18:00:00.0000000",
+        "endTime": "2025-10-06T19:15:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "ojaspatel",
+            "email": "ojaspatel@gmail.com",
+            "type": "required"
+          },
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgFRAAgI3gIPy8qAAEYAAAAAa100r2ST30Sy4ixTFV6zDgcAROjL7hQPAEamyxKNPiI8HwAAAAABDQAAROjL7hQPAEamyxKNPiI8HwAAd563OAAAEA==",
+        "subject": "Weekly Sync with Trish",
+        "startTime": "2025-10-03T15:00:00.0000000",
+        "endTime": "2025-10-03T15:30:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          },
+          {
+            "name": "Trish@bearvirtual.com",
+            "email": "Trish@bearvirtual.com",
+            "type": "required"
+          },
+          {
+            "name": "Trish Roberts",
+            "email": "hello@bearvirtual.com",
+            "type": "optional"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADZnpnsAAA=",
+        "subject": "Sync on kissing frogs",
+        "startTime": "2025-10-01T19:00:00.0000000",
+        "endTime": "2025-10-01T19:30:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgFRAAgI3f_0TI1AAEYAAAAAa100r2ST30Sy4ixTFV6zDgcAROjL7hQPAEamyxKNPiI8HwAAAAABDQAAROjL7hQPAEamyxKNPiI8HwAAaMjvQgAAEA==",
+        "subject": "Sync on Weekly GTM ",
+        "startTime": "2025-09-30T19:30:00.0000000",
+        "endTime": "2025-09-30T20:00:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADWUO4rAAA=",
+        "subject": "Sync with Nemo on GTM push",
+        "startTime": "2025-09-29T20:00:00.0000000",
+        "endTime": "2025-09-29T20:30:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "Nemo Yang",
+            "email": "nemo@withcortex.ai",
+            "type": "required"
+          },
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADWUO4pAAA=",
+        "subject": "Sync with Ojas on NYL",
+        "startTime": "2025-09-29T17:30:00.0000000",
+        "endTime": "2025-09-29T18:00:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "Ojas Patel",
+            "email": "ojaspatel@gmail.com",
+            "type": "required"
+          },
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADYmpojAAA=",
+        "subject": "Sync #2 - as needed",
+        "startTime": "2025-09-29T15:30:00.0000000",
+        "endTime": "2025-09-29T16:30:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADQLOsZAAA=",
+        "subject": "Sync with Barth",
+        "startTime": "2025-09-29T14:30:00.0000000",
+        "endTime": "2025-09-29T15:00:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "Bazyluk, Barth",
+            "email": "barth.bazyluk@mizuhogroup.com",
+            "type": "required"
+          }
+        ],
+        "location": "Blue Bottle, Rink Level, Rockefeller Center",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADYmpoiAAA=",
+        "subject": "Sync #1 ",
+        "startTime": "2025-09-29T13:30:00.0000000",
+        "endTime": "2025-09-29T14:15:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADKMQgyAAA=",
+        "subject": "SANDEEP (AILERON) + IDAN (MATRIX) - CATCH UP LUNCH",
+        "startTime": "2025-09-26T17:00:00.0000000",
+        "endTime": "2025-09-26T18:00:00.0000000",
+        "organizer": {
+          "name": "Idan Keret",
+          "email": "idan@matrix-ifs.com"
+        },
+        "attendees": [
+          {
+            "name": "Idan Keret",
+            "email": "idan@matrix-ifs.com",
+            "type": "required"
+          },
+          {
+            "name": "Sandeep Mangaraj",
+            "email": "Sandeep@aileron-group.com",
+            "type": "required"
+          }
+        ],
+        "location": "K'Far (97 Wythe Ave, Brooklyn, NY  11249-1922)",
+        "isOnlineMeeting": false
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgFRAAgI3fyPouZAAEYAAAAAa100r2ST30Sy4ixTFV6zDgcAROjL7hQPAEamyxKNPiI8HwAAAAABDQAAROjL7hQPAEamyxKNPiI8HwAAd563OAAAEA==",
+        "subject": "Weekly Sync with Trish",
+        "startTime": "2025-09-26T15:00:00.0000000",
+        "endTime": "2025-09-26T15:30:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          },
+          {
+            "name": "Trish@bearvirtual.com",
+            "email": "Trish@bearvirtual.com",
+            "type": "required"
+          },
+          {
+            "name": "Trish Roberts",
+            "email": "hello@bearvirtual.com",
+            "type": "optional"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADNSSeIAAA=",
+        "subject": "Sync with Terry on Feedback + GenAI Exercise",
+        "startTime": "2025-09-26T14:00:00.0000000",
+        "endTime": "2025-09-26T15:00:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "Terry Hurley",
+            "email": "tmh@umn.edu",
+            "type": "required"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgFRAAgI3fo0I6kAAEYAAAAAa100r2ST30Sy4ixTFV6zDgcAROjL7hQPAEamyxKNPiI8HwAAAAABDQAAROjL7hQPAEamyxKNPiI8HwAAaMjvQgAAEA==",
+        "subject": "Sync on Weekly GTM ",
+        "startTime": "2025-09-23T19:30:00.0000000",
+        "endTime": "2025-09-23T20:00:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADQ-ikzAAA=",
+        "subject": "Union Square - Coffee  Sandeep & Alejandro",
+        "startTime": "2025-09-19T20:00:00.0000000",
+        "endTime": "2025-09-19T21:00:00.0000000",
+        "organizer": {
+          "name": "Alejandro Swaby",
+          "email": "alejandro.swaby@dev.pro"
+        },
+        "attendees": [
+          {
+            "name": "Alejandro Swaby",
+            "email": "alejandro.swaby@dev.pro",
+            "type": "required"
+          },
+          {
+            "name": "Doug Caviness",
+            "email": "doug.caviness@dev.pro",
+            "type": "optional"
+          },
+          {
+            "name": "Sandeep Mangaraj",
+            "email": "Sandeep@aileron-group.com",
+            "type": "required"
+          }
+        ],
+        "location": "Devoción, 25 E 20th St, New York, NY 10003, USA",
+        "isOnlineMeeting": false
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADQ-ikyAAA=",
+        "subject": "Sync on C200",
+        "startTime": "2025-09-18T19:00:00.0000000",
+        "endTime": "2025-09-18T19:45:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "brigidmcd7",
+            "email": "brigidmcd7@gmail.com",
+            "type": "required"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADNSSeKAAA=",
+        "subject": "Sync with Stuart",
+        "startTime": "2025-09-17T18:00:00.0000000",
+        "endTime": "2025-09-17T18:30:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "starmy@aerospike.com",
+            "email": "starmy@aerospike.com",
+            "type": "required"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADQLOsbAAA=",
+        "subject": "Sync with Melissa on c200",
+        "startTime": "2025-09-17T14:30:00.0000000",
+        "endTime": "2025-09-17T15:00:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "Melissa Witbeck",
+            "email": "mmwitbeck@gmail.com",
+            "type": "required"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgFRAAgI3fcPegIAAEYAAAAAa100r2ST30Sy4ixTFV6zDgcAROjL7hQPAEamyxKNPiI8HwAAAAABDQAAROjL7hQPAEamyxKNPiI8HwAAd563OAAAEA==",
+        "subject": "Weekly Sync with Trish",
+        "startTime": "2025-09-16T15:00:00.0000000",
+        "endTime": "2025-09-16T15:30:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "Trish Roberts",
+            "email": "hello@bearvirtual.com",
+            "type": "optional"
+          },
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          },
+          {
+            "name": "Trish@bearvirtual.com",
+            "email": "Trish@bearvirtual.com",
+            "type": "required"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADNSSeLAAA=",
+        "subject": "Sync on LI Campaign",
+        "startTime": "2025-09-15T19:00:00.0000000",
+        "endTime": "2025-09-15T19:30:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      }
+    ],
+    "edgeCases": [
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADfAxQdAAA=",
+        "subject": "Sandeep Mangaraj and Dash Bibhudatta",
+        "startTime": "2025-10-10T18:00:00.0000000",
+        "endTime": "2025-10-10T18:30:00.0000000",
+        "organizer": {
+          "name": "Dash Bibhudatta",
+          "email": "dash@agenticprivatemarkets.ai"
+        },
+        "attendees": [
+          {
+            "name": "Dash Bibhudatta",
+            "email": "dash@agenticprivatemarkets.ai",
+            "type": "required"
+          },
+          {
+            "name": "Sandeep Mangaraj",
+            "email": "Sandeep@aileron-group.com",
+            "type": "required"
+          }
+        ],
+        "location": "Google Meet (instructions in description); https://meet.google.com/mbc-dwoa-ynd",
+        "isOnlineMeeting": false
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADNSSeNAAA=",
+        "subject": "Michelle Bruno - 25 minutes meeting",
+        "startTime": "2025-10-10T17:00:00.0000000",
+        "endTime": "2025-10-10T17:25:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "Michelle Bruno",
+            "email": "Michelle.bruno@rsfsocialfinance.org",
+            "type": "required"
+          }
+        ],
+        "location": "",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADZnpntAAA=",
+        "subject": "Dev.Pro CTO Happy Hour in New York on October 9 at 5 PM",
+        "startTime": "2025-10-09T21:00:00.0000000",
+        "endTime": "2025-10-09T22:00:00.0000000",
+        "organizer": {
+          "name": "CTO Dinner",
+          "email": "cto.dinner@dev.pro"
+        },
+        "attendees": [
+          {
+            "name": "CTO Dinner",
+            "email": "cto.dinner@dev.pro",
+            "type": "required"
+          },
+          {
+            "name": "Sandeep Mangaraj",
+            "email": "Sandeep@aileron-group.com",
+            "type": "required"
+          }
+        ],
+        "location": "",
+        "isOnlineMeeting": false
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADfAxQcAAA=",
+        "subject": "Aileron and ECA direct brainstorming. ",
+        "startTime": "2025-10-09T19:00:00.0000000",
+        "endTime": "2025-10-09T19:45:00.0000000",
+        "organizer": {
+          "name": "Gil Brodnitz",
+          "email": "gil@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          },
+          {
+            "name": "richard@calleca.com",
+            "email": "richard@calleca.com",
+            "type": "required"
+          },
+          {
+            "name": "Sandeep Mangaraj",
+            "email": "Sandeep@aileron-group.com",
+            "type": "required"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADZnpnxAAA=",
+        "subject": "Meeting with Aileron Group/NYL ",
+        "startTime": "2025-10-08T13:00:00.0000000",
+        "endTime": "2025-10-08T13:45:00.0000000",
+        "organizer": {
+          "name": "Hendry, Thomas A. (Tom)",
+          "email": "thomas_hendry@newyorklife.com"
+        },
+        "attendees": [
+          {
+            "name": "Hendry, Thomas A. (Tom)",
+            "email": "thomas_hendry@newyorklife.com",
+            "type": "required"
+          },
+          {
+            "name": "Donohue, Robert P. (Bob)",
+            "email": "Robert_Donohue@newyorklife.com",
+            "type": "required"
+          },
+          {
+            "name": "Kula, Michael",
+            "email": "michael_kula@newyorklife.com",
+            "type": "required"
+          },
+          {
+            "name": "Brazel, Christopher A. (Chris)",
+            "email": "CHRIS_BRAZEL@NewYorkLife.com",
+            "type": "required"
+          },
+          {
+            "name": "Sandeep Mangaraj",
+            "email": "Sandeep@aileron-group.com",
+            "type": "required"
+          },
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          },
+          {
+            "name": "ojaspatel",
+            "email": "ojaspatel@gmail.com",
+            "type": "required"
+          },
+          {
+            "name": "Black, Arnyse J.",
+            "email": "ARNYSE_J_BLACK@NewYorkLife.com",
+            "type": "optional"
+          }
+        ],
+        "location": "NYL Insurance 51 Madison Avenue. Tom's conf room:  Outside guests: please check in with Security upon arrival. A teams link has been added in case anyone is offsite. ; HMO-9S-RM941",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgFRAAgI3gLY9jRAAEYAAAAAa100r2ST30Sy4ixTFV6zDgcAROjL7hQPAEamyxKNPiI8HwAAAAABDQAAROjL7hQPAEamyxKNPiI8HwAAhNo7HwAAEA==",
+        "subject": "Repatha",
+        "startTime": "2025-10-04T14:00:00.0000000",
+        "endTime": "2025-10-04T14:15:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [],
+        "location": "",
+        "isOnlineMeeting": false
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADZnpnuAAA=",
+        "subject": "Sandeep Mangaraj and Dash Bibhudatta",
+        "startTime": "2025-10-03T17:00:00.0000000",
+        "endTime": "2025-10-03T17:30:00.0000000",
+        "organizer": {
+          "name": "Dash Bibhudatta",
+          "email": "dash@agenticprivatemarkets.ai"
+        },
+        "attendees": [
+          {
+            "name": "Dash Bibhudatta",
+            "email": "dash@agenticprivatemarkets.ai",
+            "type": "required"
+          },
+          {
+            "name": "Sandeep Mangaraj",
+            "email": "Sandeep@aileron-group.com",
+            "type": "required"
+          }
+        ],
+        "location": "Google Meet (instructions in description); https://meet.google.com/gaj-gxkk-fzs",
+        "isOnlineMeeting": false
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADZnpnyAAA=",
+        "subject": "Prep #1 for NYL",
+        "startTime": "2025-10-03T13:00:00.0000000",
+        "endTime": "2025-10-03T13:45:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "Ojas Patel",
+            "email": "ojaspatel@gmail.com",
+            "type": "required"
+          },
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADGbEA3AAA=",
+        "subject": "Cancel CANVA",
+        "startTime": "2025-10-01T13:00:00.0000000",
+        "endTime": "2025-10-01T13:30:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [],
+        "location": "",
+        "isOnlineMeeting": false
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADUJEBzAAA=",
+        "subject": "AI interview call with Aileron Group and Dev.Pro",
+        "startTime": "2025-09-30T15:30:00.0000000",
+        "endTime": "2025-09-30T16:30:00.0000000",
+        "organizer": {
+          "name": "Doug Caviness",
+          "email": "doug.caviness@dev.pro"
+        },
+        "attendees": [
+          {
+            "name": "Doug Caviness",
+            "email": "doug.caviness@dev.pro",
+            "type": "required"
+          },
+          {
+            "name": "Irina Melnichenko",
+            "email": "irina.melnichenko@dev.pro",
+            "type": "required"
+          },
+          {
+            "name": "Yurii Buchchenko",
+            "email": "yurii.buchchenko@dev.pro",
+            "type": "required"
+          },
+          {
+            "name": "Maxim Kortunov",
+            "email": "maxim@dev.pro",
+            "type": "required"
+          },
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          },
+          {
+            "name": "Sandeep Mangaraj",
+            "email": "Sandeep@aileron-group.com",
+            "type": "required"
+          }
+        ],
+        "location": "https://meet.google.com/sit-eatv-izi",
+        "isOnlineMeeting": false
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADQLOscAAA=",
+        "subject": "Sandeep Mangaraj and Karan Bhalla",
+        "startTime": "2025-09-30T13:00:00.0000000",
+        "endTime": "2025-09-30T14:00:00.0000000",
+        "organizer": {
+          "name": "Karan Bhalla",
+          "email": "karan@aivantage.global"
+        },
+        "attendees": [
+          {
+            "name": "Karan Bhalla",
+            "email": "karan@aivantage.global",
+            "type": "required"
+          },
+          {
+            "name": "Sandeep Mangaraj",
+            "email": "Sandeep@aileron-group.com",
+            "type": "required"
+          },
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          }
+        ],
+        "location": "https://calendly.com/events/5d741fc0-8ddd-4919-baa3-29436ee5940c/microsoft_teams",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADYmpokAAA=",
+        "subject": "Call Frank",
+        "startTime": "2025-09-29T20:30:00.0000000",
+        "endTime": "2025-09-29T21:00:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [],
+        "location": "",
+        "isOnlineMeeting": false
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADYmpohAAA=",
+        "subject": "Note back to C200",
+        "startTime": "2025-09-29T18:30:00.0000000",
+        "endTime": "2025-09-29T19:00:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [],
+        "location": "",
+        "isOnlineMeeting": false
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADXILs7AAA=",
+        "subject": "Complete follow up note for Terry",
+        "startTime": "2025-09-29T17:00:00.0000000",
+        "endTime": "2025-09-29T17:30:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [],
+        "location": "",
+        "isOnlineMeeting": false
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADWUO4qAAA=",
+        "subject": "Scheduled Visit to Equinox Sports Club New York",
+        "startTime": "2025-09-25T21:00:00.0000000",
+        "endTime": "2025-09-25T21:30:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [],
+        "location": "160 Columbus Ave, New York, NY 10023",
+        "isOnlineMeeting": false
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADLP6kwAAA=",
+        "subject": "CONFIRMED: Hold for c200",
+        "startTime": "2025-09-25T19:00:00.0000000",
+        "endTime": "2025-09-25T20:30:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          },
+          {
+            "name": "brigidmcd7",
+            "email": "brigidmcd7@gmail.com",
+            "type": "optional"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgFRAAgI3ffYpGvAAEYAAAAAa100r2ST30Sy4ixTFV6zDgcAROjL7hQPAEamyxKNPiI8HwAAAAABDQAAROjL7hQPAEamyxKNPiI8HwAAhNo7HwAAEA==",
+        "subject": "Repatha",
+        "startTime": "2025-09-20T14:00:00.0000000",
+        "endTime": "2025-09-20T14:15:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [],
+        "location": "",
+        "isOnlineMeeting": false
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAAC89elwAAA=",
+        "subject": "OOO (Chicago - Drop off Diya @UChicago)",
+        "startTime": "2025-09-20T00:00:00.0000000",
+        "endTime": "2025-09-25T00:00:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [],
+        "location": "",
+        "isOnlineMeeting": false
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADQ-ikxAAA=",
+        "subject": "Aileron Group+ HubSpot",
+        "startTime": "2025-09-18T17:30:00.0000000",
+        "endTime": "2025-09-18T18:00:00.0000000",
+        "organizer": {
+          "name": "Clare Gorman",
+          "email": "cgorman@hubspot.com"
+        },
+        "attendees": [
+          {
+            "name": "Clare Gorman",
+            "email": "cgorman@hubspot.com",
+            "type": "required"
+          },
+          {
+            "name": "Sandeep Mangaraj",
+            "email": "Sandeep@aileron-group.com",
+            "type": "required"
+          }
+        ],
+        "location": "https://hubspot.zoom.us/j/91817540812?pwd=Yo6lMY8SPblJt2GoCxZHXhbEbsNby7.1",
+        "isOnlineMeeting": false
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADO-iXgAAA=",
+        "subject": "Ojas Patel - 25 minutes meeting",
+        "startTime": "2025-09-17T15:30:00.0000000",
+        "endTime": "2025-09-17T15:55:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "Ojas Patel",
+            "email": "ojaspatel@gmail.com",
+            "type": "required"
+          }
+        ],
+        "location": "",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADPrIXKAAA=",
+        "subject": "DevPro Note",
+        "startTime": "2025-09-16T14:00:00.0000000",
+        "endTime": "2025-09-16T14:30:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          }
+        ],
+        "location": "Microsoft Teams Meeting",
+        "isOnlineMeeting": true
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADNSSeFAAA=",
+        "subject": "Finovate/Happy Hour Regroup ",
+        "startTime": "2025-09-16T12:30:00.0000000",
+        "endTime": "2025-09-16T13:00:00.0000000",
+        "organizer": {
+          "name": "Thomas Thompson",
+          "email": "tth@ciklum.com"
+        },
+        "attendees": [
+          {
+            "name": "Thomas Thompson",
+            "email": "tth@ciklum.com",
+            "type": "required"
+          },
+          {
+            "name": "vijk",
+            "email": "vijk@ciklum.com",
+            "type": "required"
+          },
+          {
+            "name": "Arjun Ahlawat",
+            "email": "arah@ciklum.com",
+            "type": "required"
+          },
+          {
+            "name": "Gil Brodnitz",
+            "email": "gil@aileron-group.com",
+            "type": "required"
+          },
+          {
+            "name": "Sandeep Mangaraj",
+            "email": "Sandeep@aileron-group.com",
+            "type": "required"
+          },
+          {
+            "name": "Sathishkumar Soundararajan",
+            "email": "saso@ciklum.com",
+            "type": "optional"
+          },
+          {
+            "name": "Anusha Yomahesh",
+            "email": "ayom@ciklum.com",
+            "type": "required"
+          }
+        ],
+        "location": "",
+        "isOnlineMeeting": false
+      },
+      {
+        "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADO-iXhAAA=",
+        "subject": "Proposal to Infinicept",
+        "startTime": "2025-09-15T13:00:00.0000000",
+        "endTime": "2025-09-15T13:30:00.0000000",
+        "organizer": {
+          "name": "Sandeep Mangaraj",
+          "email": "Sandeep@aileron-group.com"
+        },
+        "attendees": [],
+        "location": "",
+        "isOnlineMeeting": false
+      }
+    ]
+  }
+}
