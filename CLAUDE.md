@@ -313,6 +313,16 @@ afplay <file>  # macOS
 - [ ] Test error case → Returns error message
 - [ ] Check console logs → No unexpected errors
 
+#### **Email Search (Phase 2.3-3):**
+- See `docs/testing/email-search-test-plan.md` for comprehensive test plan
+- [ ] Keyword extraction works correctly (unit tests)
+- [ ] TIER 1 prioritizes topic-relevant emails
+- [ ] TIER 2 fills remainder with participant emails
+- [ ] No duplicate emails between tiers
+- [ ] Emails correctly formatted in LLM prompts
+- [ ] Cache working correctly (7-day expiration)
+- [ ] Real-world validation with actual calendar meetings
+
 ### When to Skip Manual Testing
 
 **Only skip Level 3 if:**
