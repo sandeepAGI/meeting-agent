@@ -4,9 +4,9 @@ AI-powered meeting transcription and summarization tool for macOS.
 
 ## Status
 
-**Current Version**: 0.3.0-alpha - Phase 2.3-3 Backend Complete ✅
+**Current Version**: 0.3.1 - Phase 2.3-3 UI Components Complete ✅
 
-This project is in active development. Phases 0-2.2 are complete (audio capture, transcription, speaker diarization, M365 integration, calendar context), and Phase 2.3-3 backend is complete (LLM-based meeting intelligence infrastructure). See [CHANGELOG.md](./CHANGELOG.md) for version history and [docs/planning/roadmap.md](./docs/planning/roadmap.md) for the full development plan.
+This project is in active development. Phases 0-2.2 are complete (audio capture, transcription, speaker diarization, M365 integration, calendar context), and Phase 2.3-3 is complete (LLM-based meeting intelligence backend + UI components). See [CHANGELOG.md](./CHANGELOG.md) for version history and [docs/planning/roadmap.md](./docs/planning/roadmap.md) for the full development plan.
 
 ## Overview
 
@@ -16,10 +16,11 @@ Meeting Agent is a desktop application that:
 - ✅ **Transcribes audio locally** using OpenAI Whisper (free, runs on your machine)
 - ✅ **Identifies speakers** using pyannote.audio speaker diarization
 - ✅ **Integrates with Microsoft 365** for meeting context, calendar, and email
-- 🚧 **Generates AI summaries** with speaker identification and action items using Claude API (Backend complete, UI in progress)
-- 🔜 **Provides an editor** to review and customize summaries before sending (Phase 4)
+- ✅ **Generates AI summaries** with speaker identification and action items using Claude API (Backend + UI complete)
+- ✅ **Provides export** to save summaries as markdown files with clipboard copy
+- 🔜 **Enhanced editor** to customize summaries before distribution (Phase 4)
 
-## What Works Now (v0.3.0-alpha)
+## What Works Now (v0.3.1)
 
 ### Audio Capture
 - Native system audio capture (no virtual drivers required!)
@@ -28,6 +29,7 @@ Meeting Agent is a desktop application that:
 - 16kHz mono WAV output (Whisper-compatible)
 - **Auto-save every 5 minutes** during recording
 - Prevents memory exhaustion for long meetings (60+ minutes)
+- **Stop Audio Capture** button to free system resources
 
 ### Recording Announcement
 - **Automatic announcement** when recording starts
@@ -50,11 +52,17 @@ Meeting Agent is a desktop application that:
 - **Today's calendar meetings** with attendees, times, and join links
 - **Automatic token refresh** for seamless authentication
 - Visual indicators for active/upcoming meetings
+- **Always accessible** (no audio initialization required)
 
-### Meeting Intelligence Backend (Phase 2.3-3)
+### Meeting Intelligence (Phase 2.3-3 Complete)
+- **Recording Browser**: Visual selection from past recordings with transcript previews
 - **Two-pass LLM workflow** for high-quality summaries
   - Pass 1: Speaker identification + initial summary
   - Pass 2: Validation and refinement
+- **Real-time status display** during batch processing
+- **Summary Display**: Speaker mappings, action items, key decisions
+- **Export functionality**: Download as markdown + copy to clipboard
+- **Standalone recordings**: Works without calendar meetings
 - **Batch API integration** (50% cost savings)
 - **Email context fetching** with smart caching (7-day expiration)
 - **SQLite database** for meeting persistence
@@ -283,8 +291,8 @@ meeting-agent/
 ## Known Limitations
 
 1. **macOS Only**: Currently requires macOS 12.3+ for native audio loopback
-2. **Backend Only (Phase 2.3-3)**: Meeting intelligence UI components are in development
-3. **Batch Processing Latency**: Summaries take 30-60 minutes to generate (due to 50% cost savings)
+2. **Batch Processing Latency**: Summaries take 30-60 minutes to generate (due to 50% cost savings)
+3. **Manual Testing Pending**: End-to-end workflow needs user testing and validation
 4. **English-Focused**: Multi-language support planned for Phase 7
 
 ## Roadmap
@@ -326,13 +334,13 @@ meeting-agent/
 - Meeting attendees and metadata
 - Join links and location info
 
-### 🚧 Phase 2.3-3: Meeting Intelligence (Backend Complete)
+### ✅ Phase 2.3-3: Meeting Intelligence (2025-10-14)
 - Two-pass LLM workflow for summaries
 - Batch API integration (50% cost savings)
 - Email context fetching with smart caching
 - SQLite database persistence
 - Background async processing
-- **UI components in development**
+- **UI components complete** (recording browser, summary display, export)
 
 ### 📅 Phase 4: GUI Development
 - Meeting list UI
@@ -379,10 +387,10 @@ MIT License - See LICENSE file
 
 ---
 
-**Current Phase**: Phase 2.3-3 Backend Complete ✅ (Audio + Transcription + Diarization + M365 + Calendar + LLM Intelligence Backend)
+**Current Phase**: Phase 2.3-3 UI Components Complete ✅ (Audio + Transcription + Diarization + M365 + Calendar + LLM Intelligence Backend + UI)
 
-**Next Milestone**: Phase 2.3-3 UI - Meeting Intelligence Components
+**Next Milestone**: Manual testing and Phase 2.3-3 completion review
 
-**Last Updated**: 2025-01-14
+**Last Updated**: 2025-10-14
 
 **Built with**: Claude Code (Sonnet 4.5) 🤖

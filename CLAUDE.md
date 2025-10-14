@@ -8,8 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Current Status
 
-**Version**: 0.3.0-alpha (Phase 2.3-3 Backend Complete ✅)
-**Last Updated**: 2025-01-14
+**Version**: 0.3.1 (Phase 2.3-3 UI Components Complete ✅)
+**Last Updated**: 2025-10-14
 
 **What Works Now**:
 - ✅ Native system audio + microphone capture (no virtual drivers)
@@ -22,10 +22,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ✅ Microsoft 365 authentication with OAuth2 and secure token storage
 - ✅ Today's calendar meetings display with attendees and meeting details
 - ✅ Meeting intelligence backend (two-pass LLM workflow, email context, database, batch processing)
+- ✅ Meeting intelligence UI (recording browser, summary display, export functionality)
+- ✅ Standalone recording support (no calendar meeting required)
+- ✅ Stop audio capture button (free system resources when done)
 
-**Next Phase**: Phase 2.3-3 UI - Meeting Intelligence Components (MeetingSelector, SummaryProcessing, SummaryDisplay)
+**Next Phase**: Manual testing and Phase 2.3-3 completion review
 
 ### Recent Updates
+**Phase 2.3-3 UI Components & UX Improvements (October 2025)**:
+- ✅ **MeetingSelector**: Visual recording browser with transcript previews
+- ✅ **SummaryProcessing**: Real-time status display during batch processing
+- ✅ **SummaryDisplay**: Complete summary view with speaker mappings, action items, decisions
+- ✅ **Export Feature**: Permanent button that downloads markdown + copies to clipboard
+- ✅ **Stop Audio Capture**: Deinitialize button to free system resources
+- ✅ **App Restructuring**: Meeting Intelligence accessible without audio initialization
+- ✅ **Standalone Recordings**: Support for recordings without calendar meetings
+- ✅ **Bug Fixes**: API key authentication, TypeScript errors, database schema updates
+- ⏸️ **Next**: Manual testing and final phase review
+
 **Phase 2.3-3 Backend Implementation (January 2025)**:
 - ✅ **Complete backend infrastructure** for intelligent meeting summarization
 - ✅ **DatabaseService**: SQLite with 7 tables (meetings, recordings, transcripts, diarization_results, meeting_summaries, batch_jobs, email_context_cache)
@@ -37,7 +51,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ✅ **7 IPC Handlers**: Complete main ↔ renderer communication layer
 - ✅ **Background Processing**: Non-blocking async workflow with database persistence
 - ✅ **Cost**: $0.09 per 60-min meeting (96% savings vs cloud alternatives)
-- 📅 **Next**: UI components (MeetingSelector, SummaryProcessing, SummaryDisplay)
 
 **Phase 2.2 (Calendar & Meeting Context)**:
 - ✅ Microsoft Graph API service for calendar operations
@@ -571,8 +584,8 @@ EMAIL_CONTEXT_MAX_COUNT=10
 ## Known Limitations
 
 1. **macOS 12.3+ only** (for now) - Windows/Linux support available via electron-audio-loopback but not tested
-2. **Backend only (Phase 2.3-3)** - Meeting intelligence UI components are in development
-3. **Batch processing latency** - Summaries take 30-60 minutes to generate (tradeoff for 50% cost savings)
+2. **Batch processing latency** - Summaries take 30-60 minutes to generate (tradeoff for 50% cost savings)
+3. **Manual testing pending** - End-to-end workflow needs user testing and validation
 
 ---
 
@@ -637,9 +650,9 @@ MIT License - See LICENSE file
 
 ---
 
-**Current Status**: Phase 2.3-3 Backend Complete ✅ (Audio + Transcription + Diarization + GPU Acceleration + M365 Auth + Calendar + LLM Intelligence Backend)
-**Next Milestone**: Phase 2.3-3 UI - Meeting Intelligence Components
-**Last Updated**: 2025-01-14
+**Current Status**: Phase 2.3-3 UI Components Complete ✅ (Audio + Transcription + Diarization + GPU Acceleration + M365 Auth + Calendar + LLM Intelligence Backend + UI)
+**Next Milestone**: Manual testing and Phase 2.3-3 completion review
+**Last Updated**: 2025-10-14
 **Built with**: Claude Code (Sonnet 4.5) 🤖
 
 ---

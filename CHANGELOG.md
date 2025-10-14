@@ -12,11 +12,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Generalize Python env discovery (Windows/Linux)
   - Real-time mono downmix (eliminate ffmpeg preprocessing)
   - Warm Python worker (instant subsequent diarizations)
-- **Phase 2.3-3**: UI Components (remaining)
-  - Meeting selection from calendar UI
-  - Summary processing status display
-  - Summary viewer with editing capability
-  - Integration into App.tsx
 - Phase 4: GUI Development (meeting list, summary editor)
 - Phase 5: Email Distribution (send summaries via M365)
 - Phase 6: Data Management (SQLite, storage quotas)
@@ -28,6 +23,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Documentation
 - Added `docs/planning/REFACTOR-PLAN.md` - Systematic refactoring roadmap based on code review
 - See `REFACTOR-CODEX.md` for detailed analysis
+
+---
+
+## [0.3.1] - 2025-10-14
+
+### Phase 2.3-3: UI Components & UX Improvements
+
+#### Added
+- **SummaryDisplay Export Feature**:
+  - "💾 Export" button permanently visible in summary header
+  - Downloads summary as markdown file (`meeting-summary-YYYY-MM-DD.md`)
+  - Includes all data: summary text, speaker mappings, action items, key decisions, metadata
+  - Automatically copies to clipboard for easy sharing
+  - No need to enter edit mode to save
+
+- **Stop Audio Capture Feature**:
+  - "⏹️ Stop Audio Capture" button in RecordingControls
+  - Completely deinitializes audio system to free resources
+  - Returns to initialization screen
+  - Only visible when not recording (prevents accidental stop)
+  - Users can restart audio capture as needed
+
+- **Standalone Recording Support**:
+  - Database schema: `meeting_summaries.meeting_id` now nullable
+  - MeetingIntelligenceService supports recordings without calendar meetings
+  - Fallback values for recordings without meeting context
+  - Summary generation works with or without M365 calendar
+
+#### Changed
+- **App.tsx UI Restructuring**:
+  - Meeting Intelligence section now always visible (not gated behind audio init)
+  - M365 Auth section always accessible
+  - Calendar section always accessible
+  - Only audio recording controls require initialization
+  - Better app accessibility - users can browse summaries without initializing audio
+
+- **Build Configuration**:
+  - `electron.vite.config.ts` now copies prompt templates to dist folder
+  - Ensures `pass1-summary.txt` and `pass2-validation.txt` available in production
+
+#### Fixed
+- **TypeScript Errors**:
+  - Fixed API key null handling in `claudeBatch.ts:156` (fetch headers)
+  - Removed invalid `processingTime` property in `meetingIntelligence.ts:112`
+
+- **Authentication**:
+  - Added API key headers to Anthropic batch results fetch
+  - Prevents "Unauthorized" error when retrieving completed batches
+
+- **Database Schema**:
+  - `saveRecording()`: meeting_id now optional parameter
+  - `createSummary()`: meeting_id nullable for standalone recordings
+  - `gatherContext()`: Provides fallback meeting context when meeting_id null
+
+#### Testing
+- ✅ `npm run type-check` passes
+- ✅ `npm run build` succeeds
+- ⏸️ Manual testing required (export, deinitialize, standalone recordings)
+
+#### Impact
+- Users can export summaries without entering edit mode
+- Users can stop audio capture to free system resources
+- App accessible immediately on launch (no audio init required)
+- Standalone recordings fully supported (no calendar meeting required)
+- Better UX for meeting intelligence features
 
 ---
 
