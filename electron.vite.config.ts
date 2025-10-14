@@ -1,10 +1,20 @@
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
+import { copyFileSync, mkdirSync } from 'fs'
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin()],
+    plugins: [
+      externalizeDepsPlugin(),
+      {
+        name: 'copy-sql-files',
+        closeBundle() {
+          mkdirSync('dist/database', { recursive: true })
+          copyFileSync('src/database/schema.sql', 'dist/database/schema.sql')
+        }
+      }
+    ],
     build: {
       outDir: 'dist/main'
     }
