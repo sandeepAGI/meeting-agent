@@ -26,16 +26,21 @@
     "db:backup": "echo 'Database backup script will be added'"
   },
   "dependencies": {
+    "@azure/identity": "^4.13.0",
+    "@azure/msal-node": "^3.8.0",
+    "@microsoft/microsoft-graph-client": "^3.0.7",
     "dotenv": "^17.2.3",
     "electron": "^38.2.1",
     "electron-audio-loopback": "^1.0.6",
     "extendable-media-recorder": "^9.2.31",
     "extendable-media-recorder-wav-encoder": "^7.0.132",
+    "keytar": "^7.9.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.37.0",
+    "@microsoft/microsoft-graph-types": "^2.43.1",
     "@types/node": "^24.7.0",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.1",

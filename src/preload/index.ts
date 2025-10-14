@@ -49,6 +49,23 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Recording announcement
   playAnnouncement: (text: string) =>
     ipcRenderer.invoke('play-announcement', text),
+
+  // Phase 2.1: M365 Authentication
+  m365Auth: {
+    initialize: () => ipcRenderer.invoke('m365-auth-initialize'),
+    login: () => ipcRenderer.invoke('m365-auth-login'),
+    logout: () => ipcRenderer.invoke('m365-auth-logout'),
+    getState: () => ipcRenderer.invoke('m365-auth-get-state'),
+    getToken: () => ipcRenderer.invoke('m365-auth-get-token'),
+    refreshToken: () => ipcRenderer.invoke('m365-auth-refresh-token')
+  },
+
+  // Phase 2.2: Graph API Calendar
+  graphApi: {
+    getTodaysMeetings: () => ipcRenderer.invoke('graph-get-todays-meetings'),
+    getUpcomingMeetings: (minutesAhead?: number) => ipcRenderer.invoke('graph-get-upcoming-meetings', minutesAhead),
+    getMeetingById: (eventId: string) => ipcRenderer.invoke('graph-get-meeting-by-id', eventId)
+  }
 })
 
 export {}

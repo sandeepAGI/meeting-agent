@@ -22,8 +22,9 @@ Meeting Agent is being developed in 10 phases, from foundation to production-rea
 | R2 | Refactor Sprint 2 | ✅ Complete | 2025-10-13 |
 | 1.4 | Recording Announcement | ✅ Complete | 2025-10-13 |
 | 1.5 | Chunked Recording | ✅ Complete | 2025-10-13 |
+| 1.6 | GPU Acceleration | ✅ Complete | 2025-10-13 |
 | R3 | Refactor Sprint 3 | 📅 Planned | - |
-| 2.1 | M365 Authentication | 📅 Planned | - |
+| 2.1 | M365 Authentication | ✅ Complete | 2025-10-13 |
 | 2.2 | Calendar & Meeting Context | 📅 Planned | - |
 | 3 | AI Summarization | 📅 Planned | - |
 | 4 | GUI Development | 📅 Planned | - |
@@ -374,24 +375,56 @@ Time-based auto-save with chunking: Save audio chunks to disk every 5 minutes au
 
 ---
 
+## Phase 2.1: M365 Authentication ✅
+
+**Completed**: 2025-10-13
+
+### Goals
+Implement Microsoft 365 OAuth2 authentication with secure token storage.
+
+### Deliverables
+- ✅ MSAL Node integration for OAuth2
+- ✅ Interactive browser authentication flow
+- ✅ Secure token storage in system keychain (keytar)
+- ✅ Automatic token refresh
+- ✅ Login/logout UI component
+- ✅ Azure AD setup documentation
+
+### Key Decisions
+- ✅ Chosen: MSAL Node for OAuth2 (official Microsoft library)
+- ✅ Chosen: keytar for system keychain storage (secure, cross-platform)
+- ✅ Chosen: Public Client Flow (no client secret required for Electron apps)
+- ✅ Added: Browser-based interactive auth (opens system default browser)
+
+### Implementation Details
+- **Service**: `M365AuthService` with OAuth2 flow
+- **IPC Handlers**: `m365-auth-initialize`, `m365-auth-login`, `m365-auth-logout`, `m365-auth-get-state`, `m365-auth-get-token`, `m365-auth-refresh-token`
+- **UI Component**: `M365AuthSection` with user info display
+- **Token Storage**: System keychain via keytar (macOS Keychain, Windows Credential Manager, Linux Secret Service)
+- **Permissions Requested**:
+  - `User.Read` - Read user profile
+  - `Calendars.Read` - Read calendar events
+  - `Calendars.ReadWrite` - Create calendar events
+  - `Mail.Send` - Send emails
+  - `offline_access` - Refresh tokens
+
+### Success Criteria
+✅ User can log in with M365 account via browser
+✅ Tokens stored securely in system keychain
+✅ Automatic token refresh when expired
+✅ User profile displayed after login
+✅ Logout clears tokens and session
+
+### Documentation
+- Created: `docs/guides/azure-ad-setup.md` - Complete Azure AD setup guide
+- Updated: `docs/planning/roadmap.md` - Phase 2.1 completion
+- See: `CHANGELOG.md` v0.2.0
+
+---
+
 ## Phase 2: Microsoft Graph Integration 📅
 
-**Status**: Planned
-
-### Phase 2.1: Authentication
-
-**Goals**:
-- Authenticate with Microsoft 365
-- Store and refresh tokens securely
-
-**Tasks**:
-- [ ] Register application in Azure AD
-- [ ] Configure MSAL for Electron
-- [ ] Implement OAuth2 flow
-- [ ] Store tokens in system keychain
-- [ ] Build login/logout UI
-
-**Success Criteria**: User can log in with M365 account
+**Status**: In Progress (Phase 2.1 Complete)
 
 ---
 

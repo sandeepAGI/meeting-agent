@@ -8,8 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Current Status
 
-**Version**: 0.1.8 (Phase 1.6 Complete ✅)
-**Last Updated**: 2025-10-13
+**Version**: 0.2.1 (Phase 2.2 Complete ✅)
+**Last Updated**: 2025-10-14
 
 **What Works Now**:
 - ✅ Native system audio + microphone capture (no virtual drivers)
@@ -19,10 +19,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ✅ Recording announcement for transparency and consent
 - ✅ Chunked recording with auto-save (prevents data loss, memory exhaustion)
 - ✅ Metal GPU acceleration for both transcription AND diarization (3-10x speedup)
+- ✅ Microsoft 365 authentication with OAuth2 and secure token storage
+- ✅ Today's calendar meetings display with attendees and meeting details
 
-**Next Phase**: Phase 2.1 - Microsoft 365 Authentication
+**Next Phase**: Phase 2.3 - Speaker Name Mapping
 
 ### Recent Updates
+**Phase 2.2 (Calendar & Meeting Context)**:
+- ✅ Microsoft Graph API service for calendar operations
+- ✅ Fetch today's meetings with `/me/calendarview` endpoint
+- ✅ Display meetings with time, location, attendees, and join links
+- ✅ Proper timezone handling (UTC to local conversion)
+- ✅ Visual indicators for active/upcoming meetings
+- ✅ MSAL cache persistence for automatic token refresh
+- ✅ Calendar section with refresh functionality
+
+**Phase 2.1 (M365 Authentication)**:
+- ✅ OAuth2 authentication with MSAL Node
+- ✅ Secure token storage in system keychain (keytar)
+- ✅ Interactive browser login flow
+- ✅ Automatic token refresh with MSAL cache persistence
+- ✅ Login/logout UI with user profile display
+- ✅ Azure AD setup documentation
+
 **Phase 1.6 (GPU Acceleration)**:
 - ✅ Metal GPU acceleration for diarization (pyannote.audio)
 - ✅ Automatic device detection (Metal → CUDA → CPU fallback)
@@ -459,8 +478,11 @@ npm run format
 - **pyannote.audio** 3.1/4.x (pip) - Speaker diarization
 - **PyTorch** (Metal backend for macOS)
 
-### Future Services
-- **Microsoft Graph API** (M365 calendar/email, Phase 2)
+### Cloud Services
+- **Microsoft Graph API** (M365 calendar/email, Phase 2.1+)
+  - **@azure/msal-node** 3.8.0 - OAuth2 authentication
+  - **@microsoft/microsoft-graph-client** 3.0.7 - Graph API client
+  - **keytar** 7.9.0 - Secure token storage (system keychain)
 - **Anthropic Claude API** (summarization, Phase 3)
 
 ---
@@ -509,9 +531,8 @@ ANTHROPIC_API_KEY=sk-ant-xxx
 ## Known Limitations
 
 1. **macOS 12.3+ only** (for now) - Windows/Linux support available via electron-audio-loopback but not tested
-2. **Generic speaker labels** - "SPEAKER_00", "SPEAKER_01" (Phase 2 will map to actual names from calendar)
-3. **No M365 integration yet** - Calendar and email features coming in Phase 2
-4. **No summarization yet** - AI summaries coming in Phase 3
+2. **Generic speaker labels** - "SPEAKER_00", "SPEAKER_01" (Phase 2.3 will map to actual names from calendar attendees)
+3. **No AI summarization yet** - Meeting summaries with action items coming in Phase 3
 
 ---
 
@@ -568,9 +589,9 @@ MIT License - See LICENSE file
 
 ---
 
-**Current Status**: Phase 1.6 Complete ✅ (Audio + Transcription + Diarization + Announcement + Chunking + GPU Acceleration)
-**Next Milestone**: Phase 2.1 - Microsoft 365 Authentication
-**Last Updated**: 2025-10-13
+**Current Status**: Phase 2.2 Complete ✅ (Audio + Transcription + Diarization + GPU Acceleration + M365 Auth + Calendar)
+**Next Milestone**: Phase 2.3 - Speaker Name Mapping
+**Last Updated**: 2025-10-14
 **Built with**: Claude Code (Sonnet 4.5) 🤖
 
 ---

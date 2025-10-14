@@ -6,15 +6,30 @@ import dotenv from 'dotenv'
 import { initializeAudioLoopback } from './audioSetup'
 import { transcriptionService } from '../services/transcription'
 import { DiarizationService } from '../services/diarization'
+import { M365AuthService } from '../services/m365Auth'
+import { GraphApiService } from '../services/graphApi'
 import { mergeDiarizationWithTranscript } from '../utils/mergeDiarization'
 import type { TranscriptionOptions } from '../types/transcription'
 
 // Load environment variables from .env file
 dotenv.config()
 console.log('[ENV] HUGGINGFACE_TOKEN configured:', !!process.env.HUGGINGFACE_TOKEN)
+console.log('[ENV] AZURE_CLIENT_ID configured:', !!process.env.AZURE_CLIENT_ID)
 
 // Initialize diarization service
 const diarizationService = new DiarizationService()
+
+// Initialize M365 Auth service
+let m365AuthService: M365AuthService | null = null
+if (process.env.AZURE_CLIENT_ID) {
+  m365AuthService = new M365AuthService(
+    process.env.AZURE_CLIENT_ID,
+    process.env.AZURE_TENANT_ID || 'common'
+  )
+}
+
+// Initialize Graph API service
+const graphApiService = new GraphApiService()
 
 let mainWindow: BrowserWindow | null = null
 
@@ -354,6 +369,236 @@ ipcMain.handle('transcribe-and-diarize', async (event, audioFilePath: string, op
   }
 })
 
+// ===== Phase 2.1: M365 Authentication IPC Handlers =====
+
+// Initialize M365 Auth
+ipcMain.handle('m365-auth-initialize', async () => {
+  try {
+    if (!m365AuthService) {
+      return {
+        success: false,
+        error: 'Azure credentials not configured. Set AZURE_CLIENT_ID and AZURE_TENANT_ID in .env file.'
+      }
+    }
+
+    await m365AuthService.initialize()
+    const authState = m365AuthService.getAuthState()
+
+    return { success: true, authState }
+  } catch (error) {
+    console.error('[M365Auth] Initialize failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to initialize authentication'
+    }
+  }
+})
+
+// Login
+ipcMain.handle('m365-auth-login', async () => {
+  try {
+    if (!m365AuthService) {
+      return {
+        success: false,
+        error: 'Azure credentials not configured.'
+      }
+    }
+
+    const result = await m365AuthService.login(mainWindow || undefined)
+    const authState = m365AuthService.getAuthState()
+
+    return { success: true, authState }
+  } catch (error) {
+    console.error('[M365Auth] Login failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Login failed'
+    }
+  }
+})
+
+// Logout
+ipcMain.handle('m365-auth-logout', async () => {
+  try {
+    if (!m365AuthService) {
+      return {
+        success: false,
+        error: 'Azure credentials not configured.'
+      }
+    }
+
+    await m365AuthService.logout()
+    const authState = m365AuthService.getAuthState()
+
+    return { success: true, authState }
+  } catch (error) {
+    console.error('[M365Auth] Logout failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Logout failed'
+    }
+  }
+})
+
+// Get auth state
+ipcMain.handle('m365-auth-get-state', async () => {
+  try {
+    if (!m365AuthService) {
+      return {
+        success: false,
+        error: 'Azure credentials not configured.'
+      }
+    }
+
+    const authState = m365AuthService.getAuthState()
+    return { success: true, authState }
+  } catch (error) {
+    console.error('[M365Auth] Get state failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get auth state'
+    }
+  }
+})
+
+// Get access token
+ipcMain.handle('m365-auth-get-token', async () => {
+  try {
+    if (!m365AuthService) {
+      return {
+        success: false,
+        error: 'Azure credentials not configured.'
+      }
+    }
+
+    const accessToken = await m365AuthService.getAccessToken()
+    return { success: true, accessToken }
+  } catch (error) {
+    console.error('[M365Auth] Get token failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get access token'
+    }
+  }
+})
+
+// Refresh token
+ipcMain.handle('m365-auth-refresh-token', async () => {
+  try {
+    if (!m365AuthService) {
+      return {
+        success: false,
+        error: 'Azure credentials not configured.'
+      }
+    }
+
+    const accessToken = await m365AuthService.refreshToken()
+    return { success: true, accessToken }
+  } catch (error) {
+    console.error('[M365Auth] Refresh token failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to refresh token'
+    }
+  }
+})
+
+// ===== Phase 2.2: Graph API Calendar IPC Handlers =====
+
+// Get today's meetings
+ipcMain.handle('graph-get-todays-meetings', async () => {
+  try {
+    if (!m365AuthService) {
+      return {
+        success: false,
+        error: 'Azure credentials not configured.'
+      }
+    }
+
+    // Get access token
+    const accessToken = await m365AuthService.getAccessToken()
+
+    // Initialize Graph API client
+    graphApiService.initialize(accessToken)
+
+    // Fetch today's meetings
+    const meetings = await graphApiService.getTodaysMeetings()
+
+    return { success: true, meetings }
+  } catch (error) {
+    console.error('[GraphAPI] Get todays meetings failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch meetings'
+    }
+  }
+})
+
+// Get upcoming meetings
+ipcMain.handle('graph-get-upcoming-meetings', async (_event, minutesAhead: number = 15) => {
+  try {
+    if (!m365AuthService) {
+      return {
+        success: false,
+        error: 'Azure credentials not configured.'
+      }
+    }
+
+    // Get access token
+    const accessToken = await m365AuthService.getAccessToken()
+
+    // Initialize Graph API client
+    graphApiService.initialize(accessToken)
+
+    // Fetch upcoming meetings
+    const meetings = await graphApiService.getUpcomingMeetings(minutesAhead)
+
+    return { success: true, meetings }
+  } catch (error) {
+    console.error('[GraphAPI] Get upcoming meetings failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch upcoming meetings'
+    }
+  }
+})
+
+// Get meeting by ID
+ipcMain.handle('graph-get-meeting-by-id', async (_event, eventId: string) => {
+  try {
+    if (!m365AuthService) {
+      return {
+        success: false,
+        error: 'Azure credentials not configured.'
+      }
+    }
+
+    // Get access token
+    const accessToken = await m365AuthService.getAccessToken()
+
+    // Initialize Graph API client
+    graphApiService.initialize(accessToken)
+
+    // Fetch meeting
+    const meeting = await graphApiService.getMeetingById(eventId)
+
+    if (!meeting) {
+      return {
+        success: false,
+        error: `Meeting with ID ${eventId} not found`
+      }
+    }
+
+    return { success: true, meeting }
+  } catch (error) {
+    console.error(`[GraphAPI] Get meeting ${eventId} failed:`, error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch meeting'
+    }
+  }
+})
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -384,6 +629,16 @@ app.whenReady().then(async () => {
     await transcriptionService.initialize('base')
   } catch (error) {
     console.error('Failed to initialize Whisper:', error)
+  }
+
+  // Initialize M365 Auth service
+  if (m365AuthService) {
+    try {
+      await m365AuthService.initialize()
+      console.log('[M365Auth] Initialized successfully')
+    } catch (error) {
+      console.error('[M365Auth] Failed to initialize:', error)
+    }
   }
 
   createWindow()

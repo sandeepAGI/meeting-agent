@@ -47,6 +47,54 @@ export interface ElectronAPI {
 
   // Recording announcement
   playAnnouncement: (text: string) => Promise<{ success: boolean }>
+
+  // Phase 2.1: M365 Authentication
+  m365Auth: {
+    initialize: () => Promise<{ success: boolean; authState?: M365AuthState; error?: string }>
+    login: () => Promise<{ success: boolean; authState?: M365AuthState; error?: string }>
+    logout: () => Promise<{ success: boolean; authState?: M365AuthState; error?: string }>
+    getState: () => Promise<{ success: boolean; authState?: M365AuthState; error?: string }>
+    getToken: () => Promise<{ success: boolean; accessToken?: string; error?: string }>
+    refreshToken: () => Promise<{ success: boolean; accessToken?: string; error?: string }>
+  }
+
+  // Phase 2.2: Graph API Calendar
+  graphApi: {
+    getTodaysMeetings: () => Promise<{ success: boolean; meetings?: MeetingInfo[]; error?: string }>
+    getUpcomingMeetings: (minutesAhead?: number) => Promise<{ success: boolean; meetings?: MeetingInfo[]; error?: string }>
+    getMeetingById: (eventId: string) => Promise<{ success: boolean; meeting?: MeetingInfo; error?: string }>
+  }
+}
+
+export interface M365AuthState {
+  isAuthenticated: boolean
+  user: {
+    name: string
+    email: string
+    id: string
+  } | null
+  error: string | null
+}
+
+export interface MeetingAttendee {
+  name: string
+  email: string
+  type: 'required' | 'optional' | 'organizer'
+}
+
+export interface MeetingInfo {
+  id: string
+  subject: string
+  start: Date
+  end: Date
+  organizer: {
+    name: string
+    email: string
+  }
+  attendees: MeetingAttendee[]
+  isOnlineMeeting: boolean
+  onlineMeetingUrl?: string
+  location?: string
 }
 
 declare global {

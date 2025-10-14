@@ -10,6 +10,8 @@ import { InitSection } from './components/InitSection'
 import { RecordingControls } from './components/RecordingControls'
 import { TranscriptionProgress } from './components/TranscriptionProgress'
 import { TranscriptDisplay } from './components/TranscriptDisplay'
+import { M365AuthSection } from './components/M365AuthSection'
+import { CalendarSection } from './components/CalendarSection'
 
 function App() {
   const [error, setError] = useState<string | null>(null)
@@ -84,6 +86,12 @@ function App() {
               {transcriptionState.transcript && !transcriptionState.isTranscribing && (
                 <TranscriptDisplay transcript={transcriptionState.transcript} />
               )}
+
+              {/* Phase 2.1: M365 Authentication Section */}
+              <M365AuthSection />
+
+              {/* Phase 2.2: Calendar Section */}
+              <CalendarSection />
             </>
           )}
         </div>
