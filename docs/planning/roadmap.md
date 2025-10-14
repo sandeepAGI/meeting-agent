@@ -455,52 +455,310 @@ Implement Microsoft 365 OAuth2 authentication with secure token storage.
 
 ## Phase 2.3-3: LLM-Based Meeting Intelligence 📅
 
-**Status**: Planned
+**Status**: Planning Complete (Ready for Implementation)
+**Last Updated**: 2025-01-13
+**Estimated Duration**: ~29 hours (4-5 days)
 
-**Approach**: Combined phase leveraging LLM for both speaker identification and summarization
+### Overview
 
-**Goals**:
-- Use meeting context (attendees, emails) + transcript for intelligent analysis
-- LLM identifies speakers based on context, not naive positional mapping
-- Generate meeting summaries with properly identified speakers and action items
+Two-pass LLM workflow using Claude Batch API for speaker identification and intelligent meeting summarization. Integrates SQLite for persistence (moved from Phase 6).
 
-**Tasks**:
-- [ ] Meeting selection UI
-  - Date range filter (default: Today, option: Last 7 Days)
-  - Simple dropdown/list of meetings for selected range
-  - Manual selection (no automatic linking until Phase 6)
-- [ ] Email context fetching (last 10 emails with participants via Graph API)
-- [ ] Claude API integration (Anthropic SDK)
-- [ ] Prompt engineering for speaker identification
-  - Input: Meeting metadata + email context + transcript with SPEAKER_00 labels
-  - Output: Speaker mapping (SPEAKER_00 → John Smith) with confidence
-- [ ] Prompt engineering for meeting summarization
-  - Generate summary with identified speakers
-  - Extract action items with assignments
-  - Identify key decisions and follow-ups
-- [ ] UI for summary display and editing
-- [ ] Handle API errors and retries
+### Architecture Approach
 
-**Why This Approach**:
-- **More accurate**: LLM analyzes content, roles, topics to identify speakers
-- **Rich context**: Email history provides conversation patterns and participant dynamics
-- **Single workflow**: Speaker ID + summarization in one LLM call (more efficient)
-- **Better output**: "John suggested..." vs "SPEAKER_00 suggested..."
+**Two-Pass Batch Processing**:
+1. **Pass 1**: Initial speaker identification + comprehensive summary
+2. **Pass 2**: Validation and refinement (fact-checking against transcript)
+3. **Adaptive Polling**: Start at 5min intervals, decrease to 30sec as processing nears completion
+4. **User Editing**: Manual correction of final summary and speaker mappings
 
-**Estimated Cost**: ~$0.02-0.03 per 60-min meeting (Claude API for context + transcript)
+**Why Two-Pass**:
+- Higher quality output (self-correction mechanism)
+- Reduces hallucinations and speaker misidentification
+- Catches missed action items
+- Still 96% cheaper than cloud alternatives ($0.09 vs $2.50 per meeting)
 
-**Success Criteria**:
-- User selects meeting from calendar (Today or Last 7 Days)
-- System fetches meeting context (metadata + recent emails)
-- LLM correctly identifies 80%+ of speakers
-- Summary includes speaker names, action items, decisions
-- Editable summary before distribution (Phase 5)
+### Key Decisions
 
-**Future Enhancement (Phase 6)**:
-- Automatic meeting-recording linkage via database
+- ✅ **Batch API**: 50% cost savings, acceptable 30-60min wait time
+- ✅ **SQLite NOW**: Database persistence integrated in this phase (not Phase 6)
+- ✅ **Full Email Bodies**: Send full body with 2000 char limit per email (configurable)
+- ✅ **Combined Speaker ID + Summary**: Single LLM call per pass (more context)
+- ✅ **Regeneration**: Always restart from Pass 1 (simpler than Pass 2 only)
+- ✅ **Verified API**: Using Claude Sonnet 4.5 via Message Batches API
+
+### Cost Analysis (Verified with Batch API Pricing)
+
+**Per 60-minute meeting** (Claude Sonnet 4.5 Batch: $1.50 input / $7.50 output per million tokens):
+
+| Pass | Input Tokens | Output Tokens | Cost |
+|------|--------------|---------------|------|
+| Pass 1 | ~20K (context + emails + transcript) | ~2K (summary JSON) | $0.045 |
+| Pass 2 | ~22K (transcript + Pass 1 result) | ~2K (refined) | $0.048 |
+| **Total** | ~42K | ~4K | **$0.093** |
+
+**Monthly** (20 meetings): **$1.86/month**
+
+**Comparison**:
+- Azure Speech + GPT-4: ~$2.50/meeting = $50/month
+- **Our solution: $0.09/meeting = 96% savings** 💰
+
+### Implementation Components
+
+#### **1. Database Schema (SQLite)**
+
+**New Tables**:
+- `meetings` - Microsoft Graph calendar events
+- `recordings` - Audio file metadata
+- `transcripts` - Whisper transcription results
+- `diarization_results` - Pyannote speaker segments
+- `meeting_summaries` - LLM summaries (Pass 1, Pass 2, user edits)
+- `batch_jobs` - Anthropic batch job tracking
+- `email_context_cache` - Cached emails for faster regeneration
+
+**File**: `src/database/schema.sql`
+
+**Dependencies**:
+```bash
+npm install better-sqlite3
+npm install --save-dev @types/better-sqlite3
+```
+
+#### **2. Services**
+
+**ClaudeBatchService** (`src/services/claudeBatch.ts`):
+- Submit batch jobs to Anthropic Message Batches API
+- Adaptive polling: 5min → 3min → 1min → 30sec
+- Retrieve JSONL results
+- Cancel in-progress batches
+
+**EmailContextService** (`src/services/emailContext.ts`):
+- Fetch recent emails with meeting participants via Graph API
+- Full email body with 2000 char truncation (configurable)
+- Strip HTML, truncate at sentence boundaries
+- Cache results in database
+
+**MeetingIntelligenceService** (`src/services/meetingIntelligence.ts`):
+- Orchestrate two-pass workflow
+- Manage database persistence
+- Handle batch job lifecycle
+- Format prompts with context
+
+**DatabaseService** (`src/services/database.ts`):
+- SQLite wrapper with better-sqlite3
+- CRUD operations for all tables
+- Transaction support
+- Foreign key enforcement
+
+#### **3. Prompt Templates**
+
+**Pass 1** (`src/prompts/pass1-summary.txt`):
+- Input: Meeting metadata + email context + transcript with SPEAKER_XX labels
+- Output: Speaker mappings (with confidence + reasoning) + comprehensive summary + action items + key decisions
+- Format: JSON
+
+**Pass 2** (`src/prompts/pass2-validation.txt`):
+- Input: Original context + transcript + Pass 1 result
+- Output: Validated speakers + refined summary + corrections made
+- Focus: Fact-checking, completeness, accuracy
+- Format: JSON
+
+#### **4. UI Components**
+
+**MeetingSelector** (`src/renderer/components/MeetingSelector.tsx`):
+- Date range filter: "Today" | "Last 7 Days"
+- Meeting list with time, subject, attendees
+- "Generate Summary" button
+
+**SummaryProcessing** (`src/renderer/components/SummaryProcessing.tsx`):
+- Two-stage progress indicator
+- Status: "Pass 1: Generating..." (Next check: 5:00)
+- Status: "Pass 2: Validating..." (Next check: 3:00)
+- Elapsed time display
+- Cancel button
+
+**SummaryDisplay** (`src/renderer/components/SummaryDisplay.tsx`):
+- Speaker mappings with confidence indicators
+- Summary sections (editable)
+- Action items list (editable)
+- Key decisions
+- "Regenerate" button
+
+#### **5. Types**
+
+**New Type Files**:
+- `src/types/batchJob.ts` - Batch API interfaces
+- `src/types/meetingSummary.ts` - Summary, action items, speaker mappings
+- `src/types/emailContext.ts` - Email context structures
+
+### Implementation Tasks
+
+**Estimated breakdown**:
+
+- [ ] Database setup (3 hours)
+  - Create schema.sql
+  - Implement DatabaseService
+  - Test CRUD operations
+
+- [ ] Type definitions (1 hour)
+  - batchJob.ts, meetingSummary.ts, emailContext.ts
+
+- [ ] Claude Batch Service (4 hours)
+  - API integration with @anthropic-ai/sdk
+  - Adaptive polling logic
+  - JSONL result parsing
+
+- [ ] Email Context Service (2 hours)
+  - Graph API integration
+  - Body truncation logic
+  - Database caching
+
+- [ ] Prompt templates (2 hours)
+  - Pass 1: Speaker ID + summary
+  - Pass 2: Validation
+
+- [ ] Meeting Intelligence Service (4 hours)
+  - Two-pass orchestration
+  - Database persistence
+  - Error handling
+
+- [ ] UI Components (5 hours)
+  - MeetingSelector
+  - SummaryProcessing
+  - SummaryDisplay
+
+- [ ] IPC Handlers (2 hours)
+  - meeting-intelligence-start
+  - meeting-intelligence-status
+  - meeting-intelligence-cancel
+  - email-context-fetch
+
+- [ ] Documentation (2 hours)
+  - Create docs/technical/llm-intelligence.md
+  - Update CLAUDE.md
+  - Update README.md
+
+- [ ] Testing (4 hours)
+  - Unit tests for services
+  - Integration test: End-to-end workflow
+  - Manual testing with real meeting
+
+**Total**: ~29 hours (~4-5 days)
+
+### Success Criteria
+
+- ✅ User selects meeting from calendar (Today or Last 7 Days)
+- ✅ System fetches meeting context (metadata + recent emails with full bodies)
+- ✅ Pass 1 batch job completes within 60 minutes
+- ✅ Pass 2 batch job validates and refines summary
+- ✅ Speaker mappings shown with confidence levels
+- ✅ Summary includes speaker names, action items, key decisions
+- ✅ User can edit summary and speaker mappings
+- ✅ All data persisted to SQLite database
+- ✅ Regeneration restarts from Pass 1
+- ✅ Cost stays under $0.10 per 60-min meeting
+
+### Batch API Details (Verified 2025-01-13)
+
+**Official Documentation**: https://docs.anthropic.com/en/docs/build-with-claude/message-batches
+
+**Endpoints**:
+- Create: `POST /v1/messages/batches`
+- Retrieve: `GET /v1/messages/batches/{batch_id}`
+- Results: `GET /v1/messages/batches/{batch_id}/results`
+- Cancel: `POST /v1/messages/batches/{batch_id}/cancel`
+
+**Limits**:
+- Max 100,000 requests per batch
+- Max 256 MB batch size
+- Results stored for 29 days
+- Processing timeout: 24 hours
+- **Typical completion: <1 hour**
+
+**Supported Models**:
+- Claude Sonnet 4.5 (recommended)
+- Claude Opus 4.1
+- Claude Haiku 3.5
+
+**Pricing** (50% discount vs standard API):
+- Sonnet 4.5: $1.50 input / $7.50 output per million tokens
+
+### Dependencies
+
+**New**:
+```json
+{
+  "@anthropic-ai/sdk": "^0.30.0",
+  "better-sqlite3": "^11.0.0"
+}
+```
+
+**DevDependencies**:
+```json
+{
+  "@types/better-sqlite3": "^7.6.0"
+}
+```
+
+### Environment Variables
+
+**Add to `.env`**:
+```bash
+ANTHROPIC_API_KEY=sk-ant-xxx
+ANTHROPIC_MODEL=claude-sonnet-4.5-20241022
+EMAIL_BODY_MAX_LENGTH=2000  # Chars per email
+EMAIL_CONTEXT_MAX_COUNT=10  # Max emails to fetch
+```
+
+### Documentation
+
+**Primary**: `docs/technical/llm-intelligence.md` (to be created)
+
+**Updates Required**:
+- `docs/planning/roadmap.md` - This section ✅
+- `CLAUDE.md` - Update "Next Phase" status
+- `README.md` - Update when complete
+- `CHANGELOG.md` - Add v0.3.0 entry when complete
+
+### Testing Protocol
+
+**Level 1: Static Analysis**:
+```bash
+npm run type-check
+npm run build
+```
+
+**Level 2: Logic Review**:
+- Verify prompt templates
+- Check adaptive polling logic
+- Review database transactions
+- Validate error handling
+
+**Level 3: Manual Testing**:
+1. Test batch job submission
+2. Test adaptive polling (mock or real)
+3. Test Pass 1 → Pass 2 workflow
+4. Verify speaker mapping accuracy
+5. Test user editing and regeneration
+6. Test with 5-min, 30-min, 60-min meetings
+7. Verify database persistence
+8. Test error scenarios (API failure, timeout)
+
+### Known Limitations
+
+- Batch processing time: 30-60 minutes (acceptable tradeoff for 50% cost savings)
+- Email body limited to 2000 chars per email (configurable)
+- Speaker ID accuracy depends on context quality
+- Requires Microsoft 365 subscription for email context
+- SQLite limits concurrent writes (single writer at a time)
+
+### Future Enhancements (Post-Phase 2.3-3)
+
+- Real-time API option for urgent summaries (2x cost)
+- Extended date ranges (30 days, custom)
+- Automatic meeting-recording linkage
 - Search meetings by subject/attendee
-- Extended date ranges (30 days, custom range)
-- Remember which recording belongs to which meeting
+- Speaker voice profile training for improved ID
+- Multi-language support
 
 ---
 

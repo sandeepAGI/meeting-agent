@@ -22,9 +22,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ✅ Microsoft 365 authentication with OAuth2 and secure token storage
 - ✅ Today's calendar meetings display with attendees and meeting details
 
-**Next Phase**: Phase 2.3-3 - LLM-Based Meeting Intelligence (Combined)
+**Next Phase**: Phase 2.3-3 - LLM-Based Meeting Intelligence (Planning Complete, Ready for Implementation)
 
 ### Recent Updates
+**Phase 2.3-3 Planning (January 2025)**:
+- ✅ Two-pass LLM workflow designed (Pass 1: Initial summary, Pass 2: Validation)
+- ✅ Batch API integration planned (50% cost savings, 30-60min latency acceptable)
+- ✅ SQLite database schema created (moving from Phase 6 to Phase 2.3-3)
+- ✅ Email context service designed (full body with 2000 char limit)
+- ✅ Adaptive polling strategy defined (5min → 30sec intervals)
+- ✅ Technical documentation complete (`docs/technical/llm-intelligence.md`)
+- ✅ Cost analysis updated: $0.09 per meeting (96% savings vs cloud alternatives)
+- 📅 Implementation: ~29 hours estimated (4-5 days)
+
 **Phase 2.2 (Calendar & Meeting Context)**:
 - ✅ Microsoft Graph API service for calendar operations
 - ✅ Fetch today's meetings with `/me/calendarview` endpoint
@@ -561,15 +571,19 @@ ANTHROPIC_API_KEY=sk-ant-xxx
 - **Diarization**: $0.00 (local pyannote.audio)
 - **Total**: **$0.00 per meeting** 🎉
 
-### Future (Phase 3+)
-- **Summarization**: ~$0.015 per 60-min meeting (Claude API)
+### After Phase 2.3-3 (LLM Intelligence)
+- **Transcription**: $0.00 (local whisper.cpp)
+- **Diarization**: $0.00 (local pyannote.audio)
+- **Summarization (Two-Pass)**: ~$0.09 per 60-min meeting (Claude Batch API)
+  - Pass 1: $0.045 (speaker ID + initial summary)
+  - Pass 2: $0.048 (validation + refinement)
 - **Microsoft Graph API**: $0.00 (included with M365 subscription)
-- **Estimated Monthly** (20 meetings): ~$0.30
+- **Estimated Monthly** (20 meetings): ~$1.86
 
 ### Comparison
-- **Cloud-only alternative**: Azure Speech + Azure OpenAI = ~$2.50/meeting = $50/month
-- **Meeting Agent**: ~$0.015/meeting = $0.30/month
-- **Savings**: 99% 💰
+- **Cloud-only alternative**: Azure Speech + GPT-4 = ~$2.50/meeting = $50/month
+- **Meeting Agent**: ~$0.09/meeting = $1.86/month
+- **Savings**: 96% 💰
 
 ---
 
