@@ -38,13 +38,14 @@ export class EmailContextService {
     keywords: string[],
     options?: EmailFetchOptions
   ): Promise<EmailContext[]> {
-    if (keywords.length === 0) return []
+    // Early return if no participants or keywords
+    if (participantEmails.length === 0 || keywords.length === 0) return []
 
     const opts = {
-      maxEmails: options?.maxEmails || 10,
-      maxBodyLength: options?.maxBodyLength || 2000,
+      maxEmails: options?.maxEmails ?? 10,
+      maxBodyLength: options?.maxBodyLength ?? 2000,
       includeBody: options?.includeBody !== false,
-      daysBack: options?.daysBack || 30
+      daysBack: options?.daysBack ?? 30
     }
 
     try {
@@ -123,11 +124,14 @@ export class EmailContextService {
     participantEmails: string[],
     options?: EmailFetchOptions
   ): Promise<EmailContext[]> {
+    // Early return if no participants
+    if (participantEmails.length === 0) return []
+
     const opts = {
-      maxEmails: options?.maxEmails || 10,
-      maxBodyLength: options?.maxBodyLength || 2000,
+      maxEmails: options?.maxEmails ?? 10,
+      maxBodyLength: options?.maxBodyLength ?? 2000,
       includeBody: options?.includeBody !== false,
-      daysBack: options?.daysBack || 30
+      daysBack: options?.daysBack ?? 30
     }
 
     try {
@@ -315,7 +319,13 @@ ${email.truncatedBody}
       return cached
     }
 
-    const maxEmails = options?.maxEmails || 10
+    const maxEmails = options?.maxEmails ?? 10
+
+    // Early return if maxEmails is 0 (no need to make API calls)
+    if (maxEmails === 0) {
+      return []
+    }
+
     let emails: EmailContext[] = []
 
     // TIER 1: Fetch topic-relevant emails (if meeting title provided)

@@ -441,6 +441,70 @@ test('topic-relevant emails appear before generic emails in prompt', async () =>
 })
 ```
 
+#### TC-E2E-003: No Email Context Available (Calendar Metadata Only)
+**Purpose**: Validates graceful degradation when email search returns no results
+
+**Scenario**: This happens when:
+- New meeting with no prior email history
+- Participants haven't exchanged emails recently (beyond daysBack window)
+- Meeting title keywords don't match any email subjects
+- Both TIER 1 and TIER 2 return empty results
+
+```typescript
+test('generates summary with calendar metadata when no emails found', async () => {
+  const mockMeeting = {
+    id: 'meeting-1',
+    subject: 'Brand New Project Kickoff',  // No prior emails about this
+    attendees_json: JSON.stringify([
+      { name: 'Alice', email: 'alice@company.com' },
+      { name: 'Bob', email: 'bob@company.com' }
+    ]),
+    location: 'Conference Room A',
+    start_time: '2024-10-15T10:00:00Z',
+    end_time: '2024-10-15T11:00:00Z'
+  }
+
+  // Mock email service returns empty array (no emails found)
+  mockDb.getMeeting.mockReturnValue(mockMeeting)
+  mockEmailService.getEmailsForMeeting.mockResolvedValue([])
+
+  const summaryId = await intelligenceService.generateSummary(
+    'meeting-1',
+    'transcript-1'
+  )
+
+  // Verify the batch request was still created
+  expect(claudeService.submitBatch).toHaveBeenCalled()
+
+  const batchRequest = claudeService.submitBatch.mock.calls[0][0][0]
+  const prompt = batchRequest.params.messages[0].content
+
+  // Verify calendar metadata IS included
+  expect(prompt).toContain('Brand New Project Kickoff')  // Title
+  expect(prompt).toContain('Alice')  // Attendee
+  expect(prompt).toContain('Bob')    // Attendee
+
+  // Verify email context shows "unavailable" message
+  expect(prompt).toContain('No recent email context available')
+
+  // Verify it doesn't crash or throw errors
+  expect(summaryId).toBeDefined()
+})
+```
+
+**Expected Results**:
+- ✅ Summary generation continues (doesn't fail)
+- ✅ Calendar metadata (title, attendees, location, time) included in prompt
+- ✅ Email context section shows "No recent email context available"
+- ✅ No errors or exceptions thrown
+- ✅ Batch job created successfully
+
+**Why This Matters**:
+- **Graceful degradation**: System should work even without email context
+- **Realistic scenario**: Many meetings won't have relevant prior emails
+- **Prevents crashes**: Empty email array should be handled properly
+- **Still useful**: Calendar metadata + transcript alone can generate valuable summaries
+
 ---
 
 ## 5. Real-World Validation
@@ -548,7 +612,7 @@ test('makes exactly 2 Graph API calls (TIER 1 + TIER 2)', async () => {
 
 ### Phase 3: E2E Tests (Day 2)
 1. Set up full service mocking
-2. Implement prompt inclusion tests (TC-E2E-001 to TC-E2E-002)
+2. Implement prompt inclusion tests (TC-E2E-001 to TC-E2E-003)
 3. Run: `npm test -- promptInclusion.test.ts`
 4. Fix any failures
 
