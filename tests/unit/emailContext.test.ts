@@ -198,22 +198,22 @@ describe('Keyword Extraction Utility', () => {
 
   describe('TC-KW-005: Handle empty/null titles', () => {
     test('returns empty array for null title', () => {
-      const keywords = (service as any).extractKeywords(null)
+      const keywords = extractKeywords(null as any)
       expect(keywords).toEqual([])
     })
 
     test('returns empty array for undefined title', () => {
-      const keywords = (service as any).extractKeywords(undefined)
+      const keywords = extractKeywords(undefined as any)
       expect(keywords).toEqual([])
     })
 
     test('returns empty array for empty string', () => {
-      const keywords = (service as any).extractKeywords('')
+      const keywords = extractKeywords('')
       expect(keywords).toEqual([])
     })
 
     test('returns empty array for whitespace-only string', () => {
-      const keywords = (service as any).extractKeywords('   ')
+      const keywords = extractKeywords('   ')
       expect(keywords).toEqual([])
     })
 

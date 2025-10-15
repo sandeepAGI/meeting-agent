@@ -14,6 +14,7 @@
  * Includes:
  * - Articles (a, an, the)
  * - Prepositions (of, on, in, at, by, for, from, to, with)
+ * - Pronouns (he, it, its, your)
  * - Common verbs (are, be, has, is, was, will)
  * - Meeting-related terms (meeting, call, sync, chat)
  * - Frequency terms (weekly, daily, monthly)
@@ -45,6 +46,7 @@ export const STOP_WORDS = new Set([
   'was',
   'will',
   'with',
+  'your',
   'meeting',
   'call',
   'sync',
@@ -64,7 +66,7 @@ export const STOP_WORDS = new Set([
  *
  * Process:
  * 1. Convert to lowercase for case-insensitive matching
- * 2. Remove special characters and punctuation
+ * 2. Remove special characters and punctuation (Unicode-aware)
  * 3. Split into words
  * 4. Filter out short words (< 3 characters)
  * 5. Filter out stop words
@@ -74,6 +76,7 @@ export const STOP_WORDS = new Set([
  * - "Matrix + Aileron - Introductions" → ["matrix", "aileron", "introductions"]
  * - "Weekly Sync with Trish" → ["trish"]
  * - "Q4 Budget Review" → ["budget", "review"] (Q4 filtered as < 3 chars)
+ * - "Meeting with José in München" → ["josé", "münchen"] (Unicode preserved)
  *
  * @param title Meeting title
  * @returns Array of keywords (lowercase, deduplicated)
@@ -84,7 +87,7 @@ export function extractKeywords(title: string): string[] {
   // Normalize: lowercase, remove special chars, split on whitespace
   const words = title
     .toLowerCase()
-    .replace(/[^\w\s]/g, ' ') // Replace punctuation with spaces
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ') // Replace punctuation with spaces (Unicode-aware)
     .split(/\s+/)
     .filter((word) => word.length > 2) // Filter short words
     .filter((word) => !STOP_WORDS.has(word)) // Filter stop words
