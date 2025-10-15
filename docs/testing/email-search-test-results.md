@@ -8,14 +8,15 @@
 
 ## Executive Summary
 
-Comprehensive testing infrastructure created and validated for the critical email search functionality. Real-world data analysis confirms **keyword extraction is production-ready** with 58% "Good" results and 0% "Poor" failures.
+Comprehensive testing infrastructure created and validated for the critical email search functionality. Real-world data analysis confirms **keyword extraction is production-ready** with 58% "Good" results, 42% "Needs Review" (acceptable), and 0% "Poor" failures.
 
 ### Key Achievements
 
 ✅ **Real-world data collection**: 52 meetings fetched from Microsoft Graph API
-✅ **Keyword extraction validated**: 58% "Good", 0% "Poor" across 12 multi-participant meetings
+✅ **Keyword extraction validated**: 58% "Good" (7/12), 42% "Needs Review" (5/12), 0% "Poor" across multi-participant meetings
 ✅ **Unit tests created**: 40+ test cases covering all 7 test cases from test plan
-✅ **Analysis tools built**: Scripts for validation and future testing
+✅ **Analysis tools built**: Scripts using production code for validation
+✅ **Refactored to shared utility**: Tests validate actual production code (no duplication)
 
 ### Validation Metrics
 
@@ -23,11 +24,12 @@ Comprehensive testing infrastructure created and validated for the critical emai
 |--------|--------|--------|
 | **Total meetings fetched** | 52 | ✅ |
 | **Multi-participant meetings** | 12 (>2 participants) | ✅ |
-| **"Good" extraction quality** | 7/12 (58%) | ✅ |
+| **"Good" extraction quality** | 7/12 (58%) | ✅ High quality |
 | **"Needs Review" quality** | 5/12 (42%) | ✅ Acceptable |
 | **"Poor" extraction quality** | 0/12 (0%) | ✅ No failures |
 | **Average keywords per meeting** | 4.3 | ✅ |
 | **Unit test coverage** | 40+ test cases | ✅ |
+| **Tests use production code** | Yes (shared utility) | ✅ |
 
 ---
 
@@ -51,7 +53,8 @@ Comprehensive testing infrastructure created and validated for the critical emai
 ### Keyword Extraction Analysis
 
 **Script**: `scripts/analyze-keyword-extraction.ts`
-**Method**: Replicates `EmailContextService.extractKeywords()` logic
+**Method**: Uses production code from `src/utils/keywordExtraction.ts` (no duplication)
+**Execution**: `npx tsx scripts/analyze-keyword-extraction.ts`
 **Evaluation**: Manual quality assessment based on meeting context
 
 #### Analysis Results
@@ -68,7 +71,7 @@ Meetings with 1-2 keywords: 4
 Meetings with 3+ keywords: 8
 ```
 
-#### Good Examples (7 meetings)
+#### Good Examples (7 meetings - 58%)
 
 1. **"Matrix (Lior, CEO, Ronen Sales) + Aileron Group (Sandeep, Gil) - Introductions (Immediate and future opps)"**
    - **Keywords**: `[matrix, lior, ceo, ronen, sales, aileron, group, sandeep, gil, introductions, immediate, future, opps]` (13 keywords)

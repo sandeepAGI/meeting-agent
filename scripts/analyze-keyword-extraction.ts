@@ -5,25 +5,21 @@
  * from the fetched calendar data. Validates that our stop words,
  * short word filtering, and topic extraction work correctly.
  *
+ * IMPORTANT: Uses production code from src/utils/keywordExtraction.ts
+ * to ensure tests validate actual implementation (no duplication).
+ *
  * Usage:
- *   npx ts-node scripts/analyze-keyword-extraction.ts
+ *   npx tsx scripts/analyze-keyword-extraction.ts
  */
 
 import { readFileSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
+import { STOP_WORDS, extractKeywords } from '../src/utils/keywordExtraction.js'
 
 // ES module __dirname equivalent
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
-
-// Stop words (same as EmailContextService)
-const STOP_WORDS = new Set([
-  'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from',
-  'has', 'he', 'in', 'is', 'it', 'its', 'of', 'on', 'that', 'the',
-  'to', 'was', 'will', 'with', 'meeting', 'call', 'sync', 'chat',
-  '1:1', '1-1', 'weekly', 'daily', 'monthly', 'catch', 'up', 'catchup'
-])
 
 interface MeetingData {
   id: string
@@ -62,24 +58,6 @@ interface KeywordAnalysis {
   expectedTopics: string[]
   evaluation: 'Good' | 'Needs Review' | 'Poor'
   notes: string
-}
-
-/**
- * Extract keywords from meeting title (matching EmailContextService logic)
- */
-function extractKeywords(title: string): string[] {
-  if (!title) return []
-
-  // Normalize: lowercase, remove special chars, split on whitespace
-  const words = title
-    .toLowerCase()
-    .replace(/[^\w\s]/g, ' ') // Replace punctuation with spaces
-    .split(/\s+/)
-    .filter(word => word.length > 2) // Filter short words
-    .filter(word => !STOP_WORDS.has(word)) // Filter stop words
-
-  // Deduplicate
-  return [...new Set(words)]
 }
 
 /**

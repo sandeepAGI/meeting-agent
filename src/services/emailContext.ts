@@ -13,44 +13,15 @@ import type {
   FormattedEmailContext
 } from '../types'
 import { DatabaseService } from './database'
+import { extractKeywords } from '../utils/keywordExtraction'
 
 export class EmailContextService {
   private graphClient: Client
   private db: DatabaseService
 
-  // Common stop words to filter out from meeting titles
-  private readonly STOP_WORDS = new Set([
-    'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from',
-    'has', 'he', 'in', 'is', 'it', 'its', 'of', 'on', 'that', 'the',
-    'to', 'was', 'will', 'with', 'meeting', 'call', 'sync', 'chat',
-    '1:1', '1-1', 'weekly', 'daily', 'monthly', 'catch', 'up', 'catchup'
-  ])
-
   constructor(graphClient: Client, db: DatabaseService) {
     this.graphClient = graphClient
     this.db = db
-  }
-
-  /**
-   * Extract meaningful keywords from meeting title
-   * Removes stop words, common meeting terms, and short words
-   *
-   * @param title Meeting title
-   * @returns Array of keywords (lowercase)
-   */
-  private extractKeywords(title: string): string[] {
-    if (!title) return []
-
-    // Normalize: lowercase, remove special chars, split on whitespace
-    const words = title
-      .toLowerCase()
-      .replace(/[^\w\s]/g, ' ') // Replace punctuation with spaces
-      .split(/\s+/)
-      .filter(word => word.length > 2) // Filter short words
-      .filter(word => !this.STOP_WORDS.has(word)) // Filter stop words
-
-    // Deduplicate
-    return [...new Set(words)]
   }
 
   /**
@@ -349,7 +320,7 @@ ${email.truncatedBody}
 
     // TIER 1: Fetch topic-relevant emails (if meeting title provided)
     if (meetingTitle) {
-      const keywords = this.extractKeywords(meetingTitle)
+      const keywords = extractKeywords(meetingTitle)
 
       if (keywords.length > 0) {
         console.log(`[EmailContext] TIER 1: Fetching topic-relevant emails for "${meetingTitle}" (keywords: ${keywords.join(', ')})`)

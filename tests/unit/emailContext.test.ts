@@ -1,8 +1,11 @@
 /**
- * Unit Tests for EmailContextService - Keyword Extraction
+ * Unit Tests for Keyword Extraction
  *
  * Tests based on real meeting data from tests/fixtures/real-meetings.json
- * Validated with scripts/analyze-keyword-extraction.ts showing 58% "Good" results, 0% "Poor"
+ * Validated with scripts/analyze-keyword-extraction.ts
+ *
+ * IMPORTANT: Tests use actual production code from src/utils/keywordExtraction.ts
+ * to ensure validation of real implementation (no duplication).
  *
  * Test Coverage:
  * - TC-KW-001: Extract meaningful keywords from business meeting titles
@@ -14,20 +17,13 @@
  * - TC-KW-007: Handle special characters and punctuation
  */
 
-import { EmailContextService } from '../../src/services/emailContext'
+import { extractKeywords } from '../../src/utils/keywordExtraction'
 
-describe('EmailContextService - Keyword Extraction', () => {
-  let service: EmailContextService
-
-  beforeEach(() => {
-    // Initialize service (mock Graph API client for unit tests)
-    service = new EmailContextService({} as any, {} as any)
-  })
-
+describe('Keyword Extraction Utility', () => {
   describe('TC-KW-001: Extract meaningful keywords from business meeting titles', () => {
     test('extracts company names and meeting topics', () => {
       const title = 'Matrix (Lior, CEO, Ronen Sales) + Aileron Group (Sandeep, Gil) - Introductions (Immediate and future opps)'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       // Should extract key company names and topics
       expect(keywords).toContain('matrix')
@@ -45,7 +41,7 @@ describe('EmailContextService - Keyword Extraction', () => {
 
     test('extracts from executive briefing title', () => {
       const title = 'HOLD: Aileron Executive Briefing - A smarter path to Generative AI in your business'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       expect(keywords).toContain('hold')
       expect(keywords).toContain('aileron')
@@ -63,7 +59,7 @@ describe('EmailContextService - Keyword Extraction', () => {
 
     test('extracts from meeting with multiple companies', () => {
       const title = 'Meeting with Aileron Group/NYL'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       expect(keywords).toContain('aileron')
       expect(keywords).toContain('group')
@@ -76,7 +72,7 @@ describe('EmailContextService - Keyword Extraction', () => {
 
     test('extracts from interview meeting', () => {
       const title = 'AI interview call with Aileron Group and Dev.Pro'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       expect(keywords).toContain('interview')
       expect(keywords).toContain('aileron')
@@ -94,7 +90,7 @@ describe('EmailContextService - Keyword Extraction', () => {
   describe('TC-KW-002: Filter out common stop words', () => {
     test('removes meeting-related stop words', () => {
       const title = 'Weekly Sync Meeting with Team Call'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       expect(keywords).not.toContain('meeting')
       expect(keywords).not.toContain('sync')
@@ -105,7 +101,7 @@ describe('EmailContextService - Keyword Extraction', () => {
 
     test('removes common articles and prepositions', () => {
       const title = 'A review of the roadmap for Q4'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       expect(keywords).not.toContain('a')
       expect(keywords).not.toContain('the')
@@ -119,7 +115,7 @@ describe('EmailContextService - Keyword Extraction', () => {
 
     test('removes catch up related terms', () => {
       const title = 'Catch up with team for weekly chat'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       expect(keywords).not.toContain('catch')
       expect(keywords).not.toContain('up')
@@ -132,7 +128,7 @@ describe('EmailContextService - Keyword Extraction', () => {
 
     test('removes 1:1 meeting terms', () => {
       const title = '1:1 meeting with manager'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       expect(keywords).not.toContain('1:1')
       expect(keywords).not.toContain('1-1')
@@ -147,7 +143,7 @@ describe('EmailContextService - Keyword Extraction', () => {
   describe('TC-KW-003: Remove short words (< 3 chars)', () => {
     test('filters out words shorter than 3 characters', () => {
       const title = 'Q4 AI ML API review by IT at HQ'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       // 2-char words should be removed
       expect(keywords).not.toContain('q4')
@@ -165,7 +161,7 @@ describe('EmailContextService - Keyword Extraction', () => {
 
     test('keeps meaningful 3-character words', () => {
       const title = 'API for Dev Pro and ECA'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       expect(keywords).toContain('api')
       expect(keywords).toContain('dev')
@@ -181,7 +177,7 @@ describe('EmailContextService - Keyword Extraction', () => {
   describe('TC-KW-004: Deduplicate keywords', () => {
     test('removes duplicate keywords', () => {
       const title = 'Aileron Aileron Group Meeting - Aileron Briefing'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       // Should only appear once
       const aileronCount = keywords.filter((k: string) => k === 'aileron').length
@@ -193,7 +189,7 @@ describe('EmailContextService - Keyword Extraction', () => {
 
     test('deduplication is case-insensitive', () => {
       const title = 'AILERON Aileron aileron Group'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       const aileronCount = keywords.filter((k: string) => k === 'aileron').length
       expect(aileronCount).toBe(1)
@@ -223,7 +219,7 @@ describe('EmailContextService - Keyword Extraction', () => {
 
     test('handles title with only stop words', () => {
       const title = 'a meeting with the team for a chat'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       // All words are stop words, should return empty or very few
       expect(keywords.length).toBeLessThanOrEqual(1)
@@ -239,7 +235,7 @@ describe('EmailContextService - Keyword Extraction', () => {
   describe('TC-KW-006: Extract from technical meeting titles', () => {
     test('extracts location-based keywords', () => {
       const title = 'Union Square - Coffee Sandeep & Alejandro'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       expect(keywords).toContain('union')
       expect(keywords).toContain('square')
@@ -250,7 +246,7 @@ describe('EmailContextService - Keyword Extraction', () => {
 
     test('extracts from brainstorming meeting', () => {
       const title = 'Aileron and ECA direct brainstorming'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       expect(keywords).toContain('aileron')
       expect(keywords).toContain('eca')
@@ -262,7 +258,7 @@ describe('EmailContextService - Keyword Extraction', () => {
 
     test('extracts from event title', () => {
       const title = 'Finovate/Happy Hour Regroup'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       expect(keywords).toContain('finovate')
       expect(keywords).toContain('happy')
@@ -274,7 +270,7 @@ describe('EmailContextService - Keyword Extraction', () => {
   describe('TC-KW-007: Handle special characters and punctuation', () => {
     test('handles punctuation in titles', () => {
       const title = 'Matrix (Lior, CEO) + Aileron - Introductions!'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       // Punctuation should be removed
       expect(keywords).toContain('matrix')
@@ -291,7 +287,7 @@ describe('EmailContextService - Keyword Extraction', () => {
 
     test('handles slash-separated terms', () => {
       const title = 'Meeting with Aileron Group/NYL'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       expect(keywords).toContain('aileron')
       expect(keywords).toContain('group')
@@ -300,7 +296,7 @@ describe('EmailContextService - Keyword Extraction', () => {
 
     test('handles ampersands', () => {
       const title = 'Sandeep & Alejandro coffee'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       expect(keywords).toContain('sandeep')
       expect(keywords).toContain('alejandro')
@@ -309,7 +305,7 @@ describe('EmailContextService - Keyword Extraction', () => {
 
     test('handles colons and dashes', () => {
       const title = 'HOLD: Executive Briefing - Generative AI'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       expect(keywords).toContain('hold')
       expect(keywords).toContain('executive')
@@ -319,7 +315,7 @@ describe('EmailContextService - Keyword Extraction', () => {
 
     test('normalizes to lowercase', () => {
       const title = 'AILERON Executive BRIEFING'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       // All should be lowercase
       keywords.forEach((keyword: string) => {
@@ -335,7 +331,7 @@ describe('EmailContextService - Keyword Extraction', () => {
   describe('Real-World Examples from Analysis', () => {
     test('real meeting 1: Matrix + Aileron introductions', () => {
       const title = 'Matrix (Lior, CEO, Ronen Sales) + Aileron Group (Sandeep, Gil) - Introductions (Immediate and future opps)'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       // At least 10 meaningful keywords should be extracted
       expect(keywords.length).toBeGreaterThanOrEqual(10)
@@ -348,7 +344,7 @@ describe('EmailContextService - Keyword Extraction', () => {
 
     test('real meeting 2: Executive briefing on AI', () => {
       const title = 'HOLD: Aileron Executive Briefing - A smarter path to Generative AI in your business'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       // At least 5 meaningful keywords
       expect(keywords.length).toBeGreaterThanOrEqual(5)
@@ -361,7 +357,7 @@ describe('EmailContextService - Keyword Extraction', () => {
 
     test('real meeting 3: Simple company meeting', () => {
       const title = 'Meeting with Aileron Group/NYL'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       // Should extract all 3 company/group names
       expect(keywords.length).toBeGreaterThanOrEqual(3)
@@ -373,7 +369,7 @@ describe('EmailContextService - Keyword Extraction', () => {
 
     test('real meeting 4: Person-only meeting', () => {
       const title = 'Weekly Sync with Trish'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       // Should extract person name even if generic meeting
       expect(keywords).toContain('trish')
@@ -386,7 +382,7 @@ describe('EmailContextService - Keyword Extraction', () => {
 
     test('real meeting 5: Names-only meeting', () => {
       const title = 'Sandeep Mangaraj and Karan Bhalla'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       // Should extract all person names
       expect(keywords).toContain('sandeep')
@@ -403,7 +399,7 @@ describe('EmailContextService - Keyword Extraction', () => {
     test('handles very long titles efficiently', () => {
       const title = 'A'.repeat(500) + ' Matrix Aileron ' + 'B'.repeat(500)
       const startTime = Date.now()
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
       const duration = Date.now() - startTime
 
       // Should complete in under 100ms
@@ -416,7 +412,7 @@ describe('EmailContextService - Keyword Extraction', () => {
 
     test('handles titles with many repeated words', () => {
       const title = 'meeting meeting meeting Aileron Aileron Group'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       // Should deduplicate
       expect(keywords.filter((k: string) => k === 'aileron').length).toBe(1)
@@ -428,7 +424,7 @@ describe('EmailContextService - Keyword Extraction', () => {
 
     test('handles unicode characters', () => {
       const title = 'Café meeting with José about München project'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       // Should handle unicode correctly
       expect(keywords).toContain('café')
@@ -439,7 +435,7 @@ describe('EmailContextService - Keyword Extraction', () => {
 
     test('handles numbers in titles', () => {
       const title = 'Q4 2024 Budget Review'
-      const keywords = (service as any).extractKeywords(title)
+      const keywords = extractKeywords(title)
 
       // Numbers should be preserved if >= 3 chars
       expect(keywords).toContain('2024')

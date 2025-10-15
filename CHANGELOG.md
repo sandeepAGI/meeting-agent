@@ -18,6 +18,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Example: Meeting titled "Q4 Budget Review" prioritizes emails containing "q4" or "budget"
   - Backward compatible (falls back to participant-only if no meeting title provided)
 
+### Changed
+- **Refactored Keyword Extraction to Shared Utility**:
+  - Extracted `extractKeywords()` and `STOP_WORDS` to `src/utils/keywordExtraction.ts`
+  - EmailContextService now imports from shared utility (no behavior change)
+  - Test scripts import production code (no duplication)
+  - Unit tests import utility directly (no private method access)
+  - Ensures single source of truth - tests validate actual production code
+  - Prevents test/production code divergence
+
 ### Added
 - **Testing Infrastructure for Email Search**:
   - Comprehensive test plan: `docs/testing/email-search-test-plan.md`
