@@ -9,17 +9,21 @@ ORIGINAL MEETING CONTEXT:
 ORIGINAL TRANSCRIPT:
 {{transcript}}
 
-PASS 1 SUMMARY TO REVIEW:
+PASS 1 OUTPUT TO REVIEW:
+Executive Summary:
 {{pass1Summary}}
 
-PASS 1 SPEAKER MAPPINGS:
+Speaker Mappings:
 {{pass1Speakers}}
 
-PASS 1 ACTION ITEMS:
+Action Items:
 {{pass1ActionItems}}
 
-PASS 1 KEY DECISIONS:
+Key Decisions:
 {{pass1KeyDecisions}}
+
+Detailed Notes:
+{{pass1DetailedNotes}}
 
 INSTRUCTIONS:
 1. **Verify Speaker Identifications**:
@@ -30,18 +34,32 @@ INSTRUCTIONS:
    - If Pass 1 was uncertain (low confidence), try to improve identification
 
 2. **Check Completeness**:
-   - Are all major topics from the transcript covered?
+   - Are all major topics from the transcript covered in detailed_notes?
    - Are any action items missed?
    - Are all decisions captured?
-   - Is there important context missing?
+   - Is there important context or discussion missing?
+   - Are notable quotes accurate and representative?
+   - Are open questions properly identified?
 
-3. **Refine Summary**:
+3. **Refine Executive Summary**:
+   - Ensure 1-2 paragraph high-level overview
    - Improve clarity and conciseness
-   - Ensure all speaker names are used correctly
-   - Add any missing context or important details
-   - Remove any redundant or incorrect information
+   - Verify it accurately reflects main outcomes
 
-4. **Document Corrections**:
+4. **Validate Detailed Notes**:
+   - Check that topics are logically grouped (3-7 major topics)
+   - Verify key_points capture actual discussion (not just "they discussed X")
+   - Ensure decisions are attributed to correct topics
+   - Validate quotes are verbatim from transcript
+   - Check open_questions and parking_lot are relevant
+   - Add any missing discussion points or context
+
+5. **Ensure Speaker Names**:
+   - All speaker names used correctly throughout
+   - Quotes attributed to correct speakers
+   - Action items assigned to correct people
+
+6. **Document Corrections**:
    - List all changes made from Pass 1
    - Explain reasoning for corrections
 
@@ -56,23 +74,74 @@ OUTPUT FORMAT (JSON only, no additional text):
       "reasoning": "Verified: John discussed backend architecture throughout. Mentions 'my team' at 3 points. Speech patterns consistent with technical lead role."
     }
   ],
-  "refined_summary": "[Improved and corrected summary, ensuring all key points are covered and speaker names are accurate. Fix any errors from Pass 1.]",
+  "refined_executive_summary": "The team held a Q1 planning meeting focused on technical priorities and architecture decisions. Key outcome: API redesign prioritized over new features, with clear role assignments and weekly check-ins established. Database selection finalized as PostgreSQL based on transaction requirements and team expertise.",
+  "refined_detailed_notes": {
+    "discussion_by_topic": [
+      {
+        "topic": "Q1 Roadmap Prioritization",
+        "key_points": [
+          "John presented performance data showing current API causing 2-3 second latency on customer queries",
+          "Sarah emphasized that 3 new feature requests are blocked by API limitations",
+          "Team debated timeline - API redesign estimated at 6-8 weeks",
+          "Decision influenced by Q4 customer survey showing performance as top complaint"
+        ],
+        "decisions": [
+          "Prioritize API redesign over new features for Q1",
+          "Defer mobile app updates to Q2"
+        ],
+        "action_items": [
+          {
+            "description": "Draft detailed Q1 roadmap with API redesign milestones and timeline",
+            "assignee": "John Smith",
+            "priority": "high"
+          }
+        ]
+      }
+    ],
+    "notable_quotes": [
+      {
+        "speaker": "John Smith",
+        "quote": "We can't keep building features on a shaky foundation. Every new feature makes the API problem worse."
+      },
+      {
+        "speaker": "Sarah Johnson",
+        "quote": "Three customers specifically mentioned slow response times in their renewal conversations. This is affecting our revenue."
+      }
+    ],
+    "open_questions": [
+      "What is the migration timeline for existing API consumers?",
+      "Do we need to hire additional backend developers for Q1?"
+    ],
+    "parking_lot": [
+      "Mobile app redesign - deferred to Q2 planning",
+      "International expansion strategy - discuss in March board meeting"
+    ]
+  },
   "validated_action_items": [
     {
       "description": "Review API design document and provide feedback by Friday",
       "assignee": "John Smith",
       "priority": "high",
       "dueDate": null
+    },
+    {
+      "description": "Set up weekly status meetings for Mondays at 10am",
+      "assignee": "Sarah Johnson",
+      "priority": "medium",
+      "dueDate": null
     }
   ],
   "validated_key_decisions": [
     "Decided to prioritize API redesign over new features for Q1",
-    "Agreed on weekly status updates every Monday at 10am"
+    "Agreed on weekly status updates every Monday at 10am",
+    "Selected PostgreSQL over MongoDB for the new service"
   ],
   "corrections": [
-    "Changed SPEAKER_01 from 'Alice' to 'Bob' - Alice was not present at the meeting, Bob discussed frontend work which matches SPEAKER_01's topics",
-    "Added missing action item about database migration testing",
-    "Clarified decision about PostgreSQL selection to include context about scalability requirements"
+    "Changed SPEAKER_01 from 'Alice' to 'Bob' - Alice was not present, Bob discussed frontend work matching SPEAKER_01's topics",
+    "Added missing discussion point about Q4 customer survey influencing API decision",
+    "Included specific latency numbers (2-3 seconds) mentioned by John",
+    "Clarified PostgreSQL decision reasoning with transaction support context",
+    "Added exact quote from Sarah about customer renewal conversations"
   ]
 }
 

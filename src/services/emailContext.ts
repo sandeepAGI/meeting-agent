@@ -59,11 +59,12 @@ export class EmailContextService {
         .map((email) => `"participants:${email}"`)
         .join(' OR ')
 
+      // Build keyword query: search BOTH subject AND body for better topic matching
       const keywordQuery = keywords
-        .map((keyword) => `"subject:${keyword}"`)
+        .map((keyword) => `("subject:${keyword}" OR "body:${keyword}")`)
         .join(' OR ')
 
-      // Combined search: (participants) AND (keywords)
+      // Combined search: (participants) AND (keywords in subject OR body)
       const searchQuery = `(${participantQuery}) AND (${keywordQuery})`
 
       console.log(`[EmailContext] Topic search query: ${searchQuery}`)

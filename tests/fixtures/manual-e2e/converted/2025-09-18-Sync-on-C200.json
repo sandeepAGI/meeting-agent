@@ -1,0 +1,1204 @@
+{
+  "segments": [
+    {
+      "start": 127,
+      "end": 141.5,
+      "speaker": "SPEAKER_01",
+      "text": "Hey, Bridget.You are on mute.Uh, still unmute."
+    },
+    {
+      "start": 142,
+      "end": 150.5,
+      "speaker": "SPEAKER_00",
+      "text": "I have it on. I have it on mute for. I can't hear you now. I have it. Then I had to fix mute. You can't hear me."
+    },
+    {
+      "start": 151,
+      "end": 163.5,
+      "speaker": "SPEAKER_01",
+      "text": "Yeah, So what? Uh uh.Yeah, I was. I was doing some stuff, so I didn't see that you were in the lobby. Still a good time. All right. Excellent. So why did I give you a little update? So I did talk to."
+    },
+    {
+      "start": 164,
+      "end": 171.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yep, now still works."
+    },
+    {
+      "start": 172,
+      "end": 174.5,
+      "speaker": "SPEAKER_01",
+      "text": "Someone at C200 is going to be attending. She's at Schwab and what she's going to do is when we come to the demo, she is going to actually walk through the problem that she described to me."
+    },
+    {
+      "start": 175,
+      "end": 187.5,
+      "speaker": "SPEAKER_00",
+      "text": "Uhhuh."
+    },
+    {
+      "start": 188,
+      "end": 189,
+      "speaker": "SPEAKER_01",
+      "text": "And then I'm going to go through, you know, how, how I took that problem, how I use Cloud to explore options and how we came up with the solution, right. So that's just walking through the cloud, you know, the cloud chat that I did."
+    },
+    {
+      "start": 188,
+      "end": 204.5,
+      "speaker": "SPEAKER_00",
+      "text": "OK.OK."
+    },
+    {
+      "start": 205,
+      "end": 235.5,
+      "speaker": "SPEAKER_01",
+      "text": "And then after that she is going to, we are both jointly going to explore some further questions she has around deepfakes, right. So we will do that live and then what I've also done is based on the conversation and what we talked about.I also am creating a little app that we can show right at the end. So that's basically the flow with Melissa, which is going to take like 1015 minutes, can take more that I think would be, you know, done right, can be fairly engaging. So I just wanted to give you that update."
+    },
+    {
+      "start": 236,
+      "end": 237.5,
+      "speaker": "SPEAKER_00",
+      "text": "OK."
+    },
+    {
+      "start": 238,
+      "end": 253.5,
+      "speaker": "SPEAKER_01",
+      "text": "So that's it. Let me flip through the deck. I've made quite a few changes. I'm sure you haven't a chance to look at it. So let me let you know because what I did is I wanted to make sure. Can you see this clearly or is it too small?"
+    },
+    {
+      "start": 254,
+      "end": 255,
+      "speaker": "SPEAKER_00",
+      "text": "Hang on, I I just realized I pulled it up and so I'm actually seeing."
+    },
+    {
+      "start": 255,
+      "end": 262.5,
+      "speaker": "SPEAKER_01",
+      "text": "I can do one thing I can. I can make a."
+    },
+    {
+      "start": 263,
+      "end": 264.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah."
+    },
+    {
+      "start": 265,
+      "end": 266.5,
+      "speaker": "SPEAKER_01",
+      "text": "Yeah, what I'll do is it'll be easy. Yeah, it'll be easier this way because I can show you also what are the changes I made, right. So this is, you know, you had a question around this, how many folks will be there? We expect between 6:00 and 20. So it's going to be a small group and that's what I had also asked."
+    },
+    {
+      "start": 267,
+      "end": 283.5,
+      "speaker": "SPEAKER_00",
+      "text": "I can see it."
+    },
+    {
+      "start": 284,
+      "end": 328.5,
+      "speaker": "SPEAKER_01",
+      "text": "And for it not to go above 20. Now the exact count of people who are accepted, I will know. I think I'd asked her to send it early next week, so I'm going to hear back from them. But the reason we could not change the.You know, change the date and time, you know is because they already have accepts, right? So they have some people who have already shown interest. Now in a small group of 6 to 20, the key is to make sure that at least someone volunteers and then I feel like people will share more, right? So what I do plan to do.Is I'll ask Emily, who is going to help coordinate, to jump in if needed and as a backup, I'll check my friend Lisa is going to be on because Lisa is the one who had facilitated this."
+    },
+    {
+      "start": 329,
+      "end": 335.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah.Mhm."
+    },
+    {
+      "start": 336,
+      "end": 347.5,
+      "speaker": "SPEAKER_01",
+      "text": "And sponsor it. So I expect Lisa to be on. Lisa will ask a question. Typically what I see is then one person asks a question and then it's a question of us managing how much time we need to spend. So I'll have Lisa as a backup. That was my plan, but 6 to 20, that's that's here."
+    },
+    {
+      "start": 348,
+      "end": 352.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah.OK, OK. And so you're not taking one positive and one negative from everyone you're just having?"
+    },
+    {
+      "start": 353,
+      "end": 359.5,
+      "speaker": "SPEAKER_01",
+      "text": "That's it.People share. Yeah, because going everyone around the room, 20 people not gonna happen. Even six people could take that, right? And OK, thanks. All right. Now what I did do is you saw this very busy slide. This is a new version of it, right?"
+    },
+    {
+      "start": 360,
+      "end": 376.5,
+      "speaker": "SPEAKER_00",
+      "text": "OK.Yeah, OK, that that was my concern. OK, but that makes sense.Yeah.I like it a lot better, yeah."
+    },
+    {
+      "start": 377,
+      "end": 399.5,
+      "speaker": "SPEAKER_01",
+      "text": "I got rid of everything, right? And here the the and we can go through talking points and how you want, but let me just walk you through it right here. The basic idea is that you need to be thinking about Gen. AI if you're not already right because of various factors. That's the basic setup here, right? It's mainstream your people are using it.And I will tie it to other things later, but that's the basic idea, right? This should be part of your agenda. Then this also is now the very simplified version of what's behind the curtain. And let me share a little about what the idea behind this, what's behind the curtain is."
+    },
+    {
+      "start": 400,
+      "end": 413.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yes."
+    },
+    {
+      "start": 414,
+      "end": 467.5,
+      "speaker": "SPEAKER_01",
+      "text": "People's experiences are so dependent on whether they're using Chat JPT, whether they're using Copilot, whether they're using howsoever they have come across Gen. AI, Gen. AI in their HubSpot, right? And so wanted to just like explain a little, like just let's speak a speak a little without getting into the technical jargon.What exactly it is, right, and how you experience it. The key thing here is to make sure that they realize that the choices that are being made, that actually has a pretty big impact on your decisions. Like how deep are this is going to be the search, right? What documents are they going to look at? Are they going to look at your document or is it?Purely based on what the model knows, is it going to be able to make any search on the Internet? I won't again get into too much detail, but the idea here is to show that your experience is is based on choices that others make, right? And knowing that choices right will let you evaluate how good or bad it is.OK, OK"
+    },
+    {
+      "start": 468,
+      "end": 501.5,
+      "speaker": "SPEAKER_00",
+      "text": "I I like this better than the the previous page. Um.I mean the interesting thing about the brain, I I like your the way you're splitting it between knowing everything and understand.I mean.It knows everything. It understands nothing, including nothing about your business, right? Like, like, I I think most people don't understand that, right? And and and they confuse knowing with understanding."
+    },
+    {
+      "start": 502,
+      "end": 506.5,
+      "speaker": "SPEAKER_01",
+      "text": "And I think these are some of the things and we can talk about like how we're going to do it. I think that's where the color commentary is going to help. And I will tell you what happened with my first C200 pretty opinionated bunch of people. We went off script. We covered barely one slide, right. So I want to keep the slide minimal and have it more be engaging."
+    },
+    {
+      "start": 507,
+      "end": 521.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah.Yeah.OK."
+    },
+    {
+      "start": 522,
+      "end": 523,
+      "speaker": "SPEAKER_01",
+      "text": "Because people I expect to jump in, especially if we have primed them up in two, right? And told them, hey, ask us questions, that's This is why we are here. So that is one. Then this is the simplified version of the old one, right?"
+    },
+    {
+      "start": 522,
+      "end": 536.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah.Yeah."
+    },
+    {
+      "start": 537,
+      "end": 556.5,
+      "speaker": "SPEAKER_01",
+      "text": "Which is basically our aileron. You know, what did we learn from the aileron report? We want to keep it obviously to also credentialize us a bit that, you know, we're not just talking the talk. We have also used LLMs to come and figure out what's going on. Everyone's talking about productivity, efficiency. Are you getting ROI?Now this is something we learned, right?"
+    },
+    {
+      "start": 557,
+      "end": 575.5,
+      "speaker": "SPEAKER_00",
+      "text": "wellOK. The one thing that worries me about this is one of the things we talked about when we talked about your guys's sample set is that it's a very."
+    },
+    {
+      "start": 576,
+      "end": 577,
+      "speaker": "SPEAKER_01",
+      "text": "It's biased."
+    },
+    {
+      "start": 577,
+      "end": 604.5,
+      "speaker": "SPEAKER_00",
+      "text": "It's a very, yeah, it's a very biased sample set. And so like what what you're not, what's not coming out here is.Best case 85% report efficiency gains, but only 21, right? Like that's not.That's not over everything that people are doing, the people who are most successful.Are having these results."
+    },
+    {
+      "start": 605,
+      "end": 614.5,
+      "speaker": "SPEAKER_01",
+      "text": "And and which is, I think, I think it's a fair one. I did look at adding it. I think it just makes it very busy, but I think that's part of the voiceover, right? Is is to talk about the sample. You saw I even took away this because I thought this was adding too much noise."
+    },
+    {
+      "start": 615,
+      "end": 621.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah.Yep."
+    },
+    {
+      "start": 622,
+      "end": 629.5,
+      "speaker": "SPEAKER_01",
+      "text": "So I don't want to have like, you know, noise in the slide, just keep it pretty straightforward what we found where and then you know based on if they want."
+    },
+    {
+      "start": 630,
+      "end": 643.5,
+      "speaker": "SPEAKER_00",
+      "text": "I mean, could you even just say like what we found best, like colon, best case or something, something like that. I mean, I think even just a little thing like that."
+    },
+    {
+      "start": 644,
+      "end": 650.5,
+      "speaker": "SPEAKER_01",
+      "text": "How about this? Based on Eneron's group analysis of 765 successful."
+    },
+    {
+      "start": 651,
+      "end": 652.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah, but nobody's gonna read that."
+    },
+    {
+      "start": 653,
+      "end": 659.5,
+      "speaker": "SPEAKER_01",
+      "text": "I know, but it's just a there's a reason I'm trying to keep this clutter free, but."
+    },
+    {
+      "start": 660,
+      "end": 676.5,
+      "speaker": "SPEAKER_00",
+      "text": "I know I was. I was suggesting adding two words to your what we found.You don't have to, but see what it see what it looks like."
+    },
+    {
+      "start": 677,
+      "end": 679.5,
+      "speaker": "SPEAKER_01",
+      "text": "Sorry, yeah, what we found."
+    },
+    {
+      "start": 680,
+      "end": 690.5,
+      "speaker": "SPEAKER_00",
+      "text": "Not parenthesis, colon, I think, or dash."
+    },
+    {
+      "start": 691,
+      "end": 696.5,
+      "speaker": "SPEAKER_01",
+      "text": "Um."
+    },
+    {
+      "start": 697,
+      "end": 698,
+      "speaker": "SPEAKER_00",
+      "text": "Mm."
+    },
+    {
+      "start": 698,
+      "end": 701.5,
+      "speaker": "SPEAKER_01",
+      "text": "Mm-hmm."
+    },
+    {
+      "start": 702,
+      "end": 707.5,
+      "speaker": "SPEAKER_00",
+      "text": "OK, you're right. I don't love that."
+    },
+    {
+      "start": 708,
+      "end": 712.5,
+      "speaker": "SPEAKER_01",
+      "text": "I realized anytime I try to caveat, I try to add something, it just tries noise, right? And so."
+    },
+    {
+      "start": 713,
+      "end": 716.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah."
+    },
+    {
+      "start": 717,
+      "end": 723.5,
+      "speaker": "SPEAKER_01",
+      "text": "6.Let's, uh, let's think about it. Yeah."
+    },
+    {
+      "start": 724,
+      "end": 733.5,
+      "speaker": "SPEAKER_00",
+      "text": "OK, leave it for now. You're right. But it it needs to be it. It needs to be a really highly emphasized voice over."
+    },
+    {
+      "start": 734,
+      "end": 736.5,
+      "speaker": "SPEAKER_01",
+      "text": "Yeah. The way I was thinking and that's how we can talk about the talking points. The way I would have approached this, right, just like off the cuff now is, you know, start with the fact that there is a lot of uncertainty, right? On thin data, people are making a lot of, you know, making a lot of inferences."
+    },
+    {
+      "start": 737,
+      "end": 750.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah.Yeah."
+    },
+    {
+      "start": 751,
+      "end": 758.5,
+      "speaker": "SPEAKER_01",
+      "text": "Right. The the, the most dense data we could find are successful customer stories that people are reporting. So we wanted to appeal behind, you know, so I'll contextualizing it. I'll contextualize it a lot to say we picked up the best of the best to see is there something we can learn by using our framework of adoption and we are learning it even with the best of the best."
+    },
+    {
+      "start": 759,
+      "end": 770.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah.Yeah.Yeah."
+    },
+    {
+      "start": 771,
+      "end": 773.5,
+      "speaker": "SPEAKER_01",
+      "text": "Right. So that'll definitely be part of the talking track, Bridget. It's just what to put. But I like the idea of adding successful just so that, you know, we're ticking on time. So that's a good point. Now this is you haven't seen this. This is the demo, right? Remember I used to have a slide which had a lot of this."
+    },
+    {
+      "start": 774,
+      "end": 788.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah, OK.Yeah.Mhm."
+    },
+    {
+      "start": 789,
+      "end": 796.5,
+      "speaker": "SPEAKER_01",
+      "text": "What do you call it? Which I don't like because it had a lot of screenshots, which doesn't tell you any story, right? So this basically take goes through and as you can see, it's a C200 member challenge. So I'm gonna this is where Melissa is gonna come and she's gonna talk about the discussion she had with me."
+    },
+    {
+      "start": 797,
+      "end": 807.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah."
+    },
+    {
+      "start": 808,
+      "end": 823.5,
+      "speaker": "SPEAKER_01",
+      "text": "Right. We're going to walk through it, which will illustrate the approach. And then I want to be very, very clear. Wipe coding is not production, right? Wipe coding is not a substitute for governance and risk and control that you need to do. But what wipe coding does is with real data, you can get an immediate validation of an approach."
+    },
+    {
+      "start": 824,
+      "end": 825,
+      "speaker": "SPEAKER_00",
+      "text": "Thank you."
+    },
+    {
+      "start": 825,
+      "end": 841.5,
+      "speaker": "SPEAKER_01",
+      "text": "Right, so this I think is the key thing here, right? We can take complex problems and we can come at a working solution. You don't need to have coding for a business user to take a lead right in trying to use these tools and with real data you get validation, but it is not a substitute for the hard work that needs to be done."
+    },
+    {
+      "start": 842,
+      "end": 843,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah."
+    },
+    {
+      "start": 843,
+      "end": 848.5,
+      "speaker": "SPEAKER_01",
+      "text": "Right, so broke it down. I think this is pretty clean. I I kind of am proud of where we landed here on this slide."
+    },
+    {
+      "start": 849,
+      "end": 855.5,
+      "speaker": "SPEAKER_00",
+      "text": "No, this this is significantly better than the other one. Like it's just it's much more digestible and it hits the right notes."
+    },
+    {
+      "start": 856,
+      "end": 861.5,
+      "speaker": "SPEAKER_01",
+      "text": "Yeah. So what I had done is this is what I do. I first like go through the complex one, which we're going to go for technical audiences and then I spend a morning, which is what I did this morning, just cleaning it up, right. So this is, this is for the people we are talking to and I think it just looks cleaner."
+    },
+    {
+      "start": 862,
+      "end": 870.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah."
+    },
+    {
+      "start": 871,
+      "end": 924.5,
+      "speaker": "SPEAKER_01",
+      "text": "This slide I do want to keep because I think this is a very important thing that the advantage of Gen. AI is is the fact that you do not have to take a square peg and fit into a round hole, right? You can start with your data, your process, your IP. I think that's the.That's the key advantage here right now. I know it goes a little against the SAS model. I'm not going to go into that because who knows who's there right in the meeting and what they're. But I just want to talk about the the, you know what makes Gen. AI a unique opportunity for businesses, right? Embedding it into your processes.Right. Not introducing a new swivel chair, right. That's basically what I want to talk about."
+    },
+    {
+      "start": 925,
+      "end": 1003.5,
+      "speaker": "SPEAKER_00",
+      "text": "I mean.What I like about this is I'm a big believer in the pendulum, right? So the pendulum swings, and then it swings back, and that swings back and swings back, right? And so SAS is all about.Standardization for optimization, right? But we've basically gone as far as we're going to get with that. And now we can swing the pendulum back with AI and we can get.Efficient customization, right? Efficient customization is what's key because we've learned the lesson of going to SAS and we've learned about like, let's let's get things standardized, let's understand the process, let's optimize now.To your point, let's do it with your data, your processes, right? So we're customizing, but we're not making the mistakes that has have created all the tech debt that's out there, right? We're not creating huge enterprise systems that are all like behemoths that can't connect, et cetera. Like we still have fundament.Mental process tools that we can use, but what we can build around them and on top of them and things like that are is the customization. And So what that gives you is the balance of where the pendulum has been swinging."
+    },
+    {
+      "start": 1004,
+      "end": 1009.5,
+      "speaker": "SPEAKER_01",
+      "text": "Exactly, exactly. And I think this is where basically let let let's get to, let me go through it and then we're going to come back to like how we're going to play it out because that's invaluable insight, right. And I also want to make sure that Bridget, this is also helpful for you, right. So I think once I get a little bit more about who is there in the meeting, we can see if we need to tweak things."
+    },
+    {
+      "start": 1010,
+      "end": 1023.5,
+      "speaker": "SPEAKER_00",
+      "text": "OK.Oh."
+    },
+    {
+      "start": 1024,
+      "end": 1031.5,
+      "speaker": "SPEAKER_01",
+      "text": "Because Emily told me she cannot obviously share names and but she can tell us and I'd give us an idea going into this call, which type of profiles we expect to see, right? Because one of the things that Lisa had told me is that."
+    },
+    {
+      "start": 1032,
+      "end": 1038.5,
+      "speaker": "SPEAKER_00",
+      "text": "Right.OK."
+    },
+    {
+      "start": 1039,
+      "end": 1060.5,
+      "speaker": "SPEAKER_01",
+      "text": "You know some if it's a discussion around technology.The CIO types are the ones who turn up more often than the business types, right? And so we tried to change that in the way we promoted it, but you never know, right? The the the whole objective is that enough people see value in this that they'll they want to have a follow up conversation, which is obviously great.But more importantly, if we can get into the invited to the Nashville Summit."
+    },
+    {
+      "start": 1061,
+      "end": 1066.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yep."
+    },
+    {
+      "start": 1067,
+      "end": 1069.5,
+      "speaker": "SPEAKER_01",
+      "text": "That's a golden ticket, right? But so, so we'll see. Anyways, so this is leverage your data, your process. This is the revised framework for action, right? So that's gone."
+    },
+    {
+      "start": 1070,
+      "end": 1081.5,
+      "speaker": "SPEAKER_00",
+      "text": "OK."
+    },
+    {
+      "start": 1082,
+      "end": 1160.5,
+      "speaker": "SPEAKER_01",
+      "text": "It's pretty straightforward. There's only one thing I've struggled a little bit with, but I just left it the way it is. But here it's this is this question of like, you know, what is this whole run work crawl about, right? What do you do? And this also ties into some of the things that we talked about earlier, right? So as an example.Here we talk about connect to your data is what creates creates real business value and you will see here it's link AI to your data and workflows. So basically very clearly tying out some of the potential of AI and how AI can parlay into success into what your next steps are supposed.Supposed to be right. So this is, you know, gotten a little busy, but I think it's just honestly just saying three things per slide. I mean per per per swimly, right? What do you do today? Well, how do you build on that and what's your, you know, long term competitor boat?So the idea is these are our suggestions ABC. The risk is risk of non action right? And end with the big one. Moving slow is the high risk strategy.This is a pretty major change from the earlier one, so you know you can take a look and let me know what you think."
+    },
+    {
+      "start": 1161,
+      "end": 1163.5,
+      "speaker": "SPEAKER_00",
+      "text": "Um.I I I like this that the."
+    },
+    {
+      "start": 1164,
+      "end": 1169.5,
+      "speaker": "SPEAKER_01",
+      "text": "But.Sorry, I'm just making. I'm listening to you. I'm just making a little tweak."
+    },
+    {
+      "start": 1170,
+      "end": 1198.5,
+      "speaker": "SPEAKER_00",
+      "text": "Um.It makes it longer, but I almost want wonder if in the third the the second one of the first column you want to say try everything, track everything, learn what works, right? Like you're you're sort of saying that with the deploy enterprise tools.But like, you really are encouraging people to try lots of different things, right? Like, that's why you're moving fast. Like, let people try whatever they want."
+    },
+    {
+      "start": 1199,
+      "end": 1215.5,
+      "speaker": "SPEAKER_01",
+      "text": "Absolutely. Oh, this works. This works fine. Actually, you know, I I just say, Yep, lots of white space. I think it works. Only thing is track needs to be there, not capitalized. Let's fix that. Yeah, try everything. Track everything. Learn what works. Love it."
+    },
+    {
+      "start": 1216,
+      "end": 1230.5,
+      "speaker": "SPEAKER_00",
+      "text": "Strictivity. I like that.OK, and I like it too 'cause the the top line is like, what AI are you doing?"
+    },
+    {
+      "start": 1231,
+      "end": 1232.5,
+      "speaker": "SPEAKER_01",
+      "text": "Mhm."
+    },
+    {
+      "start": 1233,
+      "end": 1252.5,
+      "speaker": "SPEAKER_00",
+      "text": "You're using the standard tools, you're linking in your data, you're building proprietary in the second line. What are you doing? You're trying things, you're measuring things, you're transforming things, creating internal champions, building ecosystem partners. So going beyond.And then disrupting, OK, I think, yeah, I think this is actually very effective."
+    },
+    {
+      "start": 1253,
+      "end": 1305.5,
+      "speaker": "SPEAKER_01",
+      "text": "Thank you. All right, let me do one thing. Let me just get rid of all these nice placeholders. So page numbers will line up and I think I changed the quote. I think the quote was just too was not making any sense.I landed with just a Q&A, plain Q&A slide. We have two options. We can either stop here or we can stop here and I I I want to go to the slide also and just have some I need your feedback on this. But on this particular I want to end with like a not a busy slide for Q&A. We will be sending the decks, our bios and all will make.Make its way into the deck. But I just wanted to leave this right with a little sense of urgency, right? Hopefully at the end of this they realize if they're not doing something, what should they be moving? Now? What's your first move? Maybe it should be. What's your next move?"
+    },
+    {
+      "start": 1306,
+      "end": 1324.5,
+      "speaker": "SPEAKER_00",
+      "text": "Right. And it's, it's."
+    },
+    {
+      "start": 1325,
+      "end": 1331.5,
+      "speaker": "SPEAKER_01",
+      "text": "The imagery I'm using here, it's a window is open. That's why it's a blank slide. You see what I'm going here with. It's a blank slide because the window is wide open. You write your own adventure."
+    },
+    {
+      "start": 1332,
+      "end": 1381.5,
+      "speaker": "SPEAKER_00",
+      "text": "Well, except that you you started off with what have you done that's good, what have you done that's bad in some ways rather than making it wide open like that like.You're saying?Given what you've already done, what are you going to do next, right? Because because you want to give them credit for anything they've already done and everybody should have already done something, right? And even if it's just using ChatGPT themselves, right? But like.Yeah, the world's their oyster, but the whole point is this is going to be, this is going to be a continual thing of building on what you've learned, right?"
+    },
+    {
+      "start": 1382,
+      "end": 1385.5,
+      "speaker": "SPEAKER_01",
+      "text": "Yeah, I I think it should be. What's your next move, honestly?"
+    },
+    {
+      "start": 1386,
+      "end": 1411.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah, I mean, just that is, I like that better than with the window, right? It's like, it's like and and the voiceover can even be at the beginning. We talked about what you've already done, but in a lot of ways that doesn't matter. The only thing that matters is what are you doing next because things are moving that fast.Right. That it's always, it's always now going to be what's your next move?"
+    },
+    {
+      "start": 1412,
+      "end": 1415.5,
+      "speaker": "SPEAKER_01",
+      "text": "Excellent. I just wanna make sure I center it. I think this looks good. It's what's your next move. It's right in the center. It's it's actually on the nose. But that's why I think that's a good way to end, right? Then we have like meet your guides, your bio. One quick thing Bolt is supposed to be."
+    },
+    {
+      "start": 1416,
+      "end": 1429.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yep.Yeah.Yep."
+    },
+    {
+      "start": 1430,
+      "end": 1432.5,
+      "speaker": "SPEAKER_01",
+      "text": "Uh, not capitalized. Capitalized."
+    },
+    {
+      "start": 1433,
+      "end": 1439.5,
+      "speaker": "SPEAKER_00",
+      "text": "It's supposed to be not capitalized, but you know what? I've decided I just capitalize it at this point because I'm like, it looks like a typo and so it annoys me."
+    },
+    {
+      "start": 1440,
+      "end": 1445.5,
+      "speaker": "SPEAKER_01",
+      "text": "Yes, it does it that is that is correct. Are you comfortable with this? Do you want to change something? I'll tell you like ChatGPT feedback. If you have a board level thing that you have done always a good thing to highlight with the you know with with C200. Is there anything you would like to and I always also."
+    },
+    {
+      "start": 1446,
+      "end": 1459.5,
+      "speaker": "SPEAKER_00",
+      "text": "And."
+    },
+    {
+      "start": 1460,
+      "end": 1463.5,
+      "speaker": "SPEAKER_01",
+      "text": "So thinking, didn't you do something with Watson?"
+    },
+    {
+      "start": 1464,
+      "end": 1465.5,
+      "speaker": "SPEAKER_00",
+      "text": "I sold the first Watson deal."
+    },
+    {
+      "start": 1466,
+      "end": 1470.5,
+      "speaker": "SPEAKER_01",
+      "text": "Would we? Should we, uh, maybe highlight that a bit just to talk about your AI? You know, you know it."
+    },
+    {
+      "start": 1471,
+      "end": 1487.5,
+      "speaker": "SPEAKER_00",
+      "text": "Well, I I'd like to get rid of the first four. I'm sorry, the last bullet because I I haven't written anything in like, I don't know, eight months or anything like that. So I think that needs to come off so.I mean my my AI background is."
+    },
+    {
+      "start": 1488,
+      "end": 1492.5,
+      "speaker": "SPEAKER_01",
+      "text": "We need another, yeah.Hmm."
+    },
+    {
+      "start": 1493,
+      "end": 1494.5,
+      "speaker": "SPEAKER_00",
+      "text": "Uh."
+    },
+    {
+      "start": 1495,
+      "end": 1496,
+      "speaker": "SPEAKER_01",
+      "text": "I'm starting to type, so let me know."
+    },
+    {
+      "start": 1496,
+      "end": 1540.5,
+      "speaker": "SPEAKER_00",
+      "text": "It.You you can say.Bridget Bridget's first programming language was Lisp. She sold the first Watson deal in financial services.Because like basically I've never tried to do it in this short of time, but basically what it is, is this is really the third time that we're trying a I right? And we're going to keep trying it cause like this is only Gen. A I this isn't even really a I right? And so the first time it was expert systems back in the 80s.Which makes me sound really old, but I was 13. So like the second time was Watson and the third time."
+    },
+    {
+      "start": 1541,
+      "end": 1545.5,
+      "speaker": "SPEAKER_01",
+      "text": "She said the first financial service, Watson Financial Services deal project engagement. What? What would be?"
+    },
+    {
+      "start": 1546,
+      "end": 1551.5,
+      "speaker": "SPEAKER_00",
+      "text": "E.Project project or engagement was fine."
+    },
+    {
+      "start": 1552,
+      "end": 1564.5,
+      "speaker": "SPEAKER_01",
+      "text": "Uh.Project.And is excited.About the next programming."
+    },
+    {
+      "start": 1565,
+      "end": 1571.5,
+      "speaker": "SPEAKER_00",
+      "text": "How about how about about this this third wave of AI?Like."
+    },
+    {
+      "start": 1572,
+      "end": 1575.5,
+      "speaker": "SPEAKER_01",
+      "text": "Sorry.Third should be spelled right because it's less than 10 third. How's that?"
+    },
+    {
+      "start": 1576,
+      "end": 1583.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah, probably.I like that."
+    },
+    {
+      "start": 1584,
+      "end": 1614.5,
+      "speaker": "SPEAKER_01",
+      "text": "OK, I think there's a problem. I can see it, but uh, that's only.Oh, that's interesting. This Montserrat is a weird.OK.I'm gonna do one thing. I think this is clean. Mine has too much clutter. I'll shorten it.OK, excellent. I'll do that. I'll, I'll, I'll, I'll, I'll cut mine a little so it doesn't take up that much space. So it'll be equivalent in terms of the space it takes. So let me just fix that first and then."
+    },
+    {
+      "start": 1615,
+      "end": 1622.5,
+      "speaker": "SPEAKER_00",
+      "text": "OK.OK."
+    },
+    {
+      "start": 1623,
+      "end": 1646.5,
+      "speaker": "SPEAKER_01",
+      "text": "OK, all right, excellent. And I don't have the skills. I wanted to. We can make the same shape, but I just can't do it. So I will leave it. I don't know how to crop and do all that things. So we will send it to Trish to see if she can do it. And then this is.This, I don't think that they change. Anyway, these two slides were never planned to get into, right? So now that you have seen how this flows, how do we want to do it so?"
+    },
+    {
+      "start": 1647,
+      "end": 1653.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah.Yeah."
+    },
+    {
+      "start": 1654,
+      "end": 1672.5,
+      "speaker": "SPEAKER_01",
+      "text": "At the beginning, you know, I'll thank him, blah, blah, blah. It depends on whether Lisa introduces us or someone introduces us. I'll also thank Melissa for, you know, working with us. I was not going to spend any time on introductions, just so that we don't waste time, but maybe a couple of lines. Do you want me to just like briefly introduce you?"
+    },
+    {
+      "start": 1673,
+      "end": 1678.5,
+      "speaker": "SPEAKER_00",
+      "text": "I I I mean, I've, I've become a real fan of one person introducing everyone on the team as a way to to make things, you know, when a meeting is short, that's what I do now. I'm like, this is this person, this is this person, this is this person and like."
+    },
+    {
+      "start": 1679,
+      "end": 1688.5,
+      "speaker": "SPEAKER_01",
+      "text": "OK, OK."
+    },
+    {
+      "start": 1689,
+      "end": 1690.5,
+      "speaker": "SPEAKER_00",
+      "text": "And and so yeah, I think that's better and and even though we want everybody to participate, I think if you if you let people introduce themselves, you'll you'll the whole meeting will go away."
+    },
+    {
+      "start": 1691,
+      "end": 1710.5,
+      "speaker": "SPEAKER_01",
+      "text": "OK.Yes, it'll go away. So what I'm going to do is I'm going to be pretty brief. I will introduce you some borrowing couple of lines from your bio, right? You know, joining us as a senior advisor with Aleron Group, leads financial services at Bolt."
+    },
+    {
+      "start": 1711,
+      "end": 1716.5,
+      "speaker": "SPEAKER_00",
+      "text": "Mhm."
+    },
+    {
+      "start": 1717,
+      "end": 1718,
+      "speaker": "SPEAKER_01",
+      "text": "You know, a new, well, I won't use new. I'll use exactly the words you've said, right. The leading marketplace for insurance, is that what it is? The largest global insurance marketplace. And then, you know, we want it to be interactive, blah, blah, blah and just jump, jump right in."
+    },
+    {
+      "start": 1718,
+      "end": 1732.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah."
+    },
+    {
+      "start": 1733,
+      "end": 1734,
+      "speaker": "SPEAKER_01",
+      "text": "Right now, how do we want to do it? Is there like just as you look at this flow, are there certain slides you want to take the lead in, you want to provide color commentary? How do you want to do it?"
+    },
+    {
+      "start": 1733,
+      "end": 1745.5,
+      "speaker": "SPEAKER_00",
+      "text": "OK."
+    },
+    {
+      "start": 1746,
+      "end": 1748.5,
+      "speaker": "SPEAKER_01",
+      "text": "Because I'm going to develop talking points for each of them and I will share them like as an example, not in the introduction, but most likely when we talk about here, I'll talk about what it is that makes Gen. AI."
+    },
+    {
+      "start": 1749,
+      "end": 1760.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah."
+    },
+    {
+      "start": 1761,
+      "end": 1766.5,
+      "speaker": "SPEAKER_01",
+      "text": "Different the fact that it's a general purpose tool and not a special purpose tools like which is what the majority of algorithms in here. So I'll talk, I'll use things like that. I have honestly haven't had my next thing to do other than things on my plate is to complete the VIPE coding project. I haven't started it so."
+    },
+    {
+      "start": 1767,
+      "end": 1779.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah."
+    },
+    {
+      "start": 1780,
+      "end": 1789.5,
+      "speaker": "SPEAKER_01",
+      "text": "Start and completed and then I'll come up with our talking points. So it'll take me maybe a couple of days to get the talking points to you. But how do you want to do it? Just overall like do you want for example to talk to this slide and we can go back and forth."
+    },
+    {
+      "start": 1790,
+      "end": 1810.5,
+      "speaker": "SPEAKER_00",
+      "text": "Um."
+    },
+    {
+      "start": 1811,
+      "end": 1817.5,
+      "speaker": "SPEAKER_01",
+      "text": "Yep.Yep.Yep."
+    },
+    {
+      "start": 1818,
+      "end": 1834.5,
+      "speaker": "SPEAKER_00",
+      "text": "I think like a nice soft handoff between the two of us, like I own one, you own the next. I mean, you know, if you want to, you can do two in a row, but.In general, if if it's sort of every other one that."
+    },
+    {
+      "start": 1835,
+      "end": 1836.5,
+      "speaker": "SPEAKER_01",
+      "text": "I."
+    },
+    {
+      "start": 1837,
+      "end": 1838.5,
+      "speaker": "SPEAKER_00",
+      "text": "That to me makes the most sense."
+    },
+    {
+      "start": 1839,
+      "end": 1842.5,
+      "speaker": "SPEAKER_01",
+      "text": "I think it is great. So let's do this. I'll do the introductions right and thank folks and blah blah blah."
+    },
+    {
+      "start": 1843,
+      "end": 1846.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah."
+    },
+    {
+      "start": 1847,
+      "end": 1848.5,
+      "speaker": "SPEAKER_01",
+      "text": "Do you want to do this experience? Then I'm going to go into a little about why it's a tipping point right now, up to you whether you want to do the behind the curtain. I think behind the curtain I can give you all the talking points I had. I think this would be a good one."
+    },
+    {
+      "start": 1849,
+      "end": 1862.5,
+      "speaker": "SPEAKER_00",
+      "text": "I can do that.Yep, I think I can do that."
+    },
+    {
+      "start": 1863,
+      "end": 1871.5,
+      "speaker": "SPEAKER_01",
+      "text": "And then then the performance paradox about the AI report, I'll do it. Then I will hand it over to Melissa to introduce the challenge. I will obviously, you know, walk here, but here please provide color commentary, especially on this one. I think coming from you it'll be, it'll really work, right. And we can also talk a little about our experience, right."
+    },
+    {
+      "start": 1872,
+      "end": 1882.5,
+      "speaker": "SPEAKER_00",
+      "text": "OK."
+    },
+    {
+      "start": 1883,
+      "end": 1884.5,
+      "speaker": "SPEAKER_01",
+      "text": "As power users, right, that you know a prototype is not production, right? We are not this. We are not saying governance is not important. We are not saying security is not important, right. But what we are saying because you know they're a board member may be skeptical, right? Like they have seen so many demos and so many things. This is not a demo of a tool, right?"
+    },
+    {
+      "start": 1885,
+      "end": 1902.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah.Right."
+    },
+    {
+      "start": 1903,
+      "end": 1904.5,
+      "speaker": "SPEAKER_01",
+      "text": "This is an approach and a philosophy."
+    },
+    {
+      "start": 1905,
+      "end": 1910.5,
+      "speaker": "SPEAKER_00",
+      "text": "Right. Like, like, it's pretty easy to knock things about a I that don't work. But if you do that, you're going to be left behind, right? Like there are plenty of things that don't work about it. Well, don't use it for that, right? Like."
+    },
+    {
+      "start": 1911,
+      "end": 1920.5,
+      "speaker": "SPEAKER_01",
+      "text": "Mhm.Right, exactly.Right."
+    },
+    {
+      "start": 1921,
+      "end": 1927.5,
+      "speaker": "SPEAKER_00",
+      "text": "If you try and use a broom to wash your dishes, you're going to make a mess, but like."
+    },
+    {
+      "start": 1928,
+      "end": 1937.5,
+      "speaker": "SPEAKER_01",
+      "text": "Yes, you got it. You got it. I I think, I think, I think that's the key thing. If we stop here, we have been successful. Honestly, I don't think we need to go beyond that, right. And then I think talking about the way you introduced this, this whole concept of what happened in the SAS world, what?"
+    },
+    {
+      "start": 1938,
+      "end": 1947.5,
+      "speaker": "SPEAKER_00",
+      "text": "OK."
+    },
+    {
+      "start": 1948,
+      "end": 1949,
+      "speaker": "SPEAKER_01",
+      "text": "You know where we landed in SaaS, I think that's a brilliant way to talk about what is different about AI, right. So and we are as you can see where we are, we are actually going back and forth fairly well. And then slide eight, I end with the framework for action, right. And I think here the key thing that I would love you to reinforce is."
+    },
+    {
+      "start": 1948,
+      "end": 1967.5,
+      "speaker": "SPEAKER_00",
+      "text": "OK.Yeah."
+    },
+    {
+      "start": 1968,
+      "end": 1970.5,
+      "speaker": "SPEAKER_01",
+      "text": "Not doing anything is actually the worst thing that you can do."
+    },
+    {
+      "start": 1971,
+      "end": 1972,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah."
+    },
+    {
+      "start": 1972,
+      "end": 1973,
+      "speaker": "SPEAKER_01",
+      "text": "Right. And right. And so I think, I think that's it."
+    },
+    {
+      "start": 1973,
+      "end": 1980.5,
+      "speaker": "SPEAKER_00",
+      "text": "100%."
+    },
+    {
+      "start": 1981,
+      "end": 1990.5,
+      "speaker": "SPEAKER_01",
+      "text": "I feel that on slide two, when we're talking about yours experiences at a check in, we will know very quickly what kind of a group we have and and and then."
+    },
+    {
+      "start": 1991,
+      "end": 1994.5,
+      "speaker": "SPEAKER_00",
+      "text": "Right.Well, and I guess that is one question I have, which is if people are engaging and talking and stuff like that, do we just continue doing this and try and like get all of the content of the subsequent slides as comments on what they're telling us?"
+    },
+    {
+      "start": 1995,
+      "end": 2012.5,
+      "speaker": "SPEAKER_01",
+      "text": "Mm.That is the whole idea. If we spend, we should not be here at the end of the half hour, but if we go all the way to full first half hour, that's perfectly fine then as long as it's lively. So what we can do is we'll we'll have our own chat going on. Do you prefer to it be on like a chat or do you prefer text?"
+    },
+    {
+      "start": 2013,
+      "end": 2032.5,
+      "speaker": "SPEAKER_00",
+      "text": "OK.Perfect."
+    },
+    {
+      "start": 2033,
+      "end": 2035.5,
+      "speaker": "SPEAKER_01",
+      "text": "Either way, I'm I'm fine."
+    },
+    {
+      "start": 2036,
+      "end": 2037.5,
+      "speaker": "SPEAKER_00",
+      "text": "I I prefer text because I chat on my computer with text, so it's it's the same, but I I get really nervous about chats showing up in the wrong place."
+    },
+    {
+      "start": 2038,
+      "end": 2048.5,
+      "speaker": "SPEAKER_01",
+      "text": "OK.Same."
+    },
+    {
+      "start": 2049,
+      "end": 2064.5,
+      "speaker": "SPEAKER_00",
+      "text": "Somebody, somebody actually did that to me on a meeting this morning. I was presenting in Zoom, which I never present in Zoom, but one of my clients insists on using Zoom and like I hadn't locked down my machine and so he sent me something and popped up in front of 30 people, which not ideal."
+    },
+    {
+      "start": 2065,
+      "end": 2070.5,
+      "speaker": "SPEAKER_01",
+      "text": "I I I totally know. And that's the reason. Actually, that's perfect because I do the same. I do my text from my computer. So we will use text. So we'll use text. Emily is supposed to tell us, right, and give us feedback. Emily. Emily. Oh, sorry, I forget what her name is. At least we know who we're talking about."
+    },
+    {
+      "start": 2071,
+      "end": 2082.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah."
+    },
+    {
+      "start": 2083,
+      "end": 2110.5,
+      "speaker": "SPEAKER_01",
+      "text": "Uh.It's Emily Norquist. So Emily Norquist is their membership director who is, you know, basically going to be she and a colleague she hasn't named would be in the background helping us. So I when I talk to Emily.I asked her to give us real-time feedback, slow down, move fast, you know, that kind of stuff. So whatever Emily gives us, I'll, I'll make sure you are aware of it. So I I think 1/2 an hour of good, rich discussions on this slide is."
+    },
+    {
+      "start": 2111,
+      "end": 2122.5,
+      "speaker": "SPEAKER_00",
+      "text": "OK."
+    },
+    {
+      "start": 2123,
+      "end": 2124.5,
+      "speaker": "SPEAKER_01",
+      "text": "The Max we can allow and then similarly I think on the demo."
+    },
+    {
+      "start": 2125,
+      "end": 2129.5,
+      "speaker": "SPEAKER_00",
+      "text": "OK."
+    },
+    {
+      "start": 2130,
+      "end": 2135.5,
+      "speaker": "SPEAKER_01",
+      "text": "On the demo I would not want to spend more than 20 minutes if possible, so we'll see and I I can share with you the demo so you see how it is shaping up so you have some some context about it."
+    },
+    {
+      "start": 2136,
+      "end": 2160.5,
+      "speaker": "SPEAKER_00",
+      "text": "OK."
+    },
+    {
+      "start": 2161,
+      "end": 2181.5,
+      "speaker": "SPEAKER_01",
+      "text": "This is not it, but this is the back and forth on how the slides were developed. Slides are changed. But let's let me go to the demo projects. Yeah, you won't see any of these things. That's only for us. I didn't find that.OK, so this is the this is the demo."
+    },
+    {
+      "start": 2182,
+      "end": 2188.5,
+      "speaker": "SPEAKER_00",
+      "text": "Mhm."
+    },
+    {
+      "start": 2189,
+      "end": 2200.5,
+      "speaker": "SPEAKER_01",
+      "text": "So as you as you see it, it's set up with like, you know what what Melissa told me about. So once I give it to Melissa, I'm going to put up the screen, right. So she shared the problem that cybersecurity has become a really huge challenge. She said some things which you know."
+    },
+    {
+      "start": 2201,
+      "end": 2202.5,
+      "speaker": "SPEAKER_00",
+      "text": "Mhm."
+    },
+    {
+      "start": 2203,
+      "end": 2224.5,
+      "speaker": "SPEAKER_01",
+      "text": "Like she gave an example and she had said this is confidential. So I did not go through the example of something they faced at at at at Charles Schwab. She also used things like older clients and I didn't want to use, you know, words that we should not be using. So I I I made it a little bit more generic, but I just talked about the fact that you know.Bad actors are taking advantage of those who are vulnerable. These are getting increasingly sophisticated. But as a consumer, how can you make yourself informed about it, right? So that's basically how the problem statement, right? And I took it and I, as you can see, you know, went back and forth."
+    },
+    {
+      "start": 2225,
+      "end": 2238.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah.OK."
+    },
+    {
+      "start": 2239,
+      "end": 2255.5,
+      "speaker": "SPEAKER_01",
+      "text": "You know, clarified exactly what we're trying to do and then through that came up with this concept of, you know, using technical information to create e-mail, a call to action that an advisor could send to there."
+    },
+    {
+      "start": 2256,
+      "end": 2257,
+      "speaker": "SPEAKER_00",
+      "text": "OK."
+    },
+    {
+      "start": 2256,
+      "end": 2282.5,
+      "speaker": "SPEAKER_01",
+      "text": "Clients, right? But this is the part that I thought was really interesting because initially when it developed.Initially when it developed it.Right. This is the kind of nonsense that it came up with. Urgent critical actions needed Windows Update. My pushback was, buddy, this is what we get all the time, right? So now I made it. Let's say you're a 70 year old retired ultra high net worth individual and especially after COVID, blah, blah, blah, blah, blah."
+    },
+    {
+      "start": 2283,
+      "end": 2289.5,
+      "speaker": "SPEAKER_00",
+      "text": "Right."
+    },
+    {
+      "start": 2290,
+      "end": 2308.5,
+      "speaker": "SPEAKER_01",
+      "text": "How do you react to that, right? And that made this report into this report, which is really, really different, right? Hey, I am your financial advisor. There are three things I would like you to do to secure online banking. A very different, you know, from this e-mail, which all of us get and we ignore.Right. So and then I want to make sure that it is, you know, for the refined, blah blah blah. And then what I did is, and this is not what you will see that day, then what I I will stop here."
+    },
+    {
+      "start": 2309,
+      "end": 2324.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yep."
+    },
+    {
+      "start": 2325,
+      "end": 2344.5,
+      "speaker": "SPEAKER_01",
+      "text": "And let Melissa ask the questions that she has and that's why we'll do the live back and forth. Now after that what I've done is Bridget, I went into.Developing system, you know, technical requirements for a system.Right. And then these technical requirements, again, I don't take technical requirements back and forth, you know, without without a grain of salt. We did it. And then after we did all that, we developed a Claude document. And by the way, you will like it. This actually got inspired by the conversation you and I had the other day."
+    },
+    {
+      "start": 2345,
+      "end": 2363.5,
+      "speaker": "SPEAKER_00",
+      "text": "OK."
+    },
+    {
+      "start": 2364,
+      "end": 2365.5,
+      "speaker": "SPEAKER_01",
+      "text": "And look at the cloud now. Look at the cloud now the way I'm doing it, and which is why I'm confident my vibe coding tomorrow is going to work well. See this."
+    },
+    {
+      "start": 2366,
+      "end": 2380.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yeah.Yep."
+    },
+    {
+      "start": 2381,
+      "end": 2408.5,
+      "speaker": "SPEAKER_01",
+      "text": "It has success metrics, it has plans and tracking and in every state after it completes it, it has to go and update this. It has testing checklists, it has commit messages that it has to share after it has done it. So basically.It goes through all the good processes we talk talk about, but I put it in as a cloud, as a cloud, you know, as a cloud MD command, right? So all the steps, instead of the steps coming up later, all the steps are predefined, right? And it has to follow it as it is going through steps."
+    },
+    {
+      "start": 2409,
+      "end": 2416.5,
+      "speaker": "SPEAKER_00",
+      "text": "Yep.Nice."
+    },
+    {
+      "start": 2417,
+      "end": 2424.5,
+      "speaker": "SPEAKER_01",
+      "text": "And then at the end of it, this is to be updated throughout."
+    },
+    {
+      "start": 2425,
+      "end": 2426,
+      "speaker": "SPEAKER_00",
+      "text": "Mhm."
+    },
+    {
+      "start": 2425,
+      "end": 2443.5,
+      "speaker": "SPEAKER_01",
+      "text": "So anyways, this is something I did and then I will build it. I'm pretty sure it'll work, but tomorrow I and I told Melissa that I'm going to send her a video so she can take a look at it also since she has been gracious to.You know, work with us, uh, on a live jump. So there it is. Alrighty."
+    },
+    {
+      "start": 2444,
+      "end": 2451.5,
+      "speaker": "SPEAKER_00",
+      "text": "Awesome. That's fantastic. Hey, I need to, I need to jump, but I'm feeling really good and I'm really excited about this."
+    },
+    {
+      "start": 2452,
+      "end": 2453,
+      "speaker": "SPEAKER_01",
+      "text": "Uh."
+    },
+    {
+      "start": 2452,
+      "end": 2454.5,
+      "speaker": "SPEAKER_00",
+      "text": "I mean, I'd I'd rather be in Tunisia, but I'm not in Tunisia."
+    },
+    {
+      "start": 2455,
+      "end": 2456.5,
+      "speaker": "SPEAKER_01",
+      "text": "OK, So what I'm gonna do is I'm gonna send you the deck. I will send the talking points, but maybe it'll be come over the weekend and and then we'll take it from there."
+    },
+    {
+      "start": 2457,
+      "end": 2462,
+      "speaker": "SPEAKER_00",
+      "text": "This is fine.That's fine."
+    }
+  ],
+  "speakers": {
+    "SPEAKER_00": "Brigid",
+    "SPEAKER_01": "Sandeep Mangaraj"
+  },
+  "metadata": {
+    "source": "2025-09-18-Sync on C200.docx",
+    "originalFormat": "teams-docx",
+    "convertedAt": "2025-10-15T14:29:04.707Z",
+    "meetingDate": "September 18, 2025",
+    "totalDuration": 2462,
+    "speakerCount": 2
+  }
+}

@@ -246,4 +246,45 @@ export class GraphApiService {
   getClient(): Client | null {
     return this.client
   }
+
+  /**
+   * Fetch calendar events for a specific date range
+   */
+  async getMeetingsByDateRange(startDate: Date, endDate: Date): Promise<MeetingInfo[]> {
+    if (!this.client) {
+      throw new Error('Graph API client not initialized. Call initialize() first.')
+    }
+
+    try {
+      const response = await this.client
+        .api('/me/calendarview')
+        .query({
+          startDateTime: startDate.toISOString(),
+          endDateTime: endDate.toISOString()
+        })
+        .select([
+          'id',
+          'subject',
+          'start',
+          'end',
+          'organizer',
+          'attendees',
+          'isOnlineMeeting',
+          'onlineMeetingUrl',
+          'onlineMeeting',
+          'location'
+        ])
+        .orderby('start/dateTime')
+        .top(50)
+        .get()
+
+      const events: Event[] = response.value || []
+      const meetings: MeetingInfo[] = events.map((event) => this.transformEvent(event))
+
+      return meetings
+    } catch (error) {
+      console.error('[GraphAPI] Failed to fetch calendar events:', error)
+      throw new Error(`Failed to fetch calendar events: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
 }

@@ -22,19 +22,28 @@ INSTRUCTIONS:
    - Provide reasoning for each mapping (2-3 sentences explaining why)
    - If a speaker cannot be confidently identified, leave as SPEAKER_XX with low confidence
 
-2. **Generate Summary**: Comprehensive meeting summary with:
-   - Key topics discussed (2-4 main topics)
-   - Decisions made (specific decisions with context)
-   - Action items (with assignments if clear from conversation)
-   - Follow-up items needed
-   - Important context or background discussed
+2. **Generate Executive Summary**: High-level overview (1-2 paragraphs) capturing:
+   - Main meeting purpose and outcomes
+   - Key decisions and action items
+   - Overall meeting effectiveness
 
-3. **Extract Action Items**: List concrete actions with:
+3. **Generate Detailed Notes**: Comprehensive documentation structured by topic:
+   - Identify 3-7 major discussion topics from the transcript
+   - For each topic, capture:
+     * Topic heading (clear, descriptive title)
+     * Key discussion points (what was actually discussed, not just "they talked about X")
+     * Decisions made related to this topic
+     * Action items arising from this discussion
+   - Include notable quotes (verbatim statements that capture important context)
+   - Document open questions (items raised but not resolved)
+   - Note "parking lot" items (topics deferred for later)
+
+4. **Extract Action Items**: List concrete actions with:
    - Description (specific, actionable)
    - Assignee (name of person if identified, null if unclear)
    - Priority (high/medium/low based on urgency discussed)
 
-4. **Key Decisions**: List important decisions made during the meeting
+5. **Key Decisions**: List important decisions made during the meeting
 
 OUTPUT FORMAT (JSON only, no additional text):
 {
@@ -47,12 +56,71 @@ OUTPUT FORMAT (JSON only, no additional text):
       "reasoning": "Mentioned 'my team' and discussed backend architecture extensively. John is listed as Tech Lead in attendees and his speech patterns match technical leadership role."
     }
   ],
-  "summary": "The team discussed Q1 roadmap priorities and API redesign. [Continue with full summary covering all main topics, decisions, and important context from the meeting. Be thorough but concise.]",
+  "executive_summary": "The team held a Q1 planning meeting to align on priorities and technical architecture decisions. The main outcome was to prioritize API redesign over new feature development, with John leading the backend work and Sarah coordinating frontend integration. The team agreed on weekly status updates and selected PostgreSQL as the database solution for the new service.",
+  "detailed_notes": {
+    "discussion_by_topic": [
+      {
+        "topic": "Q1 Roadmap Prioritization",
+        "key_points": [
+          "Team debated whether to focus on API redesign or new features",
+          "John presented performance data showing API latency issues affecting customers",
+          "Sarah noted that new features are blocked by current API limitations",
+          "Decision influenced by recent customer feedback about slow response times"
+        ],
+        "decisions": [
+          "Prioritize API redesign over new features for Q1"
+        ],
+        "action_items": [
+          {
+            "description": "Draft Q1 roadmap with API redesign milestones",
+            "assignee": "John Smith",
+            "priority": "high"
+          }
+        ]
+      },
+      {
+        "topic": "Technical Architecture - Database Selection",
+        "key_points": [
+          "Evaluated PostgreSQL vs MongoDB for new service",
+          "PostgreSQL chosen for better transaction support and mature tooling",
+          "MongoDB considered but rejected due to complex query requirements"
+        ],
+        "decisions": [
+          "Selected PostgreSQL over MongoDB for the new service"
+        ],
+        "action_items": []
+      }
+    ],
+    "notable_quotes": [
+      {
+        "speaker": "John Smith",
+        "quote": "We can't keep adding features on a shaky foundation. The API redesign needs to happen now."
+      },
+      {
+        "speaker": "Sarah Johnson",
+        "quote": "Our customers are complaining about latency - this is affecting revenue."
+      }
+    ],
+    "open_questions": [
+      "What is the timeline for migrating existing API consumers?",
+      "Do we need to hire additional backend developers?"
+    ],
+    "parking_lot": [
+      "Mobile app redesign - deferred to Q2",
+      "International expansion planning - discuss in next quarter planning"
+    ]
+  },
   "action_items": [
     {
       "description": "Review API design document and provide feedback by Friday",
       "assignee": "John Smith",
       "priority": "high",
+      "dueDate": null
+    },
+    {
+      "description": "Set up weekly status meetings for Mondays at 10am",
+      "assignee": "Sarah Johnson",
+      "priority": "medium",
       "dueDate": null
     }
   ],
@@ -65,8 +133,11 @@ OUTPUT FORMAT (JSON only, no additional text):
 
 IMPORTANT:
 - Output ONLY valid JSON, no markdown code blocks, no additional text
-- Be thorough but concise in the summary
+- Executive summary should be 1-2 concise paragraphs for quick scanning
+- Detailed notes should be comprehensive - capture the full discussion by topic
 - Include ALL speakers found in the transcript
 - If unsure about speaker identity, use low confidence and explain why
 - Action items should be specific and actionable
 - Key decisions should be clear and specific
+- Notable quotes should be verbatim (exact words from transcript)
+- Group discussion points logically by topic (3-7 major topics)

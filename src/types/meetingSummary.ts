@@ -23,10 +23,32 @@ export interface KeyDecision {
   participants: string[] // Names of people involved in decision
 }
 
+// Detailed notes structure - comprehensive meeting documentation by topic
+export interface DetailedNotes {
+  discussion_by_topic: DiscussionTopic[]
+  notable_quotes: NotableQuote[]
+  open_questions: string[]
+  parking_lot: string[]
+}
+
+export interface DiscussionTopic {
+  topic: string // Clear, descriptive topic heading
+  key_points: string[] // Actual discussion points (not just "they discussed X")
+  decisions: string[] // Decisions made related to this topic
+  action_items: ActionItem[] // Action items arising from this topic
+}
+
+export interface NotableQuote {
+  speaker: string // Speaker name (not generic label)
+  quote: string // Verbatim quote from transcript
+}
+
 // Pass 1 Output: Initial speaker identification + comprehensive summary
 export interface Pass1Result {
   speaker_mappings: SpeakerMapping[]
-  summary: string
+  executive_summary: string // 1-2 paragraph high-level overview
+  summary?: string // Deprecated: use executive_summary instead
+  detailed_notes?: DetailedNotes // Comprehensive notes by topic
   action_items: ActionItem[]
   key_decisions: string[] // Simplified for Pass 1, just text
 }
@@ -34,7 +56,9 @@ export interface Pass1Result {
 // Pass 2 Output: Validated and refined
 export interface Pass2Result {
   validated_speakers: SpeakerMapping[]
-  refined_summary: string
+  refined_executive_summary: string // Refined 1-2 paragraph overview
+  refined_summary?: string // Deprecated: use refined_executive_summary instead
+  refined_detailed_notes?: DetailedNotes // Refined comprehensive notes
   validated_action_items: ActionItem[]
   validated_key_decisions: string[]
   corrections: string[] // List of corrections made from Pass 1
@@ -50,19 +74,21 @@ export interface MeetingSummary {
   pass1_batch_id: string | null
   pass1_status: string | null
   pass1_speaker_mappings_json: string | null
-  pass1_summary: string | null
+  pass1_summary: string | null // Executive summary
   pass1_action_items_json: string | null
   pass1_key_decisions_json: string | null
+  pass1_detailed_notes_json: string | null // Detailed notes by topic
   pass1_completed_at: string | null
   pass1_error_message: string | null
 
   // Pass 2
   pass2_batch_id: string | null
   pass2_status: string | null
-  pass2_refined_summary: string | null
+  pass2_refined_summary: string | null // Refined executive summary
   pass2_validated_speakers_json: string | null
   pass2_validated_action_items_json: string | null
   pass2_validated_key_decisions_json: string | null
+  pass2_refined_detailed_notes_json: string | null // Refined detailed notes
   pass2_corrections_json: string | null
   pass2_completed_at: string | null
   pass2_error_message: string | null

@@ -7,7 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **EmailContextService - Email Body Search Enhancement**:
+  - Enhanced keyword query to search BOTH subject AND body fields for better topic matching
+  - Changed from `"subject:keyword"` to `("subject:keyword" OR "body:keyword")`
+  - Significantly improves topic-relevant email discovery
+  - Example: Meeting "Aileron Group+ HubSpot" now finds 10 topic-relevant emails (vs 0 before)
+  - Backward compatible - maintains same two-tier search strategy
+  - Impact: More accurate email context for LLM summaries
+
 ### Fixed
+- **Test Script Display Bug** (`scripts/test-full-pipeline.ts`):
+  - Fixed evaluation report showing 0 counts despite successful data generation
+  - Root cause: Expected pre-parsed objects, but database returns JSON strings
+  - Solution: Parse JSON fields same way production UI does (`SummaryDisplay.tsx`)
+  - Added JSON.parse() for `pass2_validated_speakers_json`, `pass2_validated_action_items_json`, `pass2_validated_key_decisions_json`
+  - Falls back through Pass 2 → Pass 1 → empty array if fields missing
+  - Verified production unaffected (already uses same parsing logic)
+  - Impact: Test evaluation now correctly displays speaker mappings, action items, and key decisions
+
 - **Critical: Use Microsoft Graph Search API instead of filter**:
   - Fixed email context fetch failing with 400 "ErrorInvalidUrlQueryFilter" and "InefficientFilter"
   - Root cause: Microsoft Graph `/me/messages` filtering has severe limitations:

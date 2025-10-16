@@ -1,0 +1,50 @@
+{
+  "meeting": {
+    "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADQ-ikxAAA=",
+    "subject": "Aileron Group+ HubSpot",
+    "start": "2025-09-18T17:30:00.000Z",
+    "end": "2025-09-18T18:00:00.000Z",
+    "organizer": {
+      "name": "Clare Gorman",
+      "email": "cgorman@hubspot.com"
+    },
+    "attendees": [
+      {
+        "name": "Clare Gorman",
+        "email": "cgorman@hubspot.com",
+        "type": "required"
+      },
+      {
+        "name": "Sandeep Mangaraj",
+        "email": "Sandeep@aileron-group.com",
+        "type": "required"
+      }
+    ],
+    "isOnlineMeeting": false,
+    "location": "https://hubspot.zoom.us/j/91817540812?pwd=Yo6lMY8SPblJt2GoCxZHXhbEbsNby7.1"
+  },
+  "searchDate": "September 18, 2025",
+  "matchConfidence": "medium",
+  "matchReason": "Matched 1/2 speakers: Sandeep Mangaraj → Sandeep Mangaraj",
+  "allMeetingsOnDate": [
+    {
+      "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADQ-ikxAAA=",
+      "subject": "Aileron Group+ HubSpot",
+      "start": "2025-09-18T17:30:00.000Z",
+      "end": "2025-09-18T18:00:00.000Z",
+      "attendees": [
+        "Clare Gorman",
+        "Sandeep Mangaraj"
+      ]
+    },
+    {
+      "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADQ-ikyAAA=",
+      "subject": "Sync on C200",
+      "start": "2025-09-18T19:00:00.000Z",
+      "end": "2025-09-18T19:45:00.000Z",
+      "attendees": [
+        "brigidmcd7"
+      ]
+    }
+  ]
+}

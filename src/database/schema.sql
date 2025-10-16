@@ -100,19 +100,21 @@ CREATE TABLE IF NOT EXISTS meeting_summaries (
   pass1_batch_id TEXT,
   pass1_status TEXT,                -- 'pending', 'processing', 'complete', 'error'
   pass1_speaker_mappings_json TEXT, -- JSON: [{label, name, confidence, reasoning}]
-  pass1_summary TEXT,
+  pass1_summary TEXT,               -- Executive summary (1-2 paragraphs)
   pass1_action_items_json TEXT,     -- JSON: [{description, assignee, priority}]
   pass1_key_decisions_json TEXT,    -- JSON: [string]
+  pass1_detailed_notes_json TEXT,   -- JSON: {discussion_by_topic, notable_quotes, open_questions, parking_lot}
   pass1_completed_at DATETIME,
   pass1_error_message TEXT,
 
   -- Pass 2: Validation and refinement
   pass2_batch_id TEXT,
   pass2_status TEXT,
-  pass2_refined_summary TEXT,
+  pass2_refined_summary TEXT,       -- Refined executive summary
   pass2_validated_speakers_json TEXT,
   pass2_validated_action_items_json TEXT,
   pass2_validated_key_decisions_json TEXT,
+  pass2_refined_detailed_notes_json TEXT,  -- JSON: Refined detailed_notes structure
   pass2_corrections_json TEXT,      -- JSON: [string] - list of corrections made
   pass2_completed_at DATETIME,
   pass2_error_message TEXT,

@@ -309,10 +309,11 @@ export class MeetingIntelligenceService {
         organizerEmail: context.meeting.organizer.email,
         attendeesList,
         transcript: context.transcript,
-        pass1Summary: pass1Data.summary,
+        pass1Summary: pass1Data.executive_summary || pass1Data.summary || '',
         pass1Speakers: JSON.stringify(pass1Data.speaker_mappings, null, 2),
         pass1ActionItems: JSON.stringify(pass1Data.action_items, null, 2),
-        pass1KeyDecisions: JSON.stringify(pass1Data.key_decisions, null, 2)
+        pass1KeyDecisions: JSON.stringify(pass1Data.key_decisions, null, 2),
+        pass1DetailedNotes: pass1Data.detailed_notes ? JSON.stringify(pass1Data.detailed_notes, null, 2) : ''
       }
     )
 

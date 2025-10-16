@@ -1,0 +1,51 @@
+{
+  "meeting": {
+    "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADdPsasAAA=",
+    "subject": "Sync #3",
+    "start": "2025-10-07T18:00:00.000Z",
+    "end": "2025-10-07T19:00:00.000Z",
+    "organizer": {
+      "name": "Sandeep Mangaraj",
+      "email": "Sandeep@aileron-group.com"
+    },
+    "attendees": [
+      {
+        "name": "Gil Brodnitz",
+        "email": "gil@aileron-group.com",
+        "type": "required"
+      },
+      {
+        "name": "ojaspatel",
+        "email": "ojaspatel@gmail.com",
+        "type": "required"
+      }
+    ],
+    "isOnlineMeeting": true,
+    "onlineMeetingUrl": "https://teams.microsoft.com/l/meetup-join/19%3ameeting_MzIzMTRiM2QtYjJkZS00YWY5LWE0NTUtNmEwNzE1OGE0ZTE2%40thread.v2/0?context=%7b%22Tid%22%3a%22ac2adfcc-313b-478e-b195-40a606b78959%22%2c%22Oid%22%3a%22b9e3b9fd-eaaa-474f-8683-a82f305bd07c%22%7d",
+    "location": "Microsoft Teams Meeting"
+  },
+  "searchDate": "October 7, 2025",
+  "matchConfidence": "medium",
+  "matchReason": "Matched 2/3 speakers: Gil Brodnitz → Gil Brodnitz, Ojas Patel → ojaspatel",
+  "allMeetingsOnDate": [
+    {
+      "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgBGAAAAAABrXTSvZJPfRLLiLFMVXrMOBwBE6MvuFA8ARqbLEo0_IjwfAAAAAAENAABE6MvuFA8ARqbLEo0_IjwfAADdPsasAAA=",
+      "subject": "Sync #3",
+      "start": "2025-10-07T18:00:00.000Z",
+      "end": "2025-10-07T19:00:00.000Z",
+      "attendees": [
+        "Gil Brodnitz",
+        "ojaspatel"
+      ]
+    },
+    {
+      "id": "AAMkADEyYTMzNjVmLWU3NTQtNDJhMi04NWZkLWY4NTMxOGU0ZjM5MgFRAAgI3gU0dXGAAEYAAAAAa100r2ST30Sy4ixTFV6zDgcAROjL7hQPAEamyxKNPiI8HwAAAAABDQAAROjL7hQPAEamyxKNPiI8HwAAaMjvQgAAEA==",
+      "subject": "Sync on Weekly GTM ",
+      "start": "2025-10-07T19:30:00.000Z",
+      "end": "2025-10-07T20:00:00.000Z",
+      "attendees": [
+        "Gil Brodnitz"
+      ]
+    }
+  ]
+}
