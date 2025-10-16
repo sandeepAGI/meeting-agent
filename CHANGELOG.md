@@ -8,11 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
-- **Critical: OData lambda expression syntax bug**:
-  - Fixed missing space after colon in `any()` lambda expressions
-  - Affected `toRecipients/any(r:r/...)` and `ccRecipients/any(r:r/...)`
-  - Correct syntax: `toRecipients/any(r: r/emailAddress/address eq '...')`
-  - Was causing 400 "ErrorInvalidUrlQueryFilter" from Microsoft Graph API
+- **Critical: Microsoft Graph API filtering limitations**:
+  - Fixed email context fetch failing with 400 "ErrorInvalidUrlQueryFilter"
+  - Root cause: Microsoft Graph `/me/messages` does NOT support filtering on `toRecipients` or `ccRecipients` collections
+  - Solution: Server-side filter on `from` field only, client-side filter for to/cc recipients
+  - Also fixed: `contains()` is not supported - using `startswith()` for subject keywords
+  - Fetch 3x limit and filter client-side to ensure sufficient relevant emails
   - Impact: Email context fetch now works correctly
 
 - **Critical: Missing Mail.Read permission**:

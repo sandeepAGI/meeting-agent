@@ -49,16 +49,20 @@ export class EmailContextService {
     }
 
     try {
-      // Build filter for participants
-      // Check from, toRecipients, and ccRecipients fields
-      const participantFilters = participantEmails
-        .map((email) => `from/emailAddress/address eq '${email}' or toRecipients/any(r: r/emailAddress/address eq '${email}') or ccRecipients/any(r: r/emailAddress/address eq '${email}')`)
+      // Microsoft Graph API filtering limitations:
+      // - toRecipients/ccRecipients are NOT filterable (collections not supported)
+      // - Only "from" can be filtered for participants
+      // - We'll need to fetch more emails and filter client-side for to/cc
+
+      // Build filter for "from" field only (server-side)
+      const fromFilters = participantEmails
+        .map((email) => `from/emailAddress/address eq '${email}'`)
         .join(' or ')
 
-      // Build filter for topic keywords in subject
-      // Search for ANY keyword in the subject line
+      // Build filter for topic keywords in subject using startswith
+      // contains() is not supported - use startswith or do client-side filtering
       const topicFilters = keywords
-        .map((keyword) => `contains(subject, '${keyword}')`)
+        .map((keyword) => `startswith(subject, '${keyword}')`)
         .join(' or ')
 
       // Date filter: last N days
@@ -66,21 +70,47 @@ export class EmailContextService {
       dateThreshold.setDate(dateThreshold.getDate() - opts.daysBack)
       const dateFilter = `receivedDateTime ge ${dateThreshold.toISOString()}`
 
-      // Combined filter: (participants) AND (topic keywords) AND (date)
-      const filter = `(${participantFilters}) and (${topicFilters}) and ${dateFilter}`
+      // Combined filter: (from participants) AND (topic keywords) AND (date)
+      const filter = `(${fromFilters}) and (${topicFilters}) and ${dateFilter}`
 
-      console.log(`[EmailContext] Topic search filter: participants=${participantEmails.length}, keywords=[${keywords.join(', ')}]`)
+      console.log(`[EmailContext] Topic search filter: from=${participantEmails.length}, keywords=[${keywords.join(', ')}]`)
+
+      // Fetch more than needed since we'll filter client-side for to/cc
+      const fetchLimit = opts.maxEmails * 3
 
       // Fetch emails
       const response = await this.graphClient
         .api('/me/messages')
         .filter(filter)
-        .select('id,subject,from,toRecipients,receivedDateTime,bodyPreview,body,hasAttachments')
+        .select('id,subject,from,toRecipients,ccRecipients,receivedDateTime,bodyPreview,body,hasAttachments')
         .orderby('receivedDateTime desc')
-        .top(opts.maxEmails)
+        .top(fetchLimit)
         .get()
 
-      const emails: EmailContext[] = response.value.map((email: any) => {
+      // Client-side filter: check if ANY participant is in from/to/cc
+      const participantSet = new Set(participantEmails.map(e => e.toLowerCase()))
+
+      const filteredEmails = response.value.filter((email: any) => {
+        // Check from
+        const fromEmail = email.from?.emailAddress?.address?.toLowerCase()
+        if (fromEmail && participantSet.has(fromEmail)) return true
+
+        // Check toRecipients
+        const toEmails = (email.toRecipients || [])
+          .map((r: any) => r.emailAddress?.address?.toLowerCase())
+          .filter(Boolean)
+        if (toEmails.some((e: string) => participantSet.has(e))) return true
+
+        // Check ccRecipients
+        const ccEmails = (email.ccRecipients || [])
+          .map((r: any) => r.emailAddress?.address?.toLowerCase())
+          .filter(Boolean)
+        if (ccEmails.some((e: string) => participantSet.has(e))) return true
+
+        return false
+      }).slice(0, opts.maxEmails) // Limit to requested count
+
+      const emails: EmailContext[] = filteredEmails.map((email: any) => {
         const body = opts.includeBody ? (email.body?.content || '') : ''
         const truncatedBody = opts.includeBody
           ? this.truncateBody(body, opts.maxBodyLength)
@@ -136,10 +166,14 @@ export class EmailContextService {
     }
 
     try {
-      // Build filter for participants
-      // Search for emails where any participant is in from/to/cc fields
-      const participantFilters = participantEmails
-        .map((email) => `from/emailAddress/address eq '${email}' or toRecipients/any(r: r/emailAddress/address eq '${email}') or ccRecipients/any(r: r/emailAddress/address eq '${email}')`)
+      // Microsoft Graph API filtering limitations:
+      // - toRecipients/ccRecipients are NOT filterable (collections not supported)
+      // - Only "from" can be filtered for participants
+      // - Fetch more and filter client-side for to/cc
+
+      // Build filter for "from" field only (server-side)
+      const fromFilters = participantEmails
+        .map((email) => `from/emailAddress/address eq '${email}'`)
         .join(' or ')
 
       // Date filter: last N days
@@ -147,19 +181,45 @@ export class EmailContextService {
       dateThreshold.setDate(dateThreshold.getDate() - opts.daysBack)
       const dateFilter = `receivedDateTime ge ${dateThreshold.toISOString()}`
 
-      // Combined filter
-      const filter = `(${participantFilters}) and ${dateFilter}`
+      // Combined filter: (from participants) AND (date)
+      const filter = `(${fromFilters}) and ${dateFilter}`
+
+      // Fetch more than needed since we'll filter client-side for to/cc
+      const fetchLimit = opts.maxEmails * 3
 
       // Fetch emails
       const response = await this.graphClient
         .api('/me/messages')
         .filter(filter)
-        .select('id,subject,from,toRecipients,receivedDateTime,bodyPreview,body,hasAttachments')
+        .select('id,subject,from,toRecipients,ccRecipients,receivedDateTime,bodyPreview,body,hasAttachments')
         .orderby('receivedDateTime desc')
-        .top(opts.maxEmails)
+        .top(fetchLimit)
         .get()
 
-      const emails: EmailContext[] = response.value.map((email: any) => {
+      // Client-side filter: check if ANY participant is in from/to/cc
+      const participantSet = new Set(participantEmails.map(e => e.toLowerCase()))
+
+      const filteredEmails = response.value.filter((email: any) => {
+        // Check from
+        const fromEmail = email.from?.emailAddress?.address?.toLowerCase()
+        if (fromEmail && participantSet.has(fromEmail)) return true
+
+        // Check toRecipients
+        const toEmails = (email.toRecipients || [])
+          .map((r: any) => r.emailAddress?.address?.toLowerCase())
+          .filter(Boolean)
+        if (toEmails.some((e: string) => participantSet.has(e))) return true
+
+        // Check ccRecipients
+        const ccEmails = (email.ccRecipients || [])
+          .map((r: any) => r.emailAddress?.address?.toLowerCase())
+          .filter(Boolean)
+        if (ccEmails.some((e: string) => participantSet.has(e))) return true
+
+        return false
+      }).slice(0, opts.maxEmails) // Limit to requested count
+
+      const emails: EmailContext[] = filteredEmails.map((email: any) => {
         const body = opts.includeBody ? (email.body?.content || '') : ''
         const truncatedBody = opts.includeBody
           ? this.truncateBody(body, opts.maxBodyLength)
