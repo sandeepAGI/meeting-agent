@@ -14,9 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Cannot filter on `toRecipients` or `ccRecipients` collections
     - Complex OR filters cause "InefficientFilter" error
     - `contains()` function not supported
-  - Solution: Use Microsoft Graph **Search API** (recommended approach per Microsoft docs)
-    - `participants:email` searches across from/to/cc automatically
-    - `subject:keyword` for topic-based search
+  - Solution: Use Microsoft Graph **Search API** with proper KQL syntax (recommended approach per Microsoft docs)
+    - `"participants:email"` searches across from/to/cc automatically (must be quoted)
+    - `"subject:keyword"` for topic-based search (must be quoted)
+    - Combine multiple clauses with OR/AND operators outside quotes
     - Combine search with date filter
   - Benefits: Cleaner, more efficient, officially supported
   - Impact: Email context fetch now works correctly

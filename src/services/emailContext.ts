@@ -54,12 +54,13 @@ export class EmailContextService {
       // Recommended approach per Microsoft documentation
 
       // Build search query: participants AND keywords
+      // Each search clause must be in double quotes per Microsoft Graph KQL syntax
       const participantQuery = participantEmails
-        .map((email) => `participants:${email}`)
+        .map((email) => `"participants:${email}"`)
         .join(' OR ')
 
       const keywordQuery = keywords
-        .map((keyword) => `subject:${keyword}`)
+        .map((keyword) => `"subject:${keyword}"`)
         .join(' OR ')
 
       // Combined search: (participants) AND (keywords)
@@ -141,8 +142,9 @@ export class EmailContextService {
       // This is the recommended approach to search across from/to/cc fields
 
       // Build search query with all participants
+      // Each search clause must be in double quotes per Microsoft Graph KQL syntax
       const searchQuery = participantEmails
-        .map((email) => `participants:${email}`)
+        .map((email) => `"participants:${email}"`)
         .join(' OR ')
 
       console.log(`[EmailContext] Participant search query: ${searchQuery}`)
