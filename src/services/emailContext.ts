@@ -50,8 +50,9 @@ export class EmailContextService {
 
     try {
       // Build filter for participants
+      // Check from, toRecipients, and ccRecipients fields
       const participantFilters = participantEmails
-        .map((email) => `from/emailAddress/address eq '${email}' or recipients/any(r:r/emailAddress/address eq '${email}')`)
+        .map((email) => `from/emailAddress/address eq '${email}' or toRecipients/any(r: r/emailAddress/address eq '${email}') or ccRecipients/any(r: r/emailAddress/address eq '${email}')`)
         .join(' or ')
 
       // Build filter for topic keywords in subject
@@ -136,9 +137,9 @@ export class EmailContextService {
 
     try {
       // Build filter for participants
-      // Search for emails where any participant is in from/to fields
+      // Search for emails where any participant is in from/to/cc fields
       const participantFilters = participantEmails
-        .map((email) => `from/emailAddress/address eq '${email}' or recipients/any(r:r/emailAddress/address eq '${email}')`)
+        .map((email) => `from/emailAddress/address eq '${email}' or toRecipients/any(r: r/emailAddress/address eq '${email}') or ccRecipients/any(r: r/emailAddress/address eq '${email}')`)
         .join(' or ')
 
       // Date filter: last N days

@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Critical: OData lambda expression syntax bug**:
+  - Fixed missing space after colon in `any()` lambda expressions
+  - Affected `toRecipients/any(r:r/...)` and `ccRecipients/any(r:r/...)`
+  - Correct syntax: `toRecipients/any(r: r/emailAddress/address eq '...')`
+  - Was causing 400 "ErrorInvalidUrlQueryFilter" from Microsoft Graph API
+  - Impact: Email context fetch now works correctly
+
 - **Critical: Missing Mail.Read permission**:
   - Added `Mail.Read` to SCOPES array in M365AuthService
   - Email context fetch was failing with 403 "Access is denied" error
