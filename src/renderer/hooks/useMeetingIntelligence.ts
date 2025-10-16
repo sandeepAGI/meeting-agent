@@ -39,6 +39,41 @@ export function useMeetingIntelligence() {
     error: null
   })
 
+  // Create stable reference for fetchStatus
+  const fetchStatusRef = useCallback(async (summaryId: string) => {
+    try {
+      const result = await window.electronAPI.meetingIntelligence.getStatus(summaryId)
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch status')
+      }
+
+      const status = result.status || null
+      setState(prev => ({
+        ...prev,
+        status,
+        error: null
+      }))
+
+      // If complete, fetch full summary
+      if (status && status.status === 'complete') {
+        // Fetch summary
+        const summaryResult = await window.electronAPI.meetingIntelligence.getSummary(summaryId)
+        if (summaryResult.success) {
+          setState(prev => ({
+            ...prev,
+            summary: summaryResult.summary || null
+          }))
+        }
+      }
+    } catch (error) {
+      setState(prev => ({
+        ...prev,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }))
+    }
+  }, [])
+
   // Poll for status updates when summary is processing
   useEffect(() => {
     if (!state.summaryId || !state.status) return
@@ -54,12 +89,12 @@ export function useMeetingIntelligence() {
     const pollInterval = state.status.nextCheckInSeconds * 1000
     const timer = setInterval(async () => {
       if (state.summaryId) {
-        await actions.fetchStatus(state.summaryId)
+        await fetchStatusRef(state.summaryId)
       }
     }, pollInterval)
 
     return () => clearInterval(timer)
-  }, [state.summaryId, state.status])
+  }, [state.summaryId, state.status, fetchStatusRef])
 
   const actions: MeetingIntelligenceActions = {
     startSummary: useCallback(async (meetingId: string, transcriptId: string) => {
@@ -81,7 +116,7 @@ export function useMeetingIntelligence() {
 
         // Start polling for status
         if (summaryId) {
-          await actions.fetchStatus(summaryId)
+          await fetchStatusRef(summaryId)
         }
       } catch (error) {
         setState(prev => ({
@@ -90,34 +125,9 @@ export function useMeetingIntelligence() {
           error: error instanceof Error ? error.message : 'Unknown error'
         }))
       }
-    }, []),
+    }, [fetchStatusRef]),
 
-    fetchStatus: useCallback(async (summaryId: string) => {
-      try {
-        const result = await window.electronAPI.meetingIntelligence.getStatus(summaryId)
-
-        if (!result.success) {
-          throw new Error(result.error || 'Failed to fetch status')
-        }
-
-        const status = result.status || null
-        setState(prev => ({
-          ...prev,
-          status,
-          error: null
-        }))
-
-        // If complete, fetch full summary
-        if (status && status.status === 'complete') {
-          await actions.fetchSummary(summaryId)
-        }
-      } catch (error) {
-        setState(prev => ({
-          ...prev,
-          error: error instanceof Error ? error.message : 'Unknown error'
-        }))
-      }
-    }, []),
+    fetchStatus: fetchStatusRef,
 
     fetchSummary: useCallback(async (summaryId: string) => {
       try {
@@ -211,7 +221,7 @@ export function useMeetingIntelligence() {
 
         // Start polling for new status
         if (newSummaryId) {
-          await actions.fetchStatus(newSummaryId)
+          await fetchStatusRef(newSummaryId)
         }
       } catch (error) {
         setState(prev => ({
@@ -220,7 +230,7 @@ export function useMeetingIntelligence() {
           error: error instanceof Error ? error.message : 'Unknown error'
         }))
       }
-    }, []),
+    }, [fetchStatusRef]),
 
     clear: useCallback(() => {
       setState({
