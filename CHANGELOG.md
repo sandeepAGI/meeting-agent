@@ -8,12 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
-- **Critical: Microsoft Graph API filtering limitations**:
-  - Fixed email context fetch failing with 400 "ErrorInvalidUrlQueryFilter"
-  - Root cause: Microsoft Graph `/me/messages` does NOT support filtering on `toRecipients` or `ccRecipients` collections
-  - Solution: Server-side filter on `from` field only, client-side filter for to/cc recipients
-  - Also fixed: `contains()` is not supported - using `startswith()` for subject keywords
-  - Fetch 3x limit and filter client-side to ensure sufficient relevant emails
+- **Critical: Use Microsoft Graph Search API instead of filter**:
+  - Fixed email context fetch failing with 400 "ErrorInvalidUrlQueryFilter" and "InefficientFilter"
+  - Root cause: Microsoft Graph `/me/messages` filtering has severe limitations:
+    - Cannot filter on `toRecipients` or `ccRecipients` collections
+    - Complex OR filters cause "InefficientFilter" error
+    - `contains()` function not supported
+  - Solution: Use Microsoft Graph **Search API** (recommended approach per Microsoft docs)
+    - `participants:email` searches across from/to/cc automatically
+    - `subject:keyword` for topic-based search
+    - Combine search with date filter
+  - Benefits: Cleaner, more efficient, officially supported
   - Impact: Email context fetch now works correctly
 
 - **Critical: Missing Mail.Read permission**:
