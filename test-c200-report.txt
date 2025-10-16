@@ -1,0 +1,221 @@
+================================================================================
+END-TO-END PIPELINE TEST RESULTS
+================================================================================
+
+📊 SUMMARY STATISTICS:
+  Transcript: 198 segments, 41m duration
+  Speakers: 2 (Brigid, Sandeep Mangaraj)
+  Email Context: 10 emails fetched
+  Calendar Match: medium confidence (Matched 1/2 speakers: Sandeep Mangaraj → Sandeep Mangaraj)
+
+⏱️  PROCESSING TIME:
+  Email Fetch: 836ms
+  Pass 1 (Speaker ID + Summary): 605s
+  Pass 2 (Validation): 0s
+  Total: 606s
+
+📝 OVERVIEW:
+  Speaker Mappings: 2
+  Action Items: 7
+  Key Decisions: 8
+  Discussion Topics: 6
+
+🗣️  SPEAKER IDENTIFICATION:
+  SPEAKER_00 → Clare Gorman <cgorman@hubspot.com> (high confidence)
+  SPEAKER_01 → Sandeep Mangaraj <Sandeep@aileron-group.com> (high confidence)
+
+📄 EXECUTIVE SUMMARY:
+  Sandeep Mangaraj and Clare Gorman held a final preparation meeting for their upcoming C200 (Committee of 200) presentation on AI implementation for business leaders. They refined presentation slides for better clarity, established alternating speaker roles with soft handoffs, and coordinated a live demo featuring Melissa from Charles Schwab presenting a real cybersecurity challenge. The interactive session expects 6-20 senior business leaders and aims to secure follow-up opportunities and potential invitation to the prestigious Nashville Summit. Key messaging focuses on AI enabling efficient customization after years of SaaS standardization, with emphasis that moving slowly on AI adoption is the highest risk strategy.
+
+💬 DETAILED DISCUSSION BY TOPIC:
+
+1. C200 PRESENTATION CONTENT REFINEMENT AND SLIDE OPTIMIZATION
+
+   Key Points:
+   • Significantly simplified complex slides to improve digestibility for business audience
+   • Created new framework showing three-stage AI progression: standard tools → linked data → proprietary solutions
+   • Addressed sample bias concern in Aileron research by emphasizing these represent 'successful' case studies from 765 companies
+   • Restructured 'Behind the Curtain' slide to focus on business impact of AI choices rather than technical complexity
+   • Changed closing from generic Q&A to action-oriented 'What's your next move?' message
+
+   Decisions:
+   ✓ Use minimal text and clutter-free slide design for maximum impact
+   ✓ Include 'successful' qualifier in voiceover to address sample bias without cluttering slides
+   ✓ Replace busy technical slides with simplified business-focused versions
+   ✓ End presentation with urgency-focused call to action rather than passive Q&A
+
+   Action Items:
+   → Complete detailed talking points for all presentation slides
+     Assignee: Sandeep Mangaraj
+     Priority: high
+   → Finalize bio formatting and coordinate image cropping with Trish
+     Assignee: Sandeep Mangaraj
+     Priority: medium
+
+--------------------------------------------------------------------------------
+
+2. LIVE DEMO STRATEGY WITH CHARLES SCHWAB EXECUTIVE
+
+   Key Points:
+   • Melissa from Charles Schwab will present real cybersecurity challenge about protecting vulnerable clients from sophisticated bad actors
+   • Demo will transform technical security bulletins into personalized advisor communications for high-net-worth clients
+   • Includes iterative refinement showing difference between generic 'urgent action needed' emails versus personalized advisor messages
+   • Built custom Claude document with integrated success metrics, testing protocols, and commit tracking based on Clare's process suggestions
+   • Plans joint live exploration of Melissa's additional deepfake-related questions
+
+   Decisions:
+   ✓ Limit demo to maximum 20 minutes to maintain audience engagement
+   ✓ Build working prototype app to demonstrate at session end
+   ✓ Include Melissa as active participant in live Q&A exploration
+   ✓ Focus on approach and philosophy rather than tool demonstration
+
+   Action Items:
+   → Complete vibe coding project and demo app development
+     Assignee: Sandeep Mangaraj
+     Priority: high
+   → Send demo video to Melissa for review before presentation
+     Assignee: Sandeep Mangaraj
+     Priority: medium
+
+--------------------------------------------------------------------------------
+
+3. SPEAKER ROLE DISTRIBUTION AND PRESENTATION CHOREOGRAPHY
+
+   Key Points:
+   • Established alternating speaker approach with Sandeep handling introductions to save time and maintain flow
+   • Clare assigned 'Behind the Curtain' technical explanation and SaaS evolution context as key segments
+   • Sandeep covering introduction, Aileron performance paradox findings, and framework sections
+   • Agreed on text messaging for real-time coordination during presentation to avoid on-screen chat risks
+   • Built in flexibility to extend discussions if audience engagement is high
+
+   Decisions:
+   ✓ Use soft handoffs between speakers, typically alternating every 1-2 slides
+   ✓ Sandeep introduces both speakers to eliminate time-consuming individual introductions
+   ✓ Clare emphasizes SaaS-to-AI pendulum swing as core strategic messaging
+   ✓ Allow organic conversation flow even if it means not covering all slides
+
+   Action Items:
+   → Coordinate with Emily Nordquist for real-time presentation feedback and guidance
+     Assignee: Sandeep Mangaraj
+     Priority: medium
+   → Send final deck and comprehensive talking points over weekend
+     Assignee: Sandeep Mangaraj
+     Priority: low
+
+--------------------------------------------------------------------------------
+
+4. AUDIENCE ENGAGEMENT STRATEGY FOR SENIOR BUSINESS LEADERS
+
+   Key Points:
+   • Expected 6-20 attendees from C200 membership, small group enabling intimate discussion
+   • Emily unable to change timing due to existing acceptances but will provide attendee profile information
+   • Lisa (event sponsor) confirmed as backup questioner if audience participation is slow
+   • Previous C200 experience showed 'opinionated bunch' going off-script with barely covering one slide
+   • Strategy to prime audience with positive/negative AI experience sharing rather than round-robin format
+
+   Decisions:
+   ✓ Make presentation highly interactive with questions encouraged throughout
+   ✓ Focus on volunteer sharing rather than forcing participation from all attendees
+   ✓ Prepare for extended discussion on early slides if engagement is high
+   ✓ Target business leaders rather than technical staff based on promotion messaging
+
+   Action Items:
+   → Get final attendee count and profile information from Emily early next week
+     Assignee: Sandeep Mangaraj
+     Priority: medium
+
+--------------------------------------------------------------------------------
+
+5. STRATEGIC AI ADOPTION MESSAGING AND FRAMEWORK
+
+   Key Points:
+   • Core message that 'moving slow is the high risk strategy' for AI adoption
+   • Positioned AI as enabling return to efficient customization after reaching limits of SaaS standardization
+   • Framework emphasizes progression from experimentation to data integration to proprietary solutions
+   • Clare's pendulum analogy: SaaS drove standardization optimization, AI enables efficient customization without creating technical debt
+   • Prototype validation distinguished from production deployment and governance requirements
+
+   Decisions:
+   ✓ Use 'Try everything, track everything, learn what works' as actionable middle-stage guidance
+   ✓ Position AI as complementing existing processes rather than requiring complete transformation
+   ✓ Emphasize non-action as worst possible strategy in current AI landscape
+   ✓ Frame rapid prototyping as validation tool while maintaining governance importance
+
+--------------------------------------------------------------------------------
+
+6. PROFESSIONAL POSITIONING AND BIO REFINEMENT
+
+   Key Points:
+   • Updated Clare's bio to highlight three waves of AI experience: expert systems (1980s), Watson, and current generative AI
+   • Added technical credibility with Lisp programming background and first Watson deal in financial services
+   • Removed outdated writing activity reference that no longer applied
+   • Balanced bio lengths and formatted for consistent slide presentation
+   • Emphasized practitioner experience rather than just consulting background
+
+   Decisions:
+   ✓ Include historical AI perspective to establish deep domain expertise
+   ✓ Keep bios concise but impactful for slide formatting constraints
+   ✓ Position both speakers as experienced practitioners with real implementation experience
+   ✓ Capitalize 'Bolt' despite brand guidelines due to professional presentation context
+
+   Action Items:
+   → Finalize bio image formatting and ensure visual consistency
+     Assignee: Sandeep Mangaraj
+     Priority: low
+
+--------------------------------------------------------------------------------
+
+💭 NOTABLE QUOTES:
+  1. Clare Gorman: "It knows everything. It understands nothing, including nothing about your business, right? Like, like, I think most people don't understand that, right? And and and they confuse knowing with understanding."
+  2. Clare Gorman: "SAS is all about standardization for optimization, right? But we've basically gone as far as we're going to get with that. And now we can swing the pendulum back with AI and we can get efficient customization."
+  3. Sandeep Mangaraj: "Moving slow is the high risk strategy."
+  4. Clare Gorman: "If you try and use a broom to wash your dishes, you're going to make a mess, but like..."
+  5. Sandeep Mangaraj: "This is not a demo of a tool, right? This is an approach and a philosophy."
+  6. Clare Gorman: "We can get efficient customization, right? Efficient customization is what's key because we've learned the lesson of going to SAS."
+
+❓ OPEN QUESTIONS:
+  1. Will final attendee mix favor business leaders or technical staff?
+  2. Should team prepare additional follow-up meeting slots for interested participants?
+  3. How can presentation best position team for Nashville Summit invitation?
+  4. Will 30 minutes plus demo time be sufficient for expected level of audience engagement?
+
+🅿️  PARKING LOT (Deferred Items):
+  1. Detailed technical architecture discussions - deliberately kept minimal for business audience
+  2. Governance and security implementation specifics - mentioned importance but not elaborated
+  3. Industry-specific use cases beyond cybersecurity demo - focus maintained on general principles
+  4. C200 member networking opportunities - not primary presentation focus but potential outcome
+
+✅ ALL ACTION ITEMS (Consolidated):
+  1. Complete detailed talking points for all presentation slides
+     Assignee: Sandeep Mangaraj
+     Priority: high
+  2. Complete vibe coding project and demo app development
+     Assignee: Sandeep Mangaraj
+     Priority: high
+  3. Send demo video to Melissa for review before presentation
+     Assignee: Sandeep Mangaraj
+     Priority: medium
+  4. Get final attendee count and profile information from Emily early next week
+     Assignee: Sandeep Mangaraj
+     Priority: medium
+  5. Coordinate with Emily Nordquist for real-time presentation feedback and guidance
+     Assignee: Sandeep Mangaraj
+     Priority: medium
+  6. Finalize bio formatting and coordinate image cropping with Trish
+     Assignee: Sandeep Mangaraj
+     Priority: medium
+  7. Send final deck and comprehensive talking points over weekend
+     Assignee: Sandeep Mangaraj
+     Priority: low
+
+🎯 ALL KEY DECISIONS (Consolidated):
+  1. Agreed on alternating speaker presentation style with soft handoffs between Clare and Sandeep
+  2. Decided to make presentation highly interactive with audience engagement encouraged throughout
+  3. Chose to limit demo to maximum 20 minutes to maintain audience attention and allow discussion
+  4. Selected 'What's your next move?' as closing slide message instead of generic Q&A format
+  5. Agreed to use text messaging for real-time coordination during presentation to avoid screen interference
+  6. Decided Sandeep will handle all speaker introductions to save time and maintain presentation flow
+  7. Confirmed Clare will emphasize SaaS-to-AI pendulum swing concept as core strategic messaging
+  8. Chose to address Aileron research sample bias through voiceover rather than cluttering slides
+
+================================================================================

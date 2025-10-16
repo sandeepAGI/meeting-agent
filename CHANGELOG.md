@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **MeetingIntelligenceService - JSON parsing for markdown-wrapped responses**:
+  - Added `stripMarkdownCodeBlocks()` helper to handle Claude responses wrapped in ```json code blocks
+  - Applied to both Pass 1 and Pass 2 result parsing
+  - Prevents `SyntaxError: Unexpected token` when Claude wraps JSON in markdown
+  - Gracefully handles both plain JSON and markdown-wrapped JSON responses
+  - Impact: Robust JSON parsing for all batch API responses
+
+- **Report Generation Script Enhancement** (`scripts/generate-report-from-json.js`):
+  - Added complete detailed_notes section to test reports
+  - Now includes discussion_by_topic, notable_quotes, open_questions, parking_lot
+  - Reports increased from ~3KB to ~12KB with full meeting context
+  - Changed output from PDF to TXT (cupsfilter reliability issues)
+  - Impact: Complete visibility into LLM-generated meeting intelligence
+
 ### Changed
 - **EmailContextService - Email Body Search Enhancement**:
   - Enhanced keyword query to search BOTH subject AND body fields for better topic matching

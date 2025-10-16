@@ -240,6 +240,25 @@ export class MeetingIntelligenceService {
   }
 
   /**
+   * Strip markdown code blocks from JSON responses
+   * Claude sometimes wraps JSON in ```json ... ```
+   */
+  private stripMarkdownCodeBlocks(text: string): string {
+    // Remove leading/trailing whitespace
+    text = text.trim()
+
+    // Check for markdown code blocks
+    const codeBlockRegex = /^```(?:json)?\s*\n([\s\S]*?)\n```$/
+    const match = text.match(codeBlockRegex)
+
+    if (match) {
+      return match[1].trim()
+    }
+
+    return text
+  }
+
+  /**
    * Poll Pass 1 in background (async, non-blocking)
    */
   private async pollPass1InBackground(
@@ -266,7 +285,8 @@ export class MeetingIntelligenceService {
 
       // Extract and parse JSON
       const textContent = ClaudeBatchService.extractTextFromResult(result)
-      const pass1Data: Pass1Result = JSON.parse(textContent)
+      const cleanedText = this.stripMarkdownCodeBlocks(textContent)
+      const pass1Data: Pass1Result = JSON.parse(cleanedText)
 
       // Save to database
       this.db.updateSummaryPass1(summaryId, batchId, pass1Data)
@@ -366,7 +386,8 @@ export class MeetingIntelligenceService {
 
       // Extract and parse JSON
       const textContent = ClaudeBatchService.extractTextFromResult(result)
-      const pass2Data: Pass2Result = JSON.parse(textContent)
+      const cleanedText = this.stripMarkdownCodeBlocks(textContent)
+      const pass2Data: Pass2Result = JSON.parse(cleanedText)
 
       // Save to database
       this.db.updateSummaryPass2(summaryId, batchId, pass2Data)
