@@ -71,9 +71,42 @@ export class DatabaseService {
       // Execute entire schema at once - better-sqlite3 handles multiple statements
       this.db.exec(schema)
       console.log(`Database initialized at: ${this.dbPath}`)
+
+      // Run migrations to add any missing columns to existing tables
+      this.runMigrations()
     } catch (error) {
       console.error('Schema execution error:', error)
       throw error
+    }
+  }
+
+  /**
+   * Run database migrations to add missing columns
+   * This ensures existing databases get updated when schema changes
+   */
+  private runMigrations(): void {
+    try {
+      // Check if pass1_detailed_notes_json column exists
+      const columns = this.db.prepare(`PRAGMA table_info(meeting_summaries)`).all() as any[]
+      const hasDetailedNotesPass1 = columns.some(col => col.name === 'pass1_detailed_notes_json')
+      const hasDetailedNotesPass2 = columns.some(col => col.name === 'pass2_refined_detailed_notes_json')
+
+      if (!hasDetailedNotesPass1) {
+        console.log('Migration: Adding pass1_detailed_notes_json column')
+        this.db.exec('ALTER TABLE meeting_summaries ADD COLUMN pass1_detailed_notes_json TEXT')
+      }
+
+      if (!hasDetailedNotesPass2) {
+        console.log('Migration: Adding pass2_refined_detailed_notes_json column')
+        this.db.exec('ALTER TABLE meeting_summaries ADD COLUMN pass2_refined_detailed_notes_json TEXT')
+      }
+
+      if (!hasDetailedNotesPass1 || !hasDetailedNotesPass2) {
+        console.log('Database migrations completed successfully')
+      }
+    } catch (error) {
+      console.error('Migration error:', error)
+      // Don't throw - let the app continue with existing schema
     }
   }
 
