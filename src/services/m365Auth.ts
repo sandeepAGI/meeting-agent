@@ -31,6 +31,7 @@ const SCOPES = [
   'User.Read',                  // Read user profile
   'Calendars.Read',             // Read calendar events
   'Calendars.ReadWrite',        // Create calendar events (optional: for blocking time)
+  'Mail.Read',                  // Read emails (for email context)
   'Mail.Send',                  // Send emails
   'offline_access'              // Refresh tokens
 ]

@@ -54,6 +54,7 @@ After registration, you'll see the application overview page. **Copy these value
 | `User.Read` | Read user profile | No |
 | `Calendars.Read` | Read calendar events | No |
 | `Calendars.ReadWrite` | Create/update calendar events | No |
+| `Mail.Read` | Read emails (for email context) | No |
 | `Mail.Send` | Send emails | No |
 | `offline_access` | Refresh tokens | No |
 

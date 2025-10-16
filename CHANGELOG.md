@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Critical: Missing Mail.Read permission**:
+  - Added `Mail.Read` to SCOPES array in M365AuthService
+  - Email context fetch was failing with 403 "Access is denied" error
+  - Required for EmailContextService to fetch meeting participant emails
+  - Updated Azure AD setup documentation to include Mail.Read permission
+  - Users must re-authenticate to grant the new permission
+  - Impact: Email context now works correctly for meeting intelligence
+
 - **DatabaseService Electron compatibility**:
   - Fixed electron `app` import to work in both Electron and Node.js (test) environments
   - Changed from static `import { app } from 'electron'` to conditional `require()` with try-catch
