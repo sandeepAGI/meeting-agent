@@ -8,16 +8,13 @@ MEETING CONTEXT:
 - Organizer: {{organizerName}} ({{organizerEmail}})
 - Attendees: {{attendeesList}}
 
-RECENT EMAIL CONTEXT (to understand participant dynamics):
-{{emailContext}}
-
 TRANSCRIPT (with generic speaker labels):
 {{transcript}}
 
 INSTRUCTIONS:
 1. **Identify Speakers**: Match SPEAKER_00, SPEAKER_01, etc. to actual attendees
    - Use conversation content, topics discussed, roles mentioned, language patterns
-   - Use email context for communication patterns and relationships
+   - Use calendar meeting metadata and attendee list for context
    - Assign confidence level: high/medium/low
    - Provide reasoning for each mapping (2-3 sentences explaining why)
    - If a speaker cannot be confidently identified, leave as SPEAKER_XX with low confidence

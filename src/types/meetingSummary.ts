@@ -145,7 +145,6 @@ export interface MeetingContext {
     }>
   }
   transcript: string // Full transcript with SPEAKER_XX labels
-  emails: string // Formatted email context
 }
 
 // Create summary request

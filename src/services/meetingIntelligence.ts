@@ -10,7 +10,6 @@
  */
 
 import { ClaudeBatchService } from './claudeBatch'
-import { EmailContextService } from './emailContext'
 import { DatabaseService } from './database'
 import { PromptLoader } from '../utils/promptLoader'
 import { mergeDiarizationWithTranscript } from '../utils/mergeDiarization'
@@ -25,17 +24,14 @@ import type {
 
 export class MeetingIntelligenceService {
   private claudeService: ClaudeBatchService
-  private emailService: EmailContextService
   private db: DatabaseService
   private promptLoader: PromptLoader
 
   constructor(
     claudeService: ClaudeBatchService,
-    emailService: EmailContextService,
     db: DatabaseService
   ) {
     this.claudeService = claudeService
-    this.emailService = emailService
     this.db = db
     this.promptLoader = new PromptLoader()
   }
@@ -125,28 +121,12 @@ export class MeetingIntelligenceService {
     const meeting = meetingId ? this.db.getMeeting(meetingId) : null
 
     let meetingContext
-    let emailsFormatted = 'No email context available (standalone recording).'
 
     if (meeting) {
       // Full meeting context available
       const attendees = meeting.attendees_json
         ? JSON.parse(meeting.attendees_json)
         : []
-      const participantEmails = attendees.map((a: any) => a.email)
-
-      // Fetch emails (with caching and topic prioritization)
-      try {
-        const emails = await this.emailService.getEmailsForMeeting(
-          meetingId,
-          participantEmails,
-          undefined, // Use default options
-          meeting.subject // Pass meeting title for topic-based search
-        )
-        emailsFormatted = this.emailService.formatEmailsForPrompt(emails)
-      } catch (error) {
-        console.warn('Failed to fetch email context:', error)
-        emailsFormatted = 'Email context unavailable.'
-      }
 
       meetingContext = {
         id: meeting.id,
@@ -183,8 +163,7 @@ export class MeetingIntelligenceService {
 
     return {
       meeting: meetingContext,
-      transcript: mergedTranscript,
-      emails: emailsFormatted
+      transcript: mergedTranscript
     }
   }
 
@@ -211,7 +190,6 @@ export class MeetingIntelligenceService {
         organizerName: context.meeting.organizer.name,
         organizerEmail: context.meeting.organizer.email,
         attendeesList,
-        emailContext: context.emails,
         transcript: context.transcript
       }
     )

@@ -445,9 +445,9 @@ meeting-agent/
 - **PyTorch** - Neural network backend
 - **Metal** - GPU acceleration (automatic on macOS)
 
-### External Services (Future)
-- **Microsoft Graph API** - M365 calendar/email (Phase 2)
-- **Anthropic Claude API** - Meeting summarization (Phase 3)
+### External Services
+- **Microsoft Graph API** - M365 calendar (Phase 2, complete)
+- **Anthropic Claude API** - Meeting summarization (Phase 2.3-3, complete)
 
 ---
 
@@ -575,10 +575,11 @@ const handleOperation = async () => {
 
 ## Future Architecture Plans
 
-### Phase 2: M365 Integration
-- Add `src/services/auth.ts` (MSAL authentication)
-- Add `src/services/graph.ts` (Microsoft Graph API)
-- Add `src/services/calendar.ts` (meeting context)
+### Phase 2: M365 Integration (Complete)
+- ✅ `src/services/auth.ts` - MSAL authentication (integrated into GraphApiService)
+- ✅ `src/services/graphApi.ts` - Microsoft Graph API client
+- ✅ Calendar integration for meeting context
+- ⚠️ **Email context removed** - Testing showed no value (see `docs/archive/email-context-deprecation.md`)
 
 ### Phase 3: AI Summarization
 - Add `src/services/summarize.ts` (Claude API integration)

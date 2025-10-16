@@ -21,7 +21,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ✅ Metal GPU acceleration for both transcription AND diarization (3-10x speedup)
 - ✅ Microsoft 365 authentication with OAuth2 and secure token storage
 - ✅ Today's calendar meetings display with attendees and meeting details
-- ✅ Meeting intelligence backend (two-pass LLM workflow, email context, database, batch processing)
+- ✅ Meeting intelligence backend (two-pass LLM workflow, database, batch processing)
 - ✅ Meeting intelligence UI (recording browser, summary display, export functionality)
 - ✅ Standalone recording support (no calendar meeting required)
 - ✅ Stop audio capture button (free system resources when done)
@@ -44,13 +44,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ✅ **Complete backend infrastructure** for intelligent meeting summarization
 - ✅ **DatabaseService**: SQLite with 7 tables (meetings, recordings, transcripts, diarization_results, meeting_summaries, batch_jobs, email_context_cache)
 - ✅ **ClaudeBatchService**: Anthropic Batch API integration with adaptive polling (5min → 30sec)
-- ✅ **EmailContextService**: Graph API email fetching with HTML stripping, 2000-char truncation, 7-day caching
 - ✅ **MeetingIntelligenceService**: Two-pass orchestrator (Pass 1: speaker ID + summary, Pass 2: validation)
 - ✅ **PromptLoader**: Template loading and variable substitution utility
 - ✅ **Prompt Templates**: Pass 1 (initial summary) and Pass 2 (validation) templates
 - ✅ **7 IPC Handlers**: Complete main ↔ renderer communication layer
 - ✅ **Background Processing**: Non-blocking async workflow with database persistence
 - ✅ **Cost**: $0.09 per 60-min meeting (96% savings vs cloud alternatives)
+- ⚠️ **Email Context Removed**: Testing showed no value for speaker identification; feature deprecated (see `docs/archive/email-context-deprecation.md`)
 
 **Phase 2.2 (Calendar & Meeting Context)**:
 - ✅ Microsoft Graph API service for calendar operations
@@ -313,15 +313,6 @@ afplay <file>  # macOS
 - [ ] Test error case → Returns error message
 - [ ] Check console logs → No unexpected errors
 
-#### **Email Search (Phase 2.3-3):**
-- See `docs/testing/email-search-test-plan.md` for comprehensive test plan
-- [ ] Keyword extraction works correctly (unit tests)
-- [ ] TIER 1 prioritizes topic-relevant emails
-- [ ] TIER 2 fills remainder with participant emails
-- [ ] No duplicate emails between tiers
-- [ ] Emails correctly formatted in LLM prompts
-- [ ] Cache working correctly (7-day expiration)
-- [ ] Real-world validation with actual calendar meetings
 
 ### When to Skip Manual Testing
 
@@ -534,7 +525,7 @@ npm run format
 - **PyTorch** (Metal backend for macOS)
 
 ### Cloud Services
-- **Microsoft Graph API** (M365 calendar/email, Phase 2.1+)
+- **Microsoft Graph API** (M365 calendar, Phase 2.1+)
   - **@azure/msal-node** 3.8.0 - OAuth2 authentication
   - **@microsoft/microsoft-graph-client** 3.0.7 - Graph API client
   - **keytar** 7.9.0 - Secure token storage (system keychain)
@@ -585,8 +576,6 @@ AZURE_TENANT_ID=your_tenant_id
 # Phase 2.3-3: Meeting Intelligence
 ANTHROPIC_API_KEY=sk-ant-xxx
 ANTHROPIC_MODEL=claude-sonnet-4-20250514
-EMAIL_BODY_MAX_LENGTH=2000
-EMAIL_CONTEXT_MAX_COUNT=10
 ```
 
 ---

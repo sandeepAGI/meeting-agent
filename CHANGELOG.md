@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+- **Email Context Feature - Removed after testing showed no measurable value**:
+  - Removed EmailContextService from meeting intelligence pipeline
+  - Removed email fetching, caching, and prompt integration
+  - Removed `emails` field from MeetingContext type interface
+  - Updated Pass 1 prompt to remove email context section
+  - Test results showed emails provided no value for speaker identification:
+    - C200 test: LLM identified wrong speaker despite 10 emails available (anchored on wrong calendar data)
+    - Sync #3 test: Perfect speaker ID (3/3) with zero email references in reasoning
+    - LLM prioritizes transcript content over emails when speakers discuss their work
+    - Generic meeting titles ("Sync", "Weekly") produce poor email relevance
+  - Performance improvement: ~800ms faster per meeting (no Graph API call)
+  - Cost impact: No change (emails were free with M365 subscription)
+  - **Archived**: Complete implementation and analysis in `docs/archive/email-context-deprecation.md`
+  - **Code preserved**: Original EmailContextService in `docs/archive/code/emailContext.ts`
+  - See deprecation doc for full test results, lessons learned, and future considerations
+
 ### Fixed
 - **MeetingIntelligenceService - JSON parsing for markdown-wrapped responses**:
   - Added `stripMarkdownCodeBlocks()` helper to handle Claude responses wrapped in ```json code blocks

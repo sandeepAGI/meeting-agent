@@ -15,7 +15,7 @@ Meeting Agent is a desktop application that:
 - ✅ **Captures audio** from online meetings (Teams, Zoom, Google Meet, etc.)
 - ✅ **Transcribes audio locally** using OpenAI Whisper (free, runs on your machine)
 - ✅ **Identifies speakers** using pyannote.audio speaker diarization
-- ✅ **Integrates with Microsoft 365** for meeting context, calendar, and email
+- ✅ **Integrates with Microsoft 365** for meeting context and calendar
 - ✅ **Generates AI summaries** with speaker identification and action items using Claude API (Backend + UI complete)
 - ✅ **Provides export** to save summaries as markdown files with clipboard copy
 - 🔜 **Enhanced editor** to customize summaries before distribution (Phase 4)
@@ -64,10 +64,6 @@ Meeting Agent is a desktop application that:
 - **Export functionality**: Download as markdown + copy to clipboard
 - **Standalone recordings**: Works without calendar meetings
 - **Batch API integration** (50% cost savings)
-- **Two-tier email search**: Prioritizes topic-relevant emails for better AI context
-  - TIER 1: Emails matching meeting topic + participants
-  - TIER 2: All participant emails (fills remainder)
-- **Smart caching**: 7-day email context expiration
 - **SQLite database** for meeting persistence
 - **Adaptive polling** (5min → 30sec intervals)
 - **Background processing** (non-blocking)
@@ -80,10 +76,8 @@ Meeting Agent is a desktop application that:
 - 🔒 **Privacy-First**: All transcription and diarization happen locally, you control all data
 - 🚀 **Metal GPU Acceleration**: Fast transcription AND diarization on Apple Silicon
 - 🗣️ **Speaker Identification**: AI-powered speaker mapping with meeting context
-- 📧 **M365 Integration**: Calendar context, email history, and attendee information
+- 📧 **M365 Integration**: Calendar context and attendee information
 - 🧠 **Two-Pass LLM Workflow**: Initial summary + validation for high accuracy
-- 💾 **Smart Email Search**: Two-tier search prioritizes topic-relevant emails for better context
-- 💾 **Smart Caching**: Email context caching reduces API calls
 - ✏️ **Edit Before Send** (Coming soon): Review and customize summaries
 - 💾 **Smart Storage** (Coming soon): Auto-delete audio after transcription
 
@@ -166,10 +160,6 @@ ANTHROPIC_MODEL=claude-sonnet-4-20250514
 # Azure AD (for M365 integration)
 AZURE_CLIENT_ID=your_client_id
 AZURE_TENANT_ID=your_tenant_id
-
-# Optional: Customize email context
-EMAIL_BODY_MAX_LENGTH=2000
-EMAIL_CONTEXT_MAX_COUNT=10
 ```
 
 ### 5. Install Node Dependencies
@@ -341,7 +331,6 @@ meeting-agent/
 ### ✅ Phase 2.3-3: Meeting Intelligence (2025-10-14)
 - Two-pass LLM workflow for summaries
 - Batch API integration (50% cost savings)
-- Email context fetching with smart caching
 - SQLite database persistence
 - Background async processing
 - **UI components complete** (recording browser, summary display, export)

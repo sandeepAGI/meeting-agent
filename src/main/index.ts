@@ -695,7 +695,6 @@ function ensureIntelligenceService(): MeetingIntelligenceService {
     emailService = new EmailContextService(graphClient, dbService)
     intelligenceService = new MeetingIntelligenceService(
       claudeService,
-      emailService,
       dbService
     )
     console.log('[MeetingIntelligence] Service initialized')
