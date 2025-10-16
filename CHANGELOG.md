@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **DatabaseService Electron compatibility**:
+  - Fixed electron `app` import to work in both Electron and Node.js (test) environments
+  - Changed from static `import { app } from 'electron'` to conditional `require()` with try-catch
+  - Test environment now uses OS temp directory instead of failing on `app.getPath()`
+  - Production environment still uses `app.getPath('userData')` as before
+  - No behavior change in production - only fixes test environment compatibility
+  - Impact: Tests can now instantiate DatabaseService without errors
+
 ### Changed
 - **EmailContextService - Two-Tier Email Search**:
   - Enhanced email search to prioritize topic-relevant emails

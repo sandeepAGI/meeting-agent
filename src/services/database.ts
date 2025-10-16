@@ -7,7 +7,6 @@
  */
 
 import Database from 'better-sqlite3'
-import { app } from 'electron'
 import * as path from 'path'
 import * as fs from 'fs'
 import { randomUUID } from 'crypto'
@@ -20,14 +19,31 @@ import type {
   EmailContext
 } from '../types'
 
+// Conditional electron import - only available in Electron environment
+let app: any
+try {
+  app = require('electron').app
+} catch {
+  // Running in Node.js (test environment) - app will be undefined
+  app = undefined
+}
+
 export class DatabaseService {
   private db: Database.Database
   private dbPath: string
 
   constructor(dbPath?: string) {
-    // Default: Store in userData directory
-    this.dbPath =
-      dbPath || path.join(app.getPath('userData'), 'meeting-agent.db')
+    // Default: Store in userData directory (Electron) or temp directory (tests)
+    if (dbPath) {
+      this.dbPath = dbPath
+    } else if (app && app.getPath) {
+      // Electron environment - use userData directory
+      this.dbPath = path.join(app.getPath('userData'), 'meeting-agent.db')
+    } else {
+      // Test/Node.js environment - use temp directory
+      const tmpDir = require('os').tmpdir()
+      this.dbPath = path.join(tmpDir, `meeting-agent-test-${Date.now()}.db`)
+    }
 
     // Ensure directory exists
     const dbDir = path.dirname(this.dbPath)
@@ -361,12 +377,13 @@ export class DatabaseService {
 
     // Update with results (when complete)
     const stmt = this.db.prepare(`
-      UPDATE meeting_summaries 
+      UPDATE meeting_summaries
       SET pass1_status = 'complete',
           pass1_speaker_mappings_json = ?,
           pass1_summary = ?,
           pass1_action_items_json = ?,
           pass1_key_decisions_json = ?,
+          pass1_detailed_notes_json = ?,
           pass1_completed_at = CURRENT_TIMESTAMP,
           overall_status = 'pass1_complete',
           updated_at = CURRENT_TIMESTAMP
@@ -375,9 +392,10 @@ export class DatabaseService {
 
     stmt.run(
       JSON.stringify(data.speaker_mappings),
-      data.summary,
+      data.executive_summary || data.summary, // Support both field names
       JSON.stringify(data.action_items),
       JSON.stringify(data.key_decisions),
+      data.detailed_notes ? JSON.stringify(data.detailed_notes) : null,
       summaryId
     )
   }
@@ -403,12 +421,13 @@ export class DatabaseService {
 
     // Update with results (when complete)
     const stmt = this.db.prepare(`
-      UPDATE meeting_summaries 
+      UPDATE meeting_summaries
       SET pass2_status = 'complete',
           pass2_refined_summary = ?,
           pass2_validated_speakers_json = ?,
           pass2_validated_action_items_json = ?,
           pass2_validated_key_decisions_json = ?,
+          pass2_refined_detailed_notes_json = ?,
           pass2_corrections_json = ?,
           pass2_completed_at = CURRENT_TIMESTAMP,
           overall_status = 'complete',
@@ -417,10 +436,11 @@ export class DatabaseService {
     `)
 
     stmt.run(
-      data.refined_summary,
+      data.refined_executive_summary || data.refined_summary, // Support both field names
       JSON.stringify(data.validated_speakers),
       JSON.stringify(data.validated_action_items),
       JSON.stringify(data.validated_key_decisions),
+      data.refined_detailed_notes ? JSON.stringify(data.refined_detailed_notes) : null,
       JSON.stringify(data.corrections),
       summaryId
     )
