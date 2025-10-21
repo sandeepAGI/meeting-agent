@@ -704,6 +704,71 @@ body {
   line-height: 1.6;
 }
 
+/* Phase 2.3-4: Tabs */
+.selector-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.selector-tab {
+  background: none;
+  border: none;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #7f8c8d;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  margin-bottom: -2px;
+}
+
+.selector-tab:hover {
+  color: #2c3e50;
+  background-color: #f8f9fa;
+}
+
+.selector-tab.active {
+  color: #3498db;
+  border-bottom-color: #3498db;
+}
+
+/* Phase 2.3-4: Filters */
+.selector-filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.selector-search {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.selector-search:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.selector-date-range {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+}
+
+.selector-date-range:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
 .loading-state,
 .empty-state {
   padding: 40px 20px;
@@ -779,10 +844,47 @@ body {
 }
 
 .recording-date,
-.recording-speakers {
+.recording-speakers,
+.recording-organizer,
+.recording-attendees {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+/* Phase 2.3-4: Recording badges for calendar meetings */
+.recording-badge {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.recording-badge.recording-available {
+  background-color: #e8f5e9;
+  color: #27ae60;
+}
+
+.recording-badge.recording-missing {
+  background-color: #fee;
+  color: #e74c3c;
+}
+
+/* Phase 2.3-4: Calendar meeting cards */
+.recording-card.no-recording {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.recording-card.no-recording:hover {
+  background-color: #f8f9fa;
+  border-color: #e9ecef;
+}
+
+.recording-location {
+  font-size: 13px;
+  color: #7f8c8d;
+  margin-top: 4px;
 }
 
 .recording-preview {

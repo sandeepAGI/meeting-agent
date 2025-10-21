@@ -97,7 +97,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getRecordingsByMeetingId: (meetingId: string) =>
       ipcRenderer.invoke('db-get-recordings-by-meeting-id', meetingId),
     updateSummaryMeetingId: (summaryId: string, meetingId: string | null) =>
-      ipcRenderer.invoke('db-update-summary-meeting-id', summaryId, meetingId)
+      ipcRenderer.invoke('db-update-summary-meeting-id', summaryId, meetingId),
+    updateRecordingMeetingId: (recordingId: string, meetingId: string | null) =>
+      ipcRenderer.invoke('db-update-recording-meeting-id', recordingId, meetingId)
   }
 })
 

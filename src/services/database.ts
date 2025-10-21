@@ -242,6 +242,20 @@ export class DatabaseService {
     return stmt.all(meetingId) as any[]
   }
 
+  /**
+   * Update recording's meeting_id (link recording to calendar meeting)
+   * Phase 2.3-4: Meeting-Recording Association
+   */
+  updateRecordingMeetingId(recordingId: string, meetingId: string | null): void {
+    const stmt = this.db.prepare(`
+      UPDATE recordings
+      SET meeting_id = ?,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `)
+    stmt.run(meetingId, recordingId)
+  }
+
   // ===========================================================================
   // Transcripts
   // ===========================================================================

@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2] - 2025-10-21
+
+### Added
+- **Phase 2.3-4: Meeting-Recording Association**:
+  - Two-tab interface in MeetingSelector: "Standalone Recordings" and "Calendar Meetings"
+  - MeetingPicker dialog for linking recordings to calendar meetings during summary generation
+  - Date range filters for calendar meetings (Today, Last 7 Days, Last 30 Days, All)
+  - Search functionality for filtering recordings and meetings by title/content
+  - Recording status badges: "🎙️ Recorded" (green) for meetings with recordings, "❌ No Recording" (red) for meetings without
+  - "Back to Selection" button in SummaryDisplay for easy navigation
+  - Database methods: `searchMeetingsByTitle()`, `getRecordingsByMeetingId()`, `updateRecordingMeetingId()`, `updateSummaryMeetingId()`
+  - 5 new IPC handlers for meeting-recording association operations
+  - User flow: Record → Transcribe → Generate Summary → Select Meeting (or Standalone) → Linked automatically
+  - Recordings automatically refresh after linking to reflect correct tab placement
+
+### Changed
+- **MeetingSelector Complete Rewrite**: From 164 lines to 425 lines with comprehensive tab-based navigation
+- **Recording-Meeting Association**: Recordings now properly link to calendar meetings via `meeting_id` foreign key
+- **UI/UX Improvements**: Clearer separation between standalone recordings and calendar-linked meetings
+
 ### Removed
 - **Email Context Feature - Removed after testing showed no measurable value**:
   - Removed EmailContextService from meeting intelligence pipeline

@@ -90,6 +90,7 @@ export interface ElectronAPI {
     searchMeetingsByTitle: (query: string, limit?: number) => Promise<{ success: boolean; meetings?: any[]; error?: string }>
     getRecordingsByMeetingId: (meetingId: string) => Promise<{ success: boolean; recordings?: any[]; error?: string }>
     updateSummaryMeetingId: (summaryId: string, meetingId: string | null) => Promise<{ success: boolean; error?: string }>
+    updateRecordingMeetingId: (recordingId: string, meetingId: string | null) => Promise<{ success: boolean; error?: string }>
   }
 }
 

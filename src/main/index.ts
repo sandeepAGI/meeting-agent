@@ -911,6 +911,20 @@ ipcMain.handle('db-update-summary-meeting-id', async (_event, summaryId: string,
   }
 })
 
+ipcMain.handle('db-update-recording-meeting-id', async (_event, recordingId: string, meetingId: string | null) => {
+  try {
+    console.log('[Database] Updating recording meeting ID:', recordingId, '->', meetingId)
+    dbService.updateRecordingMeetingId(recordingId, meetingId)
+    return { success: true }
+  } catch (error) {
+    console.error('[Database] Update recording meeting ID failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update recording meeting ID'
+    }
+  }
+})
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
