@@ -143,6 +143,75 @@ export class GraphApiService {
   }
 
   /**
+   * Fetch calendar events for a specific date range
+   * Phase 2.3-4: For syncing historical meetings to database
+   */
+  async getMeetingsInDateRange(startDate: Date, endDate: Date): Promise<MeetingInfo[]> {
+    if (!this.client) {
+      throw new Error('Graph API client not initialized. Call initialize() first.')
+    }
+
+    try {
+      // Fetch calendar events using calendar view API
+      const response = await this.client
+        .api('/me/calendarview')
+        .query({
+          startDateTime: startDate.toISOString(),
+          endDateTime: endDate.toISOString()
+        })
+        .select([
+          'id',
+          'subject',
+          'start',
+          'end',
+          'organizer',
+          'attendees',
+          'isOnlineMeeting',
+          'onlineMeetingUrl',
+          'onlineMeeting',
+          'location'
+        ])
+        .orderby('start/dateTime')
+        .top(100) // Increased from 50 for historical sync
+        .get()
+
+      const events: Event[] = response.value || []
+
+      // Transform Graph API events to MeetingInfo
+      const meetings: MeetingInfo[] = events.map((event) => this.transformEvent(event))
+
+      // Phase 2.3-4: Save meetings to database for meeting-recording association
+      if (this.dbService) {
+        for (const meeting of meetings) {
+          try {
+            this.dbService.saveMeeting({
+              id: meeting.id,
+              subject: meeting.subject,
+              start_time: meeting.start.toISOString(),
+              end_time: meeting.end.toISOString(),
+              organizer_name: meeting.organizer.name,
+              organizer_email: meeting.organizer.email,
+              attendees_json: JSON.stringify(meeting.attendees),
+              is_online_meeting: meeting.isOnlineMeeting,
+              online_meeting_url: meeting.onlineMeetingUrl,
+              location: meeting.location
+            })
+          } catch (error) {
+            console.error(`[GraphAPI] Failed to save meeting ${meeting.id} to database:`, error)
+            // Continue processing other meetings even if one fails
+          }
+        }
+        console.log(`[GraphAPI] Saved ${meetings.length} meetings to database (${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()})`)
+      }
+
+      return meetings
+    } catch (error) {
+      console.error('[GraphAPI] Failed to fetch calendar events:', error)
+      throw new Error(`Failed to fetch calendar events: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
+  /**
    * Fetch a specific calendar event by ID
    */
   async getMeetingById(eventId: string): Promise<MeetingInfo | null> {

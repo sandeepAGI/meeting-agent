@@ -64,6 +64,8 @@ export interface ElectronAPI {
     getTodaysMeetings: () => Promise<{ success: boolean; meetings?: MeetingInfo[]; error?: string }>
     getUpcomingMeetings: (minutesAhead?: number) => Promise<{ success: boolean; meetings?: MeetingInfo[]; error?: string }>
     getMeetingById: (eventId: string) => Promise<{ success: boolean; meeting?: MeetingInfo; error?: string }>
+    // Phase 2.3-4: Date range sync for historical meetings
+    getMeetingsInDateRange: (startDate: string, endDate: string) => Promise<{ success: boolean; meetings?: MeetingInfo[]; error?: string }>
   }
 
   // Phase 2.3-3: Meeting Intelligence

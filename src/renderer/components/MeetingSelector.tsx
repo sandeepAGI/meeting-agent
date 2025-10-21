@@ -63,7 +63,7 @@ export function MeetingSelector({ onStartSummary, isLoading }: MeetingSelectorPr
   // Fetch calendar meetings when tab changes
   useEffect(() => {
     if (activeTab === 'calendar') {
-      fetchCalendarMeetings()
+      syncAndFetchCalendarMeetings()
     }
   }, [activeTab, dateRange])
 
@@ -82,6 +82,44 @@ export function MeetingSelector({ onStartSummary, isLoading }: MeetingSelectorPr
       console.error('[MeetingSelector] Fetch recordings error:', err)
     } finally {
       setIsLoadingRecordings(false)
+    }
+  }
+
+  const syncAndFetchCalendarMeetings = async () => {
+    setIsLoadingMeetings(true)
+    setError(null)
+    try {
+      const { startDate, endDate } = getDateRangeValues(dateRange)
+
+      // Phase 2.3-4: First sync meetings from M365 to database
+      // This ensures we have the latest data for the selected date range
+      try {
+        console.log('[MeetingSelector] Syncing meetings from M365...')
+        await window.electronAPI.graphApi.getMeetingsInDateRange(
+          startDate.toISOString(),
+          endDate.toISOString()
+        )
+        console.log('[MeetingSelector] Sync complete')
+      } catch (syncErr) {
+        console.warn('[MeetingSelector] M365 sync failed (will use cached data):', syncErr)
+        // Continue to fetch from database even if sync fails
+      }
+
+      // Then fetch from database (which now includes synced meetings)
+      const result = await window.electronAPI.database.getMeetingsInDateRange(
+        startDate.toISOString(),
+        endDate.toISOString()
+      )
+      if (result.success && result.meetings) {
+        setCalendarMeetings(result.meetings)
+      } else {
+        setError(result.error || 'Failed to load meetings')
+      }
+    } catch (err) {
+      setError('Failed to fetch calendar meetings')
+      console.error('[MeetingSelector] Fetch meetings error:', err)
+    } finally {
+      setIsLoadingMeetings(false)
     }
   }
 

@@ -64,7 +64,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   graphApi: {
     getTodaysMeetings: () => ipcRenderer.invoke('graph-get-todays-meetings'),
     getUpcomingMeetings: (minutesAhead?: number) => ipcRenderer.invoke('graph-get-upcoming-meetings', minutesAhead),
-    getMeetingById: (eventId: string) => ipcRenderer.invoke('graph-get-meeting-by-id', eventId)
+    getMeetingById: (eventId: string) => ipcRenderer.invoke('graph-get-meeting-by-id', eventId),
+    // Phase 2.3-4: Date range sync for historical meetings
+    getMeetingsInDateRange: (startDate: string, endDate: string) =>
+      ipcRenderer.invoke('graph-get-meetings-in-date-range', startDate, endDate)
   },
 
   // Phase 2.3-3: Meeting Intelligence

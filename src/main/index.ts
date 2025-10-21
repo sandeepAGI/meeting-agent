@@ -640,6 +640,38 @@ ipcMain.handle('graph-get-upcoming-meetings', async (_event, minutesAhead: numbe
   }
 })
 
+// Get meetings in date range (Phase 2.3-4: For syncing historical meetings)
+ipcMain.handle('graph-get-meetings-in-date-range', async (_event, startDate: string, endDate: string) => {
+  try {
+    if (!m365AuthService) {
+      return {
+        success: false,
+        error: 'Azure credentials not configured.'
+      }
+    }
+
+    // Get access token
+    const accessToken = await m365AuthService.getAccessToken()
+
+    // Initialize Graph API client
+    graphApiService.initialize(accessToken)
+
+    // Fetch meetings in date range
+    const meetings = await graphApiService.getMeetingsInDateRange(
+      new Date(startDate),
+      new Date(endDate)
+    )
+
+    return { success: true, meetings }
+  } catch (error) {
+    console.error('[GraphAPI] Get meetings in date range failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch meetings'
+    }
+  }
+})
+
 // Get meeting by ID
 ipcMain.handle('graph-get-meeting-by-id', async (_event, eventId: string) => {
   try {
