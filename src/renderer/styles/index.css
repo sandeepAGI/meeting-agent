@@ -894,6 +894,12 @@ body {
   margin-bottom: 24px;
 }
 
+.summary-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .summary-header h3 {
   margin: 0;
   color: #2c3e50;
@@ -902,6 +908,21 @@ body {
 .summary-actions {
   display: flex;
   gap: 8px;
+}
+
+.btn-back {
+  background-color: #95a5a6;
+  color: white;
+  padding: 8px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-back:hover {
+  background-color: #7f8c8d;
 }
 
 .btn-regenerate,

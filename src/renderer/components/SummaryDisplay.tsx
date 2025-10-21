@@ -18,12 +18,25 @@ interface SummaryDisplayProps {
     keyDecisions?: string[]
   }) => void
   onRegenerate: () => void
+  onBack?: () => void  // Phase 2.3-4: Navigate back to selection
   isUpdating: boolean
 }
 
-export function SummaryDisplay({ summary, onUpdate, onRegenerate, isUpdating }: SummaryDisplayProps) {
+export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpdating }: SummaryDisplayProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editedSummary, setEditedSummary] = useState(summary.final_summary || summary.pass2_refined_summary || summary.pass1_summary || '')
+
+  // Handle back navigation - safe to call since this component only renders when summary is complete
+  const handleBack = () => {
+    if (isEditing) {
+      // Warn user if they have unsaved edits
+      if (confirm('You have unsaved edits. Are you sure you want to go back?')) {
+        onBack?.()
+      }
+    } else {
+      onBack?.()
+    }
+  }
 
   // Parse JSON fields
   const speakers: SpeakerMapping[] = JSON.parse(
@@ -161,7 +174,18 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, isUpdating }: 
   return (
     <div className="summary-display">
       <div className="summary-header">
-        <h3>📝 Meeting Summary</h3>
+        <div className="summary-title-row">
+          {onBack && (
+            <button
+              onClick={handleBack}
+              className="btn btn-back"
+              title="Return to meeting selection"
+            >
+              ← Back
+            </button>
+          )}
+          <h3>📝 Meeting Summary</h3>
+        </div>
         <div className="summary-actions">
           <button
             onClick={handleExport}

@@ -846,6 +846,71 @@ ipcMain.handle('db-get-recordings-with-transcripts', async (_event, limit: numbe
   }
 })
 
+// Phase 2.3-4: Meeting-Recording Association - Database Query Handlers
+
+// Get meetings in date range
+ipcMain.handle('db-get-meetings-in-date-range', async (_event, startDate: string, endDate: string) => {
+  try {
+    console.log('[Database] Fetching meetings in date range:', startDate, '-', endDate)
+    const meetings = dbService.getMeetingsByDateRange(startDate, endDate)
+    console.log('[Database] Found meetings:', meetings.length)
+    return { success: true, meetings }
+  } catch (error) {
+    console.error('[Database] Get meetings in date range failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get meetings'
+    }
+  }
+})
+
+// Search meetings by title
+ipcMain.handle('db-search-meetings-by-title', async (_event, query: string, limit: number = 50) => {
+  try {
+    console.log('[Database] Searching meetings by title:', query)
+    const meetings = dbService.searchMeetingsByTitle(query, limit)
+    console.log('[Database] Found meetings:', meetings.length)
+    return { success: true, meetings }
+  } catch (error) {
+    console.error('[Database] Search meetings by title failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to search meetings'
+    }
+  }
+})
+
+// Get recordings by meeting ID
+ipcMain.handle('db-get-recordings-by-meeting-id', async (_event, meetingId: string) => {
+  try {
+    console.log('[Database] Fetching recordings for meeting:', meetingId)
+    const recordings = dbService.getRecordingsByMeetingId(meetingId)
+    console.log('[Database] Found recordings:', recordings.length)
+    return { success: true, recordings }
+  } catch (error) {
+    console.error('[Database] Get recordings by meeting ID failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get recordings'
+    }
+  }
+})
+
+// Update summary meeting ID
+ipcMain.handle('db-update-summary-meeting-id', async (_event, summaryId: string, meetingId: string | null) => {
+  try {
+    console.log('[Database] Updating summary meeting ID:', summaryId, '->', meetingId)
+    dbService.updateSummaryMeetingId(summaryId, meetingId)
+    return { success: true }
+  } catch (error) {
+    console.error('[Database] Update summary meeting ID failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update summary meeting ID'
+    }
+  }
+})
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,

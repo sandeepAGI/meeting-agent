@@ -163,6 +163,25 @@ export class DatabaseService {
     return stmt.all(startDate, endDate) as any[]
   }
 
+  /**
+   * Search meetings by subject (case-insensitive)
+   * Phase 2.3-4: Meeting-Recording Association
+   *
+   * @param query - Search query (empty string returns all meetings)
+   * @param limit - Maximum results (default 50)
+   */
+  searchMeetingsByTitle(query: string, limit: number = 50) {
+    // Empty query returns all meetings (documented behavior)
+    const stmt = this.db.prepare(`
+      SELECT * FROM meetings
+      WHERE subject LIKE ?
+      ORDER BY start_time DESC
+      LIMIT ?
+    `)
+    // Note: %${query}% is safe here - prepared statement escapes the entire value
+    return stmt.all(`%${query}%`, limit) as any[]
+  }
+
   // ===========================================================================
   // Recordings
   // ===========================================================================
@@ -208,6 +227,19 @@ export class DatabaseService {
       LIMIT ?
     `)
     return stmt.all(limit) as any[]
+  }
+
+  /**
+   * Get all recordings for a specific meeting
+   * Phase 2.3-4: Meeting-Recording Association
+   */
+  getRecordingsByMeetingId(meetingId: string) {
+    const stmt = this.db.prepare(`
+      SELECT * FROM recordings
+      WHERE meeting_id = ?
+      ORDER BY created_at DESC
+    `)
+    return stmt.all(meetingId) as any[]
   }
 
   // ===========================================================================
@@ -477,6 +509,20 @@ export class DatabaseService {
       JSON.stringify(data.corrections),
       summaryId
     )
+  }
+
+  /**
+   * Update the meeting_id for a summary
+   * Phase 2.3-4: Meeting-Recording Association
+   */
+  updateSummaryMeetingId(summaryId: string, meetingId: string | null): void {
+    const stmt = this.db.prepare(`
+      UPDATE meeting_summaries
+      SET meeting_id = ?,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `)
+    stmt.run(meetingId, summaryId)
   }
 
   updateSummaryFinal(summaryId: string, userEdits: UpdateSummaryRequest): void {

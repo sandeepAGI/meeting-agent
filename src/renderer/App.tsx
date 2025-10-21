@@ -130,6 +130,7 @@ function App() {
                 summary={intelligenceState.summary}
                 onUpdate={(updates) => intelligenceActions.updateSummary(intelligenceState.summaryId!, updates)}
                 onRegenerate={() => intelligenceActions.regenerate(intelligenceState.summaryId!)}
+                onBack={intelligenceActions.clear}
                 isUpdating={intelligenceState.isLoading}
               />
             )}

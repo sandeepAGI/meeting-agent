@@ -88,7 +88,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Database queries
   database: {
     getRecordingsWithTranscripts: (limit?: number) =>
-      ipcRenderer.invoke('db-get-recordings-with-transcripts', limit)
+      ipcRenderer.invoke('db-get-recordings-with-transcripts', limit),
+    // Phase 2.3-4: Meeting-Recording Association
+    getMeetingsInDateRange: (startDate: string, endDate: string) =>
+      ipcRenderer.invoke('db-get-meetings-in-date-range', startDate, endDate),
+    searchMeetingsByTitle: (query: string, limit?: number) =>
+      ipcRenderer.invoke('db-search-meetings-by-title', query, limit),
+    getRecordingsByMeetingId: (meetingId: string) =>
+      ipcRenderer.invoke('db-get-recordings-by-meeting-id', meetingId),
+    updateSummaryMeetingId: (summaryId: string, meetingId: string | null) =>
+      ipcRenderer.invoke('db-update-summary-meeting-id', summaryId, meetingId)
   }
 })
 
