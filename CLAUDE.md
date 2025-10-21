@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Current Status
 
-**Version**: 0.3.1 (Phase 2.3-4 In Progress 🔄)
+**Version**: 0.3.2 (Phase 2.3-4 Complete ✅)
 **Last Updated**: 2025-10-21
 
 **What Works Now**:
@@ -25,27 +25,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ✅ Meeting intelligence UI (recording browser, summary display, export functionality)
 - ✅ Standalone recording support (no calendar meeting required)
 - ✅ Stop audio capture button (free system resources when done)
+- ✅ Meeting-recording association (Option C: link during summary generation)
+- ✅ Two-tab interface: Standalone Recordings | Calendar Meetings
+- ✅ Date range filters (Today, Last 7 Days, Last 30 Days, All)
+- ✅ Search by meeting title
+- ✅ Auto-sync from M365 when opening calendar tab
+- ✅ "Back to Selection" navigation button
 
-**What's Missing (Phase 2.3-4)**:
-- ⚠️ Meeting-recording association (recordings not linked to calendar meetings)
-- ⚠️ Week view with date filters (only shows last 20 recordings)
-- ⚠️ Search by meeting title or attendees
-- ⚠️ "Back to Selection" navigation button
-
-**Current Phase**: Phase 2.3-4 - Meeting-Recording Association (Option C: Tag during summary generation)
+**Next Phase**: Manual testing and production validation
 
 ### Recent Updates
 
-**Phase 2.3-4: Meeting-Recording Association (October 2025 - In Progress 🔄)**:
-- **Goal**: Link recordings to calendar meetings during summary generation (Option C)
-- **Deliverables**:
-  - 🔄 Meeting selection dialog after picking recording
-  - 🔄 Database methods: getMeetingsInDateRange, searchMeetingsByTitle, updateSummaryMeetingId
-  - 🔄 MeetingSelector tabs: "Calendar Meetings" | "Standalone Recordings"
-  - 🔄 Date range and search filters
-  - 🔄 "Back to Selection" button in SummaryDisplay
-- **Status**: Documented in `docs/planning/roadmap.md` Phase 2.3-4
-- **Estimated**: 4-6 hours
+**Phase 2.3-4 Complete: Meeting-Recording Association (October 21, 2025) ✅**:
+- ✅ **Complete Option C Implementation**: Link recordings to meetings during summary generation
+- ✅ **Two-Tab Interface**: "Standalone Recordings" | "Calendar Meetings"
+- ✅ **MeetingPicker Dialog**: Select meeting or "Standalone Recording" option
+- ✅ **Date Range Filters**: Today, Last 7 Days, Last 30 Days, All
+- ✅ **Search Functionality**: Filter meetings by title (with null-safety)
+- ✅ **Auto-Sync from M365**: Automatic meeting sync for selected date range
+- ✅ **Recording Status Badges**: "🎙️ Recorded" | "❌ No Recording"
+- ✅ **Back to Selection Button**: Navigate back from summary view
+- ✅ **Database Methods**: 5 new methods (getMeetingsByDateRange, searchMeetingsByTitle, getRecordingsByMeetingId, updateSummaryMeetingId, updateRecordingMeetingId)
+- ✅ **Graph API Enhancement**: getMeetingsInDateRange with auto-save to database
+- ✅ **Bug Fixes**: Search safety, M365 persistence, auto-sync date ranges, UI refresh
+- ✅ **User Tested**: Complete flow verified working end-to-end
+- **Duration**: ~6 hours (including bug fixes)
+- **Commits**: 6 (implementation + fixes + documentation)
 
 **Phase 2.3-3 Complete (October 2025) ✅**:
 - ✅ **MeetingSelector**: Visual recording browser with transcript previews

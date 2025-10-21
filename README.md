@@ -4,9 +4,9 @@ AI-powered meeting transcription and summarization tool for macOS.
 
 ## Status
 
-**Current Version**: 0.3.1 - Phase 2.3-4 In Progress 🔄
+**Current Version**: 0.3.2 - Phase 2.3-4 Complete ✅
 
-This project is in active development. Phases 0-2.3-3 are complete (audio capture, transcription, speaker diarization, M365 integration, LLM intelligence backend + UI). Phase 2.3-4 (meeting-recording association) is in progress. See [CHANGELOG.md](./CHANGELOG.md) for version history and [docs/planning/roadmap.md](./docs/planning/roadmap.md) for the full development plan.
+This project is in active development. Phases 0-2.3-4 are complete (audio capture, transcription, speaker diarization, M365 integration, LLM intelligence backend + UI, meeting-recording association). The core meeting intelligence workflow is feature-complete. See [CHANGELOG.md](./CHANGELOG.md) for version history and [docs/planning/roadmap.md](./docs/planning/roadmap.md) for the full development plan.
 
 ## Overview
 
@@ -20,7 +20,7 @@ Meeting Agent is a desktop application that:
 - ✅ **Provides export** to save summaries as markdown files with clipboard copy
 - 🔜 **Enhanced editor** to customize summaries before distribution (Phase 4)
 
-## What Works Now (v0.3.1)
+## What Works Now (v0.3.2)
 
 ### Audio Capture
 - Native system audio capture (no virtual drivers required!)
@@ -68,6 +68,18 @@ Meeting Agent is a desktop application that:
 - **Adaptive polling** (5min → 30sec intervals)
 - **Background processing** (non-blocking)
 - **Cost**: ~$0.09 per 60-min meeting (96% savings vs cloud alternatives)
+
+### Meeting-Recording Association (Phase 2.3-4 Complete)
+- **Two-tab interface**: Browse "Standalone Recordings" or "Calendar Meetings"
+- **Link recordings to meetings**: Choose meeting during summary generation (Option C)
+- **Date range filters**: Today, Last 7 Days, Last 30 Days, All
+- **Search functionality**: Filter meetings by title
+- **Auto-sync from M365**: Automatically fetches meetings for selected date range
+- **Recording status badges**: Visual indicators ("🎙️ Recorded" | "❌ No Recording")
+- **MeetingPicker dialog**: Select which meeting a recording belongs to
+- **Standalone option**: Recordings work without calendar association
+- **Back to Selection**: Easy navigation between summary and selection views
+- **Automatic UI updates**: Recording moves between tabs after linking
 
 ## Key Features
 

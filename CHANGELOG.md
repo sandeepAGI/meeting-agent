@@ -26,6 +26,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **MeetingSelector Complete Rewrite**: From 164 lines to 425 lines with comprehensive tab-based navigation
 - **Recording-Meeting Association**: Recordings now properly link to calendar meetings via `meeting_id` foreign key
 - **UI/UX Improvements**: Clearer separation between standalone recordings and calendar-linked meetings
+- **GraphApiService Enhancement**: Auto-saves all fetched meetings to database for persistence
+- **Auto-Sync on Tab Open**: Calendar tab automatically syncs selected date range from M365
+
+### Fixed
+- **Search Safety**: Calendar meeting search now handles null/undefined subjects gracefully using optional chaining
+- **Calendar Meetings Not Persisting**: GraphApiService now saves meetings to database on fetch (fixes 0 meetings issue)
+- **Date Range Showing 0 Meetings**: Auto-sync from M365 now fetches exact date range (Today, Last 7 Days, Last 30 Days)
+- **Recording List Not Refreshing**: Automatic refresh after linking recording to meeting
 
 ### Removed
 - **Email Context Feature - Removed after testing showed no measurable value**:
