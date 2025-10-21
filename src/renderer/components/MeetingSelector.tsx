@@ -35,18 +35,36 @@ interface CalendarMeeting {
 
 type DateRange = 'today' | 'week' | 'month' | 'all'
 type Tab = 'recordings' | 'calendar'
+type Mode = 'browse' | 'generate'
+
+interface RecordingWithSummary {
+  recording_id: string
+  file_path: string
+  duration_seconds: number
+  created_at: string
+  transcript_id: string | null
+  transcript_text: string | null
+  summary_id: string | null
+  summary_status: string | null
+  meeting_subject: string | null
+}
 
 interface MeetingSelectorProps {
   onStartSummary: (meetingId: string, transcriptId: string) => void
+  onViewTranscript: (recordingId: string, recordingDate: string, recordingDuration: number) => void
+  onViewSummary: (summaryId: string) => void
   isLoading: boolean
 }
 
-export function MeetingSelector({ onStartSummary, isLoading }: MeetingSelectorProps) {
+export function MeetingSelector({ onStartSummary, onViewTranscript, onViewSummary, isLoading }: MeetingSelectorProps) {
+  const [mode, setMode] = useState<Mode>('browse')
   const [activeTab, setActiveTab] = useState<Tab>('recordings')
   const [recordings, setRecordings] = useState<Recording[]>([])
+  const [browseRecordings, setBrowseRecordings] = useState<RecordingWithSummary[]>([])
   const [calendarMeetings, setCalendarMeetings] = useState<CalendarMeeting[]>([])
   const [selectedRecording, setSelectedRecording] = useState<Recording | null>(null)
   const [selectedMeeting, setSelectedMeeting] = useState<CalendarMeeting | null>(null)
+  const [selectedBrowseRecording, setSelectedBrowseRecording] = useState<RecordingWithSummary | null>(null)
   const [isLoadingRecordings, setIsLoadingRecordings] = useState(true)
   const [isLoadingMeetings, setIsLoadingMeetings] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -55,17 +73,27 @@ export function MeetingSelector({ onStartSummary, isLoading }: MeetingSelectorPr
   const [showMeetingPicker, setShowMeetingPicker] = useState(false)
   const [pendingTranscriptId, setPendingTranscriptId] = useState<string | null>(null)
 
-  // Fetch recordings on mount
+  // Fetch recordings on mount and when mode changes
   useEffect(() => {
-    fetchRecordings()
-  }, [])
+    // Clear state when switching modes to prevent showing stale data
+    setBrowseRecordings([])
+    setRecordings([])
+    setSelectedRecording(null)
+    setSelectedBrowseRecording(null)
+
+    if (mode === 'browse') {
+      fetchBrowseRecordings()
+    } else {
+      fetchRecordings()
+    }
+  }, [mode])
 
   // Fetch calendar meetings when tab changes
   useEffect(() => {
-    if (activeTab === 'calendar') {
+    if (activeTab === 'calendar' && mode === 'generate') {
       syncAndFetchCalendarMeetings()
     }
-  }, [activeTab, dateRange])
+  }, [activeTab, dateRange, mode])
 
   const fetchRecordings = async () => {
     setIsLoadingRecordings(true)
@@ -80,6 +108,31 @@ export function MeetingSelector({ onStartSummary, isLoading }: MeetingSelectorPr
     } catch (err) {
       setError('Failed to fetch recordings')
       console.error('[MeetingSelector] Fetch recordings error:', err)
+    } finally {
+      setIsLoadingRecordings(false)
+    }
+  }
+
+  const fetchBrowseRecordings = async () => {
+    setIsLoadingRecordings(true)
+    setError(null)
+    try {
+      const result = await window.electronAPI.database.getRecordingsWithSummaries(100)
+      if (result.success && result.recordings) {
+        // Deduplicate recordings by recording_id (in case of multiple summaries per transcript)
+        const uniqueRecordings = Array.from(
+          new Map(
+            result.recordings.map(r => [r.recording_id, r])
+          ).values()
+        )
+        console.log('[MeetingSelector] Total recordings:', result.recordings.length, 'Unique:', uniqueRecordings.length)
+        setBrowseRecordings(uniqueRecordings)
+      } else {
+        setError(result.error || 'Failed to load recordings')
+      }
+    } catch (err) {
+      setError('Failed to fetch recordings')
+      console.error('[MeetingSelector] Fetch browse recordings error:', err)
     } finally {
       setIsLoadingRecordings(false)
     }
@@ -247,6 +300,20 @@ export function MeetingSelector({ onStartSummary, isLoading }: MeetingSelectorPr
     setPendingTranscriptId(null)
   }
 
+  const handleViewRecording = (recording: RecordingWithSummary) => {
+    if (recording.summary_id) {
+      // Has summary - view summary
+      onViewSummary(recording.summary_id)
+    } else if (recording.transcript_id) {
+      // Has transcript only - view transcript
+      onViewTranscript(
+        recording.recording_id,
+        recording.created_at,
+        recording.duration_seconds
+      )
+    }
+  }
+
   const formatDuration = (seconds: number): string => {
     const mins = Math.floor(seconds / 60)
     const secs = Math.floor(seconds % 60)
@@ -283,14 +350,39 @@ export function MeetingSelector({ onStartSummary, isLoading }: MeetingSelectorPr
   return (
     <div className="meeting-selector">
       <div className="selector-header">
-        <h3>Generate Meeting Summary</h3>
+        <h3>{mode === 'browse' ? 'Browse Recordings' : 'Generate Meeting Summary'}</h3>
         <p className="selector-description">
-          Select a recording to create an intelligent summary with speaker identification and action items.
+          {mode === 'browse'
+            ? 'View past transcripts and summaries from your meetings.'
+            : 'Select a recording to create an intelligent summary with speaker identification and action items.'}
         </p>
       </div>
 
-      {/* Tabs */}
-      <div className="selector-tabs">
+      {/* Mode Toggle */}
+      <div className="mode-toggle">
+        <button
+          className={`mode-toggle-btn ${mode === 'browse' ? 'active' : ''}`}
+          onClick={() => {
+            setMode('browse')
+            setSearchQuery('')
+          }}
+        >
+          📖 Browse
+        </button>
+        <button
+          className={`mode-toggle-btn ${mode === 'generate' ? 'active' : ''}`}
+          onClick={() => {
+            setMode('generate')
+            setSearchQuery('')
+          }}
+        >
+          ✨ Generate
+        </button>
+      </div>
+
+      {/* Tabs (only show in generate mode) */}
+      {mode === 'generate' && (
+        <div className="selector-tabs">
         <button
           className={`selector-tab ${activeTab === 'recordings' ? 'active' : ''}`}
           onClick={() => {
@@ -312,6 +404,7 @@ export function MeetingSelector({ onStartSummary, isLoading }: MeetingSelectorPr
           📅 Calendar Meetings ({filteredMeetings.length})
         </button>
       </div>
+      )}
 
       {/* Filters */}
       <div className="selector-filters">
@@ -337,7 +430,65 @@ export function MeetingSelector({ onStartSummary, isLoading }: MeetingSelectorPr
       </div>
 
       {/* Content */}
-      {isLoadingData ? (
+      {mode === 'browse' ? (
+        /* Browse Mode */
+        isLoadingRecordings ? (
+          <div className="loading-state">Loading recordings...</div>
+        ) : error ? (
+          <div className="error-message">{error}</div>
+        ) : browseRecordings.length === 0 ? (
+          <div className="empty-state">
+            <p>No recordings found.</p>
+            <p className="form-hint">
+              Record a meeting first to see transcripts and summaries here.
+            </p>
+          </div>
+        ) : (
+          <div className="recordings-list">
+            {browseRecordings
+              .filter(r => {
+                const matchesSearch = searchQuery
+                  ? (r.meeting_subject?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                     r.transcript_text?.toLowerCase().includes(searchQuery.toLowerCase()))
+                  : true
+                return matchesSearch
+              })
+              .map((recording) => (
+                <div
+                  key={recording.recording_id}
+                  className={`recording-card ${selectedBrowseRecording?.recording_id === recording.recording_id ? 'selected' : ''} clickable`}
+                  onClick={() => handleViewRecording(recording)}
+                >
+                  <div className="recording-header">
+                    <span className="recording-title">
+                      {recording.meeting_subject || 'Untitled Recording'}
+                    </span>
+                    <div className="recording-badges">
+                      {recording.summary_id ? (
+                        <span className="recording-badge summary-available">✅ Summary</span>
+                      ) : recording.transcript_id ? (
+                        <span className="recording-badge transcript-available">📝 Transcript</span>
+                      ) : null}
+                      <span className="recording-duration">
+                        {formatDuration(recording.duration_seconds)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="recording-meta">
+                    <span className="recording-date">
+                      {formatDate(recording.created_at)}
+                    </span>
+                  </div>
+                  {recording.transcript_text && (
+                    <div className="recording-preview">
+                      {recording.transcript_text.substring(0, 120)}...
+                    </div>
+                  )}
+                </div>
+              ))}
+          </div>
+        )
+      ) : isLoadingData ? (
         <div className="loading-state">Loading {activeTab === 'recordings' ? 'recordings' : 'meetings'}...</div>
       ) : error ? (
         <div className="error-message">{error}</div>

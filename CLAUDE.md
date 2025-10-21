@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Current Status
 
-**Version**: 0.3.2 (Phase 2.3-4 Complete ✅)
+**Version**: 0.4.0 (Phase 4: Browse Mode Complete ✅)
 **Last Updated**: 2025-10-21
 
 **What Works Now**:
@@ -31,10 +31,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ✅ Search by meeting title
 - ✅ Auto-sync from M365 when opening calendar tab
 - ✅ "Back to Selection" navigation button
+- ✅ **Browse Mode**: View past transcripts and summaries
+- ✅ **Transcript Viewer**: Display speaker-labeled transcripts with metadata
+- ✅ **Mode Toggle**: Switch between Browse and Generate modes
+- ✅ **Aileron Branding**: Logo, colors, and Montserrat font integrated
 
-**Next Phase**: Manual testing and production validation
+**Next Phase**: Enhanced Summary Editor with inline editing
 
 ### Recent Updates
+
+**Phase 4: Browse Mode (October 21, 2025) ✅**:
+- ✅ **Browse/Generate Mode Toggle**: Switch between viewing past recordings and generating new summaries
+- ✅ **Unified Recording List**: Shows all recordings with status badges (✅ Summary | 📝 Transcript)
+- ✅ **TranscriptViewer Component**: Full viewer for past transcripts with speaker labels
+- ✅ **Smart Navigation**: Click to view transcript or summary based on recording status
+- ✅ **Database Methods**: 3 new methods (getTranscriptByRecordingId, getSummaryByRecordingId, getRecordingsWithSummaries)
+- ✅ **IPC Handlers**: 3 new handlers for browse mode functionality
+- ✅ **State Management**: Proper state clearing when switching modes
+- ✅ **Deduplication Logic**: Prevents duplicate keys from stale React state
+- ✅ **Aileron Branding**: Complete design system with purple (#2D2042) and blue (#60B5E5) colors
+- ✅ **Logo Integration**: Aileron logo in app header with proper Vite asset handling
+- ✅ **Typography**: Montserrat font family via Google Fonts
+- **Duration**: ~4 hours (implementation + bug fixes)
+- **Known Issues**: UI rendering needs polish (minor visual improvements needed)
 
 **Phase 2.3-4 Complete: Meeting-Recording Association (October 21, 2025) ✅**:
 - ✅ **Complete Option C Implementation**: Link recordings to meetings during summary generation

@@ -93,6 +93,10 @@ export interface ElectronAPI {
     getRecordingsByMeetingId: (meetingId: string) => Promise<{ success: boolean; recordings?: any[]; error?: string }>
     updateSummaryMeetingId: (summaryId: string, meetingId: string | null) => Promise<{ success: boolean; error?: string }>
     updateRecordingMeetingId: (recordingId: string, meetingId: string | null) => Promise<{ success: boolean; error?: string }>
+    // Phase 4: Browse mode
+    getTranscriptByRecordingId: (recordingId: string) => Promise<{ success: boolean; transcript?: any; error?: string }>
+    getSummaryByRecordingId: (recordingId: string) => Promise<{ success: boolean; summary?: any; error?: string }>
+    getRecordingsWithSummaries: (limit?: number) => Promise<{ success: boolean; recordings?: any[]; error?: string }>
   }
 }
 

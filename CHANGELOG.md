@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2025-10-21
+
+### Added
+- **Phase 4: Browse Mode**:
+  - Browse/Generate mode toggle in Meeting Intelligence section
+  - Unified recording list showing all recordings with status badges (✅ Summary | 📝 Transcript)
+  - TranscriptViewer component for viewing past transcripts with speaker labels
+  - Smart navigation: click to view transcript or summary based on recording status
+  - Search functionality for filtering recordings by title or transcript content
+  - Recording metadata display (date, duration, speaker count)
+  - "Generate Summary" button in TranscriptViewer
+  - Database methods: `getTranscriptByRecordingId()`, `getSummaryByRecordingId()`, `getRecordingsWithSummaries()`
+  - 3 new IPC handlers for browse mode functionality
+  - State management improvements: proper state clearing when switching modes
+  - Deduplication logic to prevent duplicate keys from stale React state
+- **Aileron Branding**:
+  - Complete design system with CSS custom properties
+  - Aileron logo integration in app header
+  - Brand colors: Purple (#2D2042), Blue (#60B5E5), Light Blue (#B3DCF3), Light Gray (#F2F2F2)
+  - Montserrat font family via Google Fonts
+  - CSP updates for font loading
+  - Mode toggle styling with brand colors
+  - Recording status badges with visual hierarchy
+  - Image module type declarations for TypeScript
+
+### Changed
+- **MeetingSelector Enhancement**: Added mode toggle and browse mode UI
+- **App.tsx**: Integrated TranscriptViewer with navigation handlers
+- **SQL Query Optimization**: Explicit field selection instead of `r.*` for better performance and type safety
+- **Database Schema**: Fixed join path for summaries (recordings → transcripts → meeting_summaries)
+
+### Fixed
+- **Duplicate Recording Keys**: Fixed React duplicate key warning by adding state clearing on mode switch
+- **SQL Join Error**: Fixed "no such column: s.recording_id" by correcting join to use transcript_id
+- **Asset Loading**: Fixed logo display using Vite module imports
+- **Type Safety**: Added TypeScript declarations for image imports
+
 ## [0.3.2] - 2025-10-21
 
 ### Added

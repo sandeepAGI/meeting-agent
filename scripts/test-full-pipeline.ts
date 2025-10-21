@@ -30,8 +30,8 @@ import { M365AuthService } from '../src/services/m365Auth';
 import { ClaudeBatchService } from '../src/services/claudeBatch';
 import type { ConvertedTranscript } from './convert-teams-transcript';
 
-// Load environment variables
-dotenv.config();
+// Load environment variables (suppress output)
+dotenv.config({ override: false });
 
 interface CalendarMetadata {
   meeting: any;

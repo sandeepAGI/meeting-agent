@@ -102,7 +102,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
     updateSummaryMeetingId: (summaryId: string, meetingId: string | null) =>
       ipcRenderer.invoke('db-update-summary-meeting-id', summaryId, meetingId),
     updateRecordingMeetingId: (recordingId: string, meetingId: string | null) =>
-      ipcRenderer.invoke('db-update-recording-meeting-id', recordingId, meetingId)
+      ipcRenderer.invoke('db-update-recording-meeting-id', recordingId, meetingId),
+    // Phase 4: Browse mode
+    getTranscriptByRecordingId: (recordingId: string) =>
+      ipcRenderer.invoke('db-get-transcript-by-recording-id', recordingId),
+    getSummaryByRecordingId: (recordingId: string) =>
+      ipcRenderer.invoke('db-get-summary-by-recording-id', recordingId),
+    getRecordingsWithSummaries: (limit?: number) =>
+      ipcRenderer.invoke('db-get-recordings-with-summaries', limit)
   }
 })
 

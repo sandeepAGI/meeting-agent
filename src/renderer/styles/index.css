@@ -741,6 +741,40 @@ body {
   line-height: 1.6;
 }
 
+/* Phase 4: Mode Toggle */
+.mode-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  background-color: #f5f5f5;
+  padding: 4px;
+  border-radius: 8px;
+  width: fit-content;
+}
+
+.mode-toggle-btn {
+  background: none;
+  border: none;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.mode-toggle-btn:hover {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.mode-toggle-btn.active {
+  background-color: var(--aileron-primary);
+  color: white;
+  font-weight: var(--font-weight-semibold);
+}
+
 /* Phase 2.3-4: Tabs */
 .selector-tabs {
   display: flex;
@@ -908,10 +942,38 @@ body {
   color: #e74c3c;
 }
 
+/* Phase 4: Browse mode badges */
+.recording-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recording-badge.summary-available {
+  background-color: #e8f5e9;
+  color: #27ae60;
+}
+
+.recording-badge.transcript-available {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
 /* Phase 2.3-4: Calendar meeting cards */
 .recording-card.no-recording {
   opacity: 0.7;
   cursor: not-allowed;
+}
+
+/* Phase 4: Clickable cards in browse mode */
+.recording-card.clickable {
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.2s;
+}
+
+.recording-card.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .recording-card.no-recording:hover {

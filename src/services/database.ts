@@ -415,6 +415,18 @@ export class DatabaseService {
     return stmt.get(meetingId) as MeetingSummary | null
   }
 
+  // Phase 4: Get summary by recording ID
+  getSummaryByRecordingId(recordingId: string): MeetingSummary | null {
+    const stmt = this.db.prepare(`
+      SELECT s.* FROM meeting_summaries s
+      JOIN transcripts t ON s.transcript_id = t.id
+      WHERE t.recording_id = ?
+      ORDER BY s.created_at DESC
+      LIMIT 1
+    `)
+    return stmt.get(recordingId) as MeetingSummary | null
+  }
+
   updateSummaryStatus(
     summaryId: string,
     status: SummaryStatus,

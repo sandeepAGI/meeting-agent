@@ -16,11 +16,17 @@ import { CalendarSection } from './components/CalendarSection'
 import { MeetingSelector } from './components/MeetingSelector'
 import { SummaryProcessing } from './components/SummaryProcessing'
 import { SummaryDisplay } from './components/SummaryDisplay'
+import { TranscriptViewer } from './components/TranscriptViewer'
 import aileronLogo from './assets/branding/aileron-logo.png'
 
 function App() {
   console.log('[App] Component rendering...')
   const [error, setError] = useState<string | null>(null)
+  const [viewingTranscript, setViewingTranscript] = useState<{
+    recordingId: string
+    recordingDate: string
+    recordingDuration: number
+  } | null>(null)
 
   // Audio capture hook
   const { state: audioState, actions: audioActions } = useAudioCapture()
@@ -42,6 +48,30 @@ function App() {
   // Forward error setter to audio actions
   const handleMicrophoneToggle = async (enabled: boolean) => {
     await audioActions.handleMicrophoneToggle(enabled)
+  }
+
+  // Phase 4: Handle viewing transcript
+  const handleViewTranscript = (recordingId: string, recordingDate: string, recordingDuration: number) => {
+    setViewingTranscript({ recordingId, recordingDate, recordingDuration })
+    // Clear summary view if viewing transcript
+    intelligenceActions.clear()
+  }
+
+  // Phase 4: Handle viewing summary
+  const handleViewSummary = async (summaryId: string) => {
+    // Clear transcript view if viewing summary
+    setViewingTranscript(null)
+    // Load the summary
+    await intelligenceActions.fetchSummary(summaryId)
+  }
+
+  // Phase 4: Handle generating summary from transcript viewer
+  const handleGenerateSummaryFromTranscript = () => {
+    if (viewingTranscript) {
+      setViewingTranscript(null)
+      // The user will need to select the recording again in generate mode
+      // This is intentional to keep the flow simple
+    }
   }
 
   return (
@@ -118,10 +148,23 @@ function App() {
           <div className="meeting-intelligence-section">
             <h2>Meeting Intelligence</h2>
 
-            {/* Step 1: Select Meeting */}
-            {!intelligenceState.summaryId && (
+            {/* Phase 4: Transcript Viewer */}
+            {viewingTranscript && (
+              <TranscriptViewer
+                recordingId={viewingTranscript.recordingId}
+                recordingDate={viewingTranscript.recordingDate}
+                recordingDuration={viewingTranscript.recordingDuration}
+                onGenerateSummary={handleGenerateSummaryFromTranscript}
+                onBack={() => setViewingTranscript(null)}
+              />
+            )}
+
+            {/* Step 1: Select Meeting (hide if viewing transcript or summary) */}
+            {!intelligenceState.summaryId && !viewingTranscript && (
               <MeetingSelector
                 onStartSummary={intelligenceActions.startSummary}
+                onViewTranscript={handleViewTranscript}
+                onViewSummary={handleViewSummary}
                 isLoading={intelligenceState.isLoading}
               />
             )}

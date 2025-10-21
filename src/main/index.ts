@@ -959,6 +959,71 @@ ipcMain.handle('db-update-recording-meeting-id', async (_event, recordingId: str
   }
 })
 
+// Phase 4: Get transcript by recording ID
+ipcMain.handle('db-get-transcript-by-recording-id', async (_event, recordingId: string) => {
+  try {
+    console.log('[Database] Fetching transcript for recording:', recordingId)
+    const transcript = dbService.getTranscriptByRecordingId(recordingId)
+    return { success: true, transcript }
+  } catch (error) {
+    console.error('[Database] Get transcript failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get transcript'
+    }
+  }
+})
+
+// Phase 4: Get summary by recording ID
+ipcMain.handle('db-get-summary-by-recording-id', async (_event, recordingId: string) => {
+  try {
+    console.log('[Database] Fetching summary for recording:', recordingId)
+    const summary = dbService.getSummaryByRecordingId(recordingId)
+    return { success: true, summary }
+  } catch (error) {
+    console.error('[Database] Get summary failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get summary'
+    }
+  }
+})
+
+// Phase 4: Get recordings with summaries (for browse mode)
+ipcMain.handle('db-get-recordings-with-summaries', async (_event, limit: number = 50) => {
+  try {
+    console.log('[Database] Fetching recordings with summaries, limit:', limit)
+    const stmt = dbService['db'].prepare(`
+      SELECT
+        r.id as recording_id,
+        r.file_path,
+        r.duration_seconds,
+        r.created_at,
+        t.id as transcript_id,
+        t.transcript_text,
+        s.id as summary_id,
+        s.overall_status as summary_status,
+        m.subject as meeting_subject
+      FROM recordings r
+      LEFT JOIN transcripts t ON r.id = t.recording_id
+      LEFT JOIN meeting_summaries s ON t.id = s.transcript_id
+      LEFT JOIN meetings m ON r.meeting_id = m.id
+      WHERE t.id IS NOT NULL
+      ORDER BY r.created_at DESC
+      LIMIT ?
+    `)
+    const recordings = stmt.all(limit)
+    console.log('[Database] Found recordings:', recordings.length)
+    return { success: true, recordings }
+  } catch (error) {
+    console.error('[Database] Get recordings with summaries failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get recordings'
+    }
+  }
+})
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,

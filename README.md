@@ -4,9 +4,9 @@ AI-powered meeting transcription and summarization tool for macOS.
 
 ## Status
 
-**Current Version**: 0.3.2 - Phase 2.3-4 Complete ✅
+**Current Version**: 0.4.0 - Phase 4: Browse Mode Complete ✅
 
-This project is in active development. Phases 0-2.3-4 are complete (audio capture, transcription, speaker diarization, M365 integration, LLM intelligence backend + UI, meeting-recording association). The core meeting intelligence workflow is feature-complete. See [CHANGELOG.md](./CHANGELOG.md) for version history and [docs/planning/roadmap.md](./docs/planning/roadmap.md) for the full development plan.
+This project is in active development. Phases 0-4 (Browse Mode) are complete (audio capture, transcription, speaker diarization, M365 integration, LLM intelligence backend + UI, meeting-recording association, browse mode, Aileron branding). See [CHANGELOG.md](./CHANGELOG.md) for version history and [docs/planning/roadmap.md](./docs/planning/roadmap.md) for the full development plan.
 
 ## Overview
 
@@ -16,11 +16,13 @@ Meeting Agent is a desktop application that:
 - ✅ **Transcribes audio locally** using OpenAI Whisper (free, runs on your machine)
 - ✅ **Identifies speakers** using pyannote.audio speaker diarization
 - ✅ **Integrates with Microsoft 365** for meeting context and calendar
-- ✅ **Generates AI summaries** with speaker identification and action items using Claude API (Backend + UI complete)
+- ✅ **Generates AI summaries** with speaker identification and action items using Claude API
+- ✅ **Browse past recordings** with transcript and summary viewing
 - ✅ **Provides export** to save summaries as markdown files with clipboard copy
-- 🔜 **Enhanced editor** to customize summaries before distribution (Phase 4)
+- ✅ **Aileron branding** with professional design system
+- 🔜 **Enhanced editor** to customize summaries with inline editing (Phase 4 continued)
 
-## What Works Now (v0.3.2)
+## What Works Now (v0.4.0)
 
 ### Audio Capture
 - Native system audio capture (no virtual drivers required!)
@@ -80,6 +82,16 @@ Meeting Agent is a desktop application that:
 - **Standalone option**: Recordings work without calendar association
 - **Back to Selection**: Easy navigation between summary and selection views
 - **Automatic UI updates**: Recording moves between tabs after linking
+
+### Browse Mode (Phase 4 Complete)
+- **Browse/Generate toggle**: Switch between viewing past recordings and generating new summaries
+- **Unified recording list**: Shows all recordings with status badges (✅ Summary | 📝 Transcript)
+- **TranscriptViewer**: Full viewer for past transcripts with speaker labels and metadata
+- **Smart navigation**: Click to view transcript or summary based on recording status
+- **Search recordings**: Filter by meeting title or transcript content
+- **Recording metadata**: Date, duration, speaker count displayed for each recording
+- **Generate from transcript**: Option to create summary from transcript viewer
+- **Aileron branding**: Professional design system with logo, colors, and Montserrat font
 
 ## Key Features
 
