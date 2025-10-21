@@ -779,11 +779,12 @@ npm run build
 
 ---
 
-## Phase 2.3-4: Meeting-Recording Association 🔄
+## Phase 2.3-4: Meeting-Recording Association ✅
 
-**Status**: In Progress
+**Status**: Complete
 **Started**: 2025-10-21
-**Estimated Duration**: 4-6 hours
+**Completed**: 2025-10-21
+**Duration**: ~6 hours (including bug fixes)
 
 ### Overview
 
@@ -903,6 +904,61 @@ Enable users to link recordings to calendar meetings, browse meetings by date ra
 ✅ Standalone recordings still work without meeting association
 ✅ All database queries performant (<100ms)
 ✅ Manual testing passes (record → transcribe → link → summarize → export)
+
+### What Was Delivered
+
+**Complete meeting-recording association system with Option C implementation:**
+
+**Database Layer** (src/services/database.ts):
+- ✅ `getMeetingsByDateRange()` - Query meetings by date
+- ✅ `searchMeetingsByTitle()` - Search meetings by subject
+- ✅ `getRecordingsByMeetingId()` - Find recordings for a meeting
+- ✅ `updateSummaryMeetingId()` - Link summary to meeting
+- ✅ `updateRecordingMeetingId()` - Link recording to meeting (critical fix)
+
+**Graph API Enhancement** (src/services/graphApi.ts):
+- ✅ `getMeetingsInDateRange()` - Fetch historical meetings from M365
+- ✅ Auto-save meetings to database on fetch
+- ✅ Support for custom date ranges (not just "today")
+
+**IPC Layer** (src/main/index.ts):
+- ✅ 5 new database IPC handlers
+- ✅ 1 new Graph API handler (`graph-get-meetings-in-date-range`)
+
+**UI Components**:
+- ✅ **MeetingSelector** (src/renderer/components/MeetingSelector.tsx):
+  - Two-tab interface: "Standalone Recordings" | "Calendar Meetings"
+  - Date range filters: Today, Last 7 Days, Last 30 Days, All
+  - Search functionality with client-side filtering
+  - Auto-sync from M365 when tab opens or filter changes
+  - Recording status badges: "🎙️ Recorded" | "❌ No Recording"
+  - Automatic UI refresh after linking recording to meeting
+- ✅ **MeetingPicker** (src/renderer/components/MeetingPicker.tsx):
+  - Dialog for selecting meeting during summary generation
+  - "Standalone Recording" option always at top
+  - Meeting list from last 7 days with search
+  - Three-state selection: undefined (none) | null (standalone) | string (meeting ID)
+- ✅ **SummaryDisplay** (src/renderer/components/SummaryDisplay.tsx):
+  - "Back to Selection" button with unsaved edits warning
+  - Navigation back to MeetingSelector
+
+**Bug Fixes** (Critical):
+- ✅ Fixed search to handle null/undefined meeting subjects
+- ✅ Fixed calendar meetings not persisting to database (GraphAPI now saves on fetch)
+- ✅ Fixed "Last 7 Days" showing 0 meetings (auto-sync from M365 on tab open)
+- ✅ Fixed recording list not refreshing after linking to meeting
+
+**Testing**:
+- ✅ Level 1: TypeScript type-check passes
+- ✅ Level 1: Build succeeds
+- ✅ Level 2: Logic review completed with edge case fixes
+- ✅ Level 3: User tested complete Option C flow successfully
+
+**Total Commits**: 4
+- Part 1: Database methods + Back button
+- Part 2: MeetingPicker component
+- Part 3: Complete integration with recording-meeting link
+- Fixes: Search safety + M365 auto-sync
 
 ### Dependencies
 
