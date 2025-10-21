@@ -16,6 +16,7 @@
 
 import { Client } from '@microsoft/microsoft-graph-client'
 import { Event, Attendee } from '@microsoft/microsoft-graph-types'
+import type { DatabaseService } from './database'
 
 export interface MeetingAttendee {
   name: string
@@ -42,9 +43,11 @@ export interface MeetingInfo {
  * GraphApiService
  *
  * Provides methods to interact with Microsoft Graph API for calendar operations.
+ * Phase 2.3-4: Now persists meetings to database for meeting-recording association.
  */
 export class GraphApiService {
   private client: Client | null = null
+  private dbService: DatabaseService | null = null
 
   /**
    * Initialize Graph API client with access token
@@ -55,6 +58,14 @@ export class GraphApiService {
         done(null, accessToken)
       }
     })
+  }
+
+  /**
+   * Set database service for persisting meetings
+   * Phase 2.3-4: Meeting-Recording Association
+   */
+  setDatabaseService(dbService: DatabaseService): void {
+    this.dbService = dbService
   }
 
   /**
@@ -99,6 +110,30 @@ export class GraphApiService {
 
       // Transform Graph API events to MeetingInfo
       const meetings: MeetingInfo[] = events.map((event) => this.transformEvent(event))
+
+      // Phase 2.3-4: Save meetings to database for meeting-recording association
+      if (this.dbService) {
+        for (const meeting of meetings) {
+          try {
+            this.dbService.saveMeeting({
+              id: meeting.id,
+              subject: meeting.subject,
+              start_time: meeting.start.toISOString(),
+              end_time: meeting.end.toISOString(),
+              organizer_name: meeting.organizer.name,
+              organizer_email: meeting.organizer.email,
+              attendees_json: JSON.stringify(meeting.attendees),
+              is_online_meeting: meeting.isOnlineMeeting,
+              online_meeting_url: meeting.onlineMeetingUrl,
+              location: meeting.location
+            })
+          } catch (error) {
+            console.error(`[GraphAPI] Failed to save meeting ${meeting.id} to database:`, error)
+            // Continue processing other meetings even if one fails
+          }
+        }
+        console.log(`[GraphAPI] Saved ${meetings.length} meetings to database`)
+      }
 
       return meetings
     } catch (error) {

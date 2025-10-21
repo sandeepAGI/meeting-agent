@@ -33,11 +33,13 @@ if (process.env.AZURE_CLIENT_ID) {
   )
 }
 
-// Initialize Graph API service
-const graphApiService = new GraphApiService()
-
 // Initialize Database service (Phase 2.3-3)
 const dbService = new DatabaseService()
+
+// Initialize Graph API service
+const graphApiService = new GraphApiService()
+// Phase 2.3-4: Connect GraphAPI to database for meeting persistence
+graphApiService.setDatabaseService(dbService)
 
 // Initialize Meeting Intelligence services (Phase 2.3-3)
 let claudeService: ClaudeBatchService | null = null
