@@ -26,7 +26,8 @@ Meeting Agent is being developed in 10 phases, from foundation to production-rea
 | R3 | Refactor Sprint 3 | 📅 Planned | - |
 | 2.1 | M365 Authentication | ✅ Complete | 2025-10-13 |
 | 2.2 | Calendar & Meeting Context | ✅ Complete | 2025-10-14 |
-| 2.3-3 | LLM-Based Meeting Intelligence | 📅 Planned | - |
+| 2.3-3 | LLM Meeting Intelligence (Backend + UI) | ✅ Complete | 2025-10-21 |
+| 2.3-4 | Meeting-Recording Association | 🔄 In Progress | - |
 | 4 | GUI Development | 📅 Planned | - |
 | 5 | Email Distribution | 📅 Planned | - |
 | 6 | Data Management | 📅 Planned | - |
@@ -453,11 +454,11 @@ Implement Microsoft 365 OAuth2 authentication with secure token storage.
 
 ---
 
-## Phase 2.3-3: LLM-Based Meeting Intelligence 📅
+## Phase 2.3-3: LLM-Based Meeting Intelligence ✅
 
-**Status**: Planning Complete (Ready for Implementation)
-**Last Updated**: 2025-01-13
-**Estimated Duration**: ~29 hours (4-5 days)
+**Status**: Complete
+**Completed**: 2025-10-21
+**Duration**: Backend + UI components implemented
 
 ### Overview
 
@@ -751,14 +752,183 @@ npm run build
 - Requires Microsoft 365 subscription for email context
 - SQLite limits concurrent writes (single writer at a time)
 
-### Future Enhancements (Post-Phase 2.3-3)
+### Completed Deliverables
 
-- Real-time API option for urgent summaries (2x cost)
-- Extended date ranges (30 days, custom)
-- Automatic meeting-recording linkage
-- Search meetings by subject/attendee
-- Speaker voice profile training for improved ID
-- Multi-language support
+- ✅ **Backend Services**: DatabaseService, ClaudeBatchService, MeetingIntelligenceService
+- ✅ **Database Schema**: 7 tables with SQLite persistence
+- ✅ **Two-Pass Workflow**: Pass 1 (speaker ID + summary) → Pass 2 (validation)
+- ✅ **UI Components**: MeetingSelector, SummaryProcessing, SummaryDisplay
+- ✅ **IPC Handlers**: 7 handlers for meeting intelligence operations
+- ✅ **Export Feature**: Markdown download + clipboard copy
+- ✅ **Batch API Integration**: Anthropic Message Batches with adaptive polling
+- ✅ **Cost Optimization**: ~$0.09 per 60-min meeting (96% savings)
+
+### Known Limitations
+
+- ⚠️ **Meeting association missing**: Recordings not linked to calendar meetings
+- ⚠️ **Limited date range**: MeetingSelector shows last 20 recordings only
+- ⚠️ **No search**: Cannot search meetings by title or attendees
+- ⚠️ **No navigation**: Cannot return to selection after viewing summary
+
+### Success Criteria
+
+✅ Backend complete with database persistence
+✅ UI components render and display data
+✅ Two-pass workflow functional
+⚠️ **Manual testing pending** (requires Phase 2.3-4 for full workflow)
+
+---
+
+## Phase 2.3-4: Meeting-Recording Association 🔄
+
+**Status**: In Progress
+**Started**: 2025-10-21
+**Estimated Duration**: 4-6 hours
+
+### Overview
+
+Enable users to link recordings to calendar meetings, browse meetings by date range, and search by title. This completes the Phase 2.3-3 workflow by connecting calendar meetings with recorded audio and generated summaries.
+
+### Goals
+
+1. **Meeting Selection During Summary Generation** - Prompt user to select which meeting this recording was for (Option C)
+2. **Week View with Filters** - Browse calendar meetings from last 7+ days with search
+3. **Database Enhancement** - Add query methods for date ranges and meeting search
+4. **Navigation Flow** - Add "Back to Selection" button to complete UX loop
+
+### Implementation Approach (Option C)
+
+**User Flow**:
+```
+1. User records → transcribes audio (meeting_id = NULL initially)
+2. User clicks "Generate Summary" in MeetingSelector
+3. System prompts: "Which meeting was this recording for?"
+   - Show calendar meetings from last 7 days
+   - Option: "Standalone Recording (no meeting)"
+4. User selects meeting OR standalone
+5. System updates meeting_summaries.meeting_id
+6. Summary generation proceeds with correct meeting context
+```
+
+**Why Option C**:
+- ✅ Works with existing recording flow (no UI redesign)
+- ✅ Supports ad-hoc recordings without calendar meetings
+- ✅ Deferred decision point (user can skip during recording)
+- ✅ Correct meeting context for LLM (better speaker ID)
+
+### Deliverables
+
+**1. Database Enhancements** (`src/services/database.ts`):
+- [ ] `getMeetingsInDateRange(startDate, endDate)` - Fetch calendar meetings by date
+- [ ] `searchMeetingsByTitle(query)` - Search meetings by subject
+- [ ] `getRecordingsByMeetingId(meetingId)` - Find recordings for a meeting
+- [ ] `updateSummaryMeetingId(summaryId, meetingId)` - Link summary to meeting
+- [ ] IPC handlers for new database methods
+
+**2. MeetingSelector Component Overhaul** (`src/renderer/components/MeetingSelector.tsx`):
+- [ ] **Two-tab interface**:
+  - Tab 1: "Calendar Meetings" (last 7 days)
+  - Tab 2: "Standalone Recordings" (recordings without meeting_id)
+- [ ] **Filters & Search**:
+  - Date range picker (Today, Last 7 Days, Last 30 Days, Custom)
+  - Search bar for meeting title
+  - Attendee filter
+- [ ] **Meeting Cards Enhancement**:
+  - Show recording status badge (🎙️ if recorded, 📝 if transcribed, ✅ if summarized)
+  - Show attendee count + names
+  - Show existing summary link if available
+- [ ] **Meeting Selection Dialog**:
+  - Triggered after user picks a recording without meeting_id
+  - Shows filtered calendar meetings
+  - "Standalone Recording" option at top
+
+**3. Summary Generation Flow Update**:
+- [ ] Check if `recording.meeting_id` is NULL
+- [ ] If NULL: Show meeting selection dialog before starting summary
+- [ ] Update `meeting_summaries.meeting_id` with selected value
+- [ ] Pass correct meeting_id to MeetingIntelligenceService
+
+**4. Navigation Enhancement** (`src/renderer/components/SummaryDisplay.tsx`):
+- [ ] Add "← Back to Meetings" button in header
+- [ ] Calls `intelligenceActions.clear()` to reset state
+- [ ] Returns user to MeetingSelector
+
+**5. Type Definitions**:
+- [ ] Update `MeetingInfo` interface for calendar meeting display
+- [ ] Add `RecordingWithMeetingInfo` type for joined queries
+
+### Implementation Tasks
+
+**Estimated breakdown** (4-6 hours):
+
+1. **Database Methods** (1 hour):
+   - Implement 4 new query methods
+   - Add IPC handlers
+   - Unit tests for date/search queries
+
+2. **Meeting Selection Dialog** (1.5 hours):
+   - New component: `MeetingPicker.tsx`
+   - Calendar meeting list with date filter
+   - "Standalone" option
+   - Selection handler
+
+3. **MeetingSelector Tabs** (1.5 hours):
+   - Tab navigation (Calendar | Standalone)
+   - Date range picker integration
+   - Search bar with debounce
+   - Status badges on cards
+
+4. **Flow Integration** (1 hour):
+   - Update `useMeetingIntelligence.ts` to check meeting_id
+   - Show dialog before `startSummary()`
+   - Update database with selected meeting_id
+   - Test end-to-end flow
+
+5. **Navigation Button** (0.5 hours):
+   - Add back button to SummaryDisplay
+   - Wire up clear action
+   - Test navigation loop
+
+6. **Testing & Documentation** (0.5 hours):
+   - Manual testing (Level 1-3)
+   - Update CHANGELOG.md
+   - Update README.md
+
+### Success Criteria
+
+✅ User can link recording to calendar meeting during summary generation
+✅ MeetingSelector shows calendar meetings with date filters
+✅ Search by meeting title works correctly
+✅ "Back to Selection" button returns to MeetingSelector
+✅ Standalone recordings still work without meeting association
+✅ All database queries performant (<100ms)
+✅ Manual testing passes (record → transcribe → link → summarize → export)
+
+### Dependencies
+
+- Phase 2.3-3 backend (DatabaseService, MeetingIntelligenceService) ✅
+- Phase 2.2 calendar integration (GraphApiService) ✅
+
+### Testing Protocol (Per CLAUDE.md)
+
+**Level 1: Static Analysis**
+```bash
+npm run type-check  # Must pass
+npm run build       # Must succeed
+```
+
+**Level 2: Logic Review**
+- [ ] Verify meeting selection dialog handles NULL meeting_id
+- [ ] Check date range queries use correct SQL syntax
+- [ ] Validate search escapes special characters
+- [ ] Ensure navigation clears all intelligence state
+
+**Level 3: Manual Testing**
+- [ ] Happy path: Record → Transcribe → Select meeting → Generate summary → Export
+- [ ] Edge case: Generate summary for standalone recording (no meeting)
+- [ ] Edge case: Search with special characters
+- [ ] Edge case: Date filter with no meetings in range
+- [ ] Navigation: Back button → Select different meeting → Generate new summary
 
 ---
 

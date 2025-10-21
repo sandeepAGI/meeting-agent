@@ -4,9 +4,9 @@ AI-powered meeting transcription and summarization tool for macOS.
 
 ## Status
 
-**Current Version**: 0.3.1 - Phase 2.3-3 UI Components Complete ✅
+**Current Version**: 0.3.1 - Phase 2.3-4 In Progress 🔄
 
-This project is in active development. Phases 0-2.2 are complete (audio capture, transcription, speaker diarization, M365 integration, calendar context), and Phase 2.3-3 is complete (LLM-based meeting intelligence backend + UI components). See [CHANGELOG.md](./CHANGELOG.md) for version history and [docs/planning/roadmap.md](./docs/planning/roadmap.md) for the full development plan.
+This project is in active development. Phases 0-2.3-3 are complete (audio capture, transcription, speaker diarization, M365 integration, LLM intelligence backend + UI). Phase 2.3-4 (meeting-recording association) is in progress. See [CHANGELOG.md](./CHANGELOG.md) for version history and [docs/planning/roadmap.md](./docs/planning/roadmap.md) for the full development plan.
 
 ## Overview
 
@@ -328,12 +328,19 @@ meeting-agent/
 - Meeting attendees and metadata
 - Join links and location info
 
-### ✅ Phase 2.3-3: Meeting Intelligence (2025-10-14)
+### ✅ Phase 2.3-3: Meeting Intelligence (2025-10-21)
 - Two-pass LLM workflow for summaries
 - Batch API integration (50% cost savings)
 - SQLite database persistence
 - Background async processing
 - **UI components complete** (recording browser, summary display, export)
+
+### 🔄 Phase 2.3-4: Meeting-Recording Association (In Progress)
+- Meeting selection during summary generation (Option C)
+- Week view with date range filters
+- Search meetings by title and attendees
+- Link recordings to calendar meetings
+- "Back to Selection" navigation
 
 ### 📅 Phase 4: GUI Development
 - Meeting list UI
