@@ -16,6 +16,7 @@ import { CalendarSection } from './components/CalendarSection'
 import { MeetingSelector } from './components/MeetingSelector'
 import { SummaryProcessing } from './components/SummaryProcessing'
 import { SummaryDisplay } from './components/SummaryDisplay'
+import aileronLogo from './assets/branding/aileron-logo.png'
 
 function App() {
   console.log('[App] Component rendering...')
@@ -46,8 +47,17 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>Meeting Agent</h1>
-        <p>AI-powered meeting transcription and summarization</p>
+        <div className="app-header-brand">
+          <img
+            src={aileronLogo}
+            alt="Aileron Logo"
+            className="app-header-logo"
+          />
+          <div className="app-header-text">
+            <h1>Meeting Agent</h1>
+            <p>AI-powered meeting transcription and summarization</p>
+          </div>
+        </div>
       </header>
 
       <main className="app-main">

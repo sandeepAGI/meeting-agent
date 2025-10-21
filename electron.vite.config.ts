@@ -22,6 +22,14 @@ export default defineConfig({
               copyFileSync(`src/prompts/${file}`, `dist/prompts/${file}`)
             }
           }
+
+          // Copy branding assets (Phase 4)
+          mkdirSync('dist/assets/branding/logos', { recursive: true })
+          try {
+            copyFileSync('assets/branding/logos/aileron-logo.png', 'dist/assets/branding/logos/aileron-logo.png')
+          } catch (err) {
+            console.log('Branding assets not found, skipping copy')
+          }
         }
       }
     ],
