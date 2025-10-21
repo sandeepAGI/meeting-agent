@@ -141,11 +141,11 @@ export function MeetingSelector({ onStartSummary, isLoading }: MeetingSelectorPr
   })
 
   // Filter calendar meetings by search query
-  const filteredMeetings = calendarMeetings.filter(m =>
-    searchQuery
-      ? m.subject.toLowerCase().includes(searchQuery.toLowerCase())
-      : true
-  )
+  const filteredMeetings = calendarMeetings.filter(m => {
+    if (!searchQuery) return true
+    const subject = m.subject?.toLowerCase() || ''
+    return subject.includes(searchQuery.toLowerCase())
+  })
 
   const handleStartSummary = () => {
     if (activeTab === 'recordings' && selectedRecording) {
