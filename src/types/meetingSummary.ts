@@ -122,7 +122,8 @@ export interface SummaryStatusDisplay {
   status: SummaryStatus
   currentPass: 1 | 2 | null
   elapsedMinutes: number
-  nextCheckInSeconds: number
+  nextCheckInSeconds: number // Deprecated: UI now uses constant 5s polling
+  backendNextCheckSeconds?: number // When backend will next poll Anthropic API
   errorMessage?: string
 }
 

@@ -17,10 +17,6 @@ export function SummaryProcessing({ status, onCancel }: SummaryProcessingProps) 
   // Real-time elapsed time calculation
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
 
-  // Real-time next check countdown
-  const [nextCheckSeconds, setNextCheckSeconds] = useState(status.nextCheckInSeconds)
-  const [lastStatusUpdateTime, setLastStatusUpdateTime] = useState(Date.now())
-
   // Update elapsed time every second
   useEffect(() => {
     const timer = setInterval(() => {
@@ -34,23 +30,6 @@ export function SummaryProcessing({ status, onCancel }: SummaryProcessingProps) 
   useEffect(() => {
     setElapsedSeconds(status.elapsedMinutes * 60)
   }, [status.elapsedMinutes])
-
-  // Update next check countdown
-  useEffect(() => {
-    setNextCheckSeconds(status.nextCheckInSeconds)
-    setLastStatusUpdateTime(Date.now())
-  }, [status])
-
-  // Countdown next check every second
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const secondsSinceUpdate = Math.floor((Date.now() - lastStatusUpdateTime) / 1000)
-      const remaining = Math.max(0, status.nextCheckInSeconds - secondsSinceUpdate)
-      setNextCheckSeconds(remaining)
-    }, 1000)
-
-    return () => clearInterval(timer)
-  }, [lastStatusUpdateTime, status.nextCheckInSeconds])
 
   const formatElapsedTime = (totalSeconds: number) => {
     const minutes = Math.floor(totalSeconds / 60)
@@ -144,9 +123,11 @@ export function SummaryProcessing({ status, onCancel }: SummaryProcessingProps) 
             <span className="detail-item">
               ⏱️ Elapsed: {formatElapsedTime(elapsedSeconds)}
             </span>
-            <span className="detail-item">
-              🔄 Next check: {formatNextCheck(nextCheckSeconds)}
-            </span>
+            {status.backendNextCheckSeconds && (
+              <span className="detail-item" title="When the backend will next poll the Anthropic API for updates">
+                🔄 Backend checks Anthropic in: {formatNextCheck(status.backendNextCheckSeconds)}
+              </span>
+            )}
           </div>
         )}
       </div>

@@ -81,17 +81,24 @@ export function useMeetingIntelligence() {
     const isProcessing =
       state.status.status === 'pass1_submitted' ||
       state.status.status === 'pass1_processing' ||
+      state.status.status === 'pass1_complete' ||
       state.status.status === 'pass2_submitted' ||
       state.status.status === 'pass2_processing'
 
     if (!isProcessing) return
 
-    const pollInterval = state.status.nextCheckInSeconds * 1000
+    // UI polls local DB frequently for responsive updates
+    // Default: 5 seconds, faster (2s) when near completion (55+ min)
+    let pollIntervalMs = 5000
+    if (state.status.elapsedMinutes >= 55) {
+      pollIntervalMs = 2000  // Poll faster when near expected completion
+    }
+
     const timer = setInterval(async () => {
       if (state.summaryId) {
         await fetchStatusRef(state.summaryId)
       }
-    }, pollInterval)
+    }, pollIntervalMs)
 
     return () => clearInterval(timer)
   }, [state.summaryId, state.status, fetchStatusRef])

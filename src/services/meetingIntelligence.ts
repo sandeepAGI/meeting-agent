@@ -389,28 +389,65 @@ export class MeetingIntelligenceService {
       throw new Error(`Summary not found: ${summaryId}`)
     }
 
-    // Determine current pass
+    // Determine current pass (include pass1_complete and complete states)
     let currentPass: 1 | 2 | null = null
-    if (summary.overall_status === 'pass1_processing' || summary.overall_status === 'pass1_submitted') {
+    if (summary.overall_status === 'pass1_processing' ||
+        summary.overall_status === 'pass1_submitted' ||
+        summary.overall_status === 'pass1_complete') {
       currentPass = 1
-    } else if (summary.overall_status === 'pass2_processing' || summary.overall_status === 'pass2_submitted') {
+    } else if (summary.overall_status === 'pass2_processing' ||
+               summary.overall_status === 'pass2_submitted' ||
+               summary.overall_status === 'complete') {
       currentPass = 2
     }
 
-    // Calculate elapsed time
-    const startTime = new Date(summary.created_at).getTime()
-    const now = Date.now()
-    const elapsedMinutes = Math.floor((now - startTime) / 60000)
+    // Get batch jobs to calculate accurate elapsed time and next check time
+    const batchJobs = this.db.getBatchJobsBySummaryId(summaryId)
+    const activeBatch = batchJobs.find(j =>
+      j.pass_number === currentPass &&
+      (j.status === 'in_progress' || j.status === 'ended')
+    )
 
-    // Calculate next check interval (UI can poll every 5 seconds)
-    const nextCheckInSeconds = 5
+    // Calculate elapsed time from batch submission (more accurate than summary creation)
+    let elapsedMinutes = 0
+    if (activeBatch) {
+      const batchStartTime = new Date(activeBatch.submitted_at).getTime()
+      const now = Date.now()
+      elapsedMinutes = Math.floor((now - batchStartTime) / 60000)
+    } else {
+      // Fallback to summary creation time if no batch found
+      const startTime = new Date(summary.created_at).getTime()
+      elapsedMinutes = Math.floor((Date.now() - startTime) / 60000)
+    }
+
+    // Calculate when backend will next poll Anthropic API (matches claudeBatch.ts logic)
+    let backendNextCheckSeconds: number | undefined
+    if (activeBatch && activeBatch.status === 'in_progress') {
+      const batchStartTime = new Date(activeBatch.submitted_at).getTime()
+      const batchElapsedMinutes = Math.floor((Date.now() - batchStartTime) / 60000)
+
+      // Match the backend's adaptive polling interval
+      let backendPollIntervalMs: number
+      if (batchElapsedMinutes < 30) {
+        backendPollIntervalMs = 5 * 60 * 1000  // 5 minutes
+      } else if (batchElapsedMinutes < 45) {
+        backendPollIntervalMs = 3 * 60 * 1000  // 3 minutes
+      } else if (batchElapsedMinutes < 55) {
+        backendPollIntervalMs = 1 * 60 * 1000  // 1 minute
+      } else {
+        backendPollIntervalMs = 30 * 1000  // 30 seconds
+      }
+
+      backendNextCheckSeconds = Math.floor(backendPollIntervalMs / 1000)
+    }
 
     return {
       summaryId: summary.id,
       status: summary.overall_status,
       currentPass,
       elapsedMinutes,
-      nextCheckInSeconds,
+      nextCheckInSeconds: 5,  // UI polls DB every 5 seconds (constant)
+      backendNextCheckSeconds,  // When backend will actually poll Anthropic
       errorMessage: summary.pass1_error_message || summary.pass2_error_message || undefined
     }
   }
