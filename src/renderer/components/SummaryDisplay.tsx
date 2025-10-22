@@ -7,7 +7,7 @@
  */
 
 import { useState } from 'react'
-import type { MeetingSummary, SpeakerMapping, ActionItem } from '../../types/meetingSummary'
+import type { MeetingSummary, SpeakerMapping, ActionItem, DetailedNotes } from '../../types/meetingSummary'
 
 interface SummaryDisplayProps {
   summary: MeetingSummary
@@ -60,6 +60,17 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
   }
 
   const handleExport = () => {
+    // Parse detailed notes if available
+    const detailedNotesJson = summary.pass2_refined_detailed_notes_json || summary.pass1_detailed_notes_json
+    let detailedNotes = null
+    if (detailedNotesJson) {
+      try {
+        detailedNotes = JSON.parse(detailedNotesJson)
+      } catch (e) {
+        console.error('Failed to parse detailed notes:', e)
+      }
+    }
+
     // Format summary data for export
     const exportData = {
       summary: editedSummary,
@@ -77,6 +88,7 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
         priority: a.priority
       })),
       keyDecisions: keyDecisions,
+      detailedNotes,
       metadata: {
         created: summary.created_at,
         pass1Completed: summary.pass1_completed_at,
@@ -124,6 +136,69 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
       textContent += '\n'
     }
 
+    // Detailed Notes
+    if (detailedNotes) {
+      // Discussion by Topic
+      if (detailedNotes.discussion_by_topic && detailedNotes.discussion_by_topic.length > 0) {
+        textContent += `## Discussion by Topic\n\n`
+        detailedNotes.discussion_by_topic.forEach((topic: any) => {
+          textContent += `### ${topic.topic}\n\n`
+
+          if (topic.key_points && topic.key_points.length > 0) {
+            textContent += `**Key Points:**\n`
+            topic.key_points.forEach((point: string) => {
+              textContent += `- ${point}\n`
+            })
+            textContent += '\n'
+          }
+
+          if (topic.decisions && topic.decisions.length > 0) {
+            textContent += `**Decisions:**\n`
+            topic.decisions.forEach((decision: string) => {
+              textContent += `- ${decision}\n`
+            })
+            textContent += '\n'
+          }
+
+          if (topic.action_items && topic.action_items.length > 0) {
+            textContent += `**Related Action Items:**\n`
+            topic.action_items.forEach((item: any) => {
+              textContent += `- ${item.description}`
+              if (item.assignee) textContent += ` (${item.assignee})`
+              textContent += '\n'
+            })
+            textContent += '\n'
+          }
+        })
+      }
+
+      // Notable Quotes
+      if (detailedNotes.notable_quotes && detailedNotes.notable_quotes.length > 0) {
+        textContent += `## Notable Quotes\n\n`
+        detailedNotes.notable_quotes.forEach((quote: any) => {
+          textContent += `> "${quote.quote}"\n>\n> — ${quote.speaker}\n\n`
+        })
+      }
+
+      // Open Questions
+      if (detailedNotes.open_questions && detailedNotes.open_questions.length > 0) {
+        textContent += `## Open Questions\n\n`
+        detailedNotes.open_questions.forEach((question: string) => {
+          textContent += `- ${question}\n`
+        })
+        textContent += '\n'
+      }
+
+      // Parking Lot
+      if (detailedNotes.parking_lot && detailedNotes.parking_lot.length > 0) {
+        textContent += `## Parking Lot\n\n`
+        detailedNotes.parking_lot.forEach((item: string) => {
+          textContent += `- ${item}\n`
+        })
+        textContent += '\n'
+      }
+    }
+
     // Metadata
     textContent += '## Metadata\n'
     textContent += `Created: ${new Date(summary.created_at).toLocaleString()}\n`
@@ -139,7 +214,10 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `meeting-summary-${new Date().toISOString().split('T')[0]}.md`
+    // Use local date instead of UTC for filename
+    const localDate = new Date()
+    const dateStr = `${localDate.getFullYear()}-${String(localDate.getMonth() + 1).padStart(2, '0')}-${String(localDate.getDate()).padStart(2, '0')}`
+    a.download = `meeting-summary-${dateStr}.md`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)

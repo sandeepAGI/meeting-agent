@@ -89,6 +89,7 @@ export interface ElectronAPI {
     getRecordingsWithTranscripts: (limit?: number) => Promise<{ success: boolean; recordings?: any[]; error?: string }>
     // Phase 2.3-4: Meeting-Recording Association
     getMeetingsInDateRange: (startDate: string, endDate: string) => Promise<{ success: boolean; meetings?: any[]; error?: string }>
+    getMeetingsWithRecordingsAndSummaries: (startDate: string, endDate: string) => Promise<{ success: boolean; meetings?: any[]; error?: string }>
     searchMeetingsByTitle: (query: string, limit?: number) => Promise<{ success: boolean; meetings?: any[]; error?: string }>
     getRecordingsByMeetingId: (meetingId: string) => Promise<{ success: boolean; recordings?: any[]; error?: string }>
     updateSummaryMeetingId: (summaryId: string, meetingId: string | null) => Promise<{ success: boolean; error?: string }>

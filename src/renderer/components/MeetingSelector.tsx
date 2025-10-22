@@ -31,6 +31,11 @@ interface CalendarMeeting {
   organizer_name?: string
   attendees_json?: string
   location?: string
+  recording_id?: string | null
+  recording_duration?: number | null
+  transcript_id?: string | null
+  summary_id?: string | null
+  summary_status?: string | null
 }
 
 type DateRange = 'today' | 'week' | 'month' | 'all'
@@ -57,7 +62,7 @@ interface MeetingSelectorProps {
 }
 
 export function MeetingSelector({ onStartSummary, onViewTranscript, onViewSummary, isLoading }: MeetingSelectorProps) {
-  const [mode, setMode] = useState<Mode>('browse')
+  const [mode, setMode] = useState<Mode>('generate')
   const [activeTab, setActiveTab] = useState<Tab>('recordings')
   const [recordings, setRecordings] = useState<Recording[]>([])
   const [browseRecordings, setBrowseRecordings] = useState<RecordingWithSummary[]>([])
@@ -158,8 +163,8 @@ export function MeetingSelector({ onStartSummary, onViewTranscript, onViewSummar
         // Continue to fetch from database even if sync fails
       }
 
-      // Then fetch from database (which now includes synced meetings)
-      const result = await window.electronAPI.database.getMeetingsInDateRange(
+      // Then fetch from database with recordings and summaries (full JOIN)
+      const result = await window.electronAPI.database.getMeetingsWithRecordingsAndSummaries(
         startDate.toISOString(),
         endDate.toISOString()
       )
@@ -321,7 +326,9 @@ export function MeetingSelector({ onStartSummary, onViewTranscript, onViewSummar
   }
 
   const formatDate = (dateString: string): string => {
-    const date = new Date(dateString)
+    // SQLite CURRENT_TIMESTAMP returns UTC without timezone suffix
+    // Explicitly append 'Z' to treat as UTC, then convert to local time
+    const date = new Date(dateString.endsWith('Z') ? dateString : dateString + 'Z')
     return date.toLocaleString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -338,10 +345,6 @@ export function MeetingSelector({ onStartSummary, onViewTranscript, onViewSummar
     } catch {
       return 0
     }
-  }
-
-  const hasRecording = (meetingId: string): boolean => {
-    return recordings.some(r => r.meeting_id === meetingId)
   }
 
   const isLoadingData = activeTab === 'recordings' ? isLoadingRecordings : isLoadingMeetings
@@ -562,16 +565,28 @@ export function MeetingSelector({ onStartSummary, onViewTranscript, onViewSummar
               {filteredMeetings.map((meeting) => (
                 <div
                   key={meeting.id}
-                  className={`recording-card ${selectedMeeting?.id === meeting.id ? 'selected' : ''} ${!hasRecording(meeting.id) ? 'no-recording' : ''}`}
-                  onClick={() => setSelectedMeeting(meeting)}
+                  className={`recording-card ${selectedMeeting?.id === meeting.id ? 'selected' : ''} ${!meeting.recording_id ? 'no-recording' : ''} ${meeting.summary_id ? 'clickable' : ''}`}
+                  onClick={() => {
+                    if (meeting.summary_id) {
+                      // Has summary - view it directly
+                      onViewSummary(meeting.summary_id)
+                    } else {
+                      // No summary yet - select for generation
+                      setSelectedMeeting(meeting)
+                    }
+                  }}
                 >
                   <div className="recording-header">
                     <span className="recording-title">{meeting.subject}</span>
-                    {hasRecording(meeting.id) ? (
-                      <span className="recording-badge recording-available">🎙️ Recorded</span>
-                    ) : (
-                      <span className="recording-badge recording-missing">❌ No Recording</span>
-                    )}
+                    <div className="recording-badges">
+                      {meeting.summary_id && meeting.summary_status === 'complete' ? (
+                        <span className="recording-badge summary-available">✅ Summary</span>
+                      ) : meeting.recording_id ? (
+                        <span className="recording-badge recording-available">🎙️ Recorded</span>
+                      ) : (
+                        <span className="recording-badge recording-missing">❌ No Recording</span>
+                      )}
+                    </div>
                   </div>
                   <div className="recording-meta">
                     <span className="recording-date">
@@ -599,7 +614,7 @@ export function MeetingSelector({ onStartSummary, onViewTranscript, onViewSummar
 
             <button
               onClick={handleStartSummary}
-              disabled={isLoading || !selectedMeeting || (selectedMeeting && !hasRecording(selectedMeeting.id))}
+              disabled={isLoading || !selectedMeeting || (selectedMeeting && !selectedMeeting.recording_id)}
               className="btn btn-primary"
             >
               {isLoading ? 'Starting...' : '🤖 Generate Summary'}

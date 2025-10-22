@@ -95,6 +95,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Phase 2.3-4: Meeting-Recording Association
     getMeetingsInDateRange: (startDate: string, endDate: string) =>
       ipcRenderer.invoke('db-get-meetings-in-date-range', startDate, endDate),
+    getMeetingsWithRecordingsAndSummaries: (startDate: string, endDate: string) =>
+      ipcRenderer.invoke('db-get-meetings-with-recordings-and-summaries', startDate, endDate),
     searchMeetingsByTitle: (query: string, limit?: number) =>
       ipcRenderer.invoke('db-search-meetings-by-title', query, limit),
     getRecordingsByMeetingId: (meetingId: string) =>

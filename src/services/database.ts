@@ -127,11 +127,24 @@ export class DatabaseService {
     location?: string
     body_preview?: string
   }): void {
+    // Use ON CONFLICT DO UPDATE instead of INSERT OR REPLACE to avoid triggering CASCADE DELETE
+    // INSERT OR REPLACE internally does DELETE + INSERT, which triggers CASCADE on foreign keys
     const stmt = this.db.prepare(`
-      INSERT OR REPLACE INTO meetings (
+      INSERT INTO meetings (
         id, subject, start_time, end_time, organizer_name, organizer_email,
         attendees_json, is_online_meeting, online_meeting_url, location, body_preview
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        subject = excluded.subject,
+        start_time = excluded.start_time,
+        end_time = excluded.end_time,
+        organizer_name = excluded.organizer_name,
+        organizer_email = excluded.organizer_email,
+        attendees_json = excluded.attendees_json,
+        is_online_meeting = excluded.is_online_meeting,
+        online_meeting_url = excluded.online_meeting_url,
+        location = excluded.location,
+        body_preview = excluded.body_preview
     `)
 
     stmt.run(
@@ -159,6 +172,32 @@ export class DatabaseService {
       SELECT * FROM meetings
       WHERE start_time >= ? AND start_time < ?
       ORDER BY start_time DESC
+    `)
+    return stmt.all(startDate, endDate) as any[]
+  }
+
+  /**
+   * Get meetings with recording and summary information (with full JOIN)
+   * Phase 2.3-4: Meeting-Recording Association
+   *
+   * Returns meetings with their associated recordings and summaries for display.
+   * Used by Calendar Meetings view to show recording and summary status.
+   */
+  getMeetingsWithRecordingsAndSummaries(startDate: string, endDate: string) {
+    const stmt = this.db.prepare(`
+      SELECT
+        m.*,
+        r.id as recording_id,
+        r.duration_seconds as recording_duration,
+        t.id as transcript_id,
+        s.id as summary_id,
+        s.overall_status as summary_status
+      FROM meetings m
+      LEFT JOIN recordings r ON r.meeting_id = m.id
+      LEFT JOIN transcripts t ON t.recording_id = r.id
+      LEFT JOIN meeting_summaries s ON s.transcript_id = t.id
+      WHERE m.start_time >= ? AND m.start_time < ?
+      ORDER BY m.start_time DESC
     `)
     return stmt.all(startDate, endDate) as any[]
   }
@@ -247,13 +286,30 @@ export class DatabaseService {
    * Phase 2.3-4: Meeting-Recording Association
    */
   updateRecordingMeetingId(recordingId: string, meetingId: string | null): void {
+    // Get current value before update
+    const current = this.db.prepare('SELECT meeting_id FROM recordings WHERE id = ?').get(recordingId) as { meeting_id: string | null } | undefined
+
+    console.log(`[Database] updateRecordingMeetingId called:`, {
+      recordingId,
+      meetingId_new: meetingId,
+      meetingId_old: current?.meeting_id || null,
+      stack: new Error().stack?.split('\n').slice(2, 5).join('\n')
+    })
+
     const stmt = this.db.prepare(`
       UPDATE recordings
-      SET meeting_id = ?,
-          updated_at = CURRENT_TIMESTAMP
+      SET meeting_id = ?
       WHERE id = ?
     `)
-    stmt.run(meetingId, recordingId)
+    const result = stmt.run(meetingId, recordingId)
+
+    console.log(`[Database] UPDATE result:`, {
+      changes: result.changes
+    })
+
+    // Verify the update
+    const verify = this.db.prepare('SELECT id, meeting_id FROM recordings WHERE id = ?').get(recordingId)
+    console.log(`[Database] Verification after update:`, verify)
   }
 
   // ===========================================================================
@@ -360,6 +416,7 @@ export class DatabaseService {
     const stmt = this.db.prepare(`
       SELECT
         r.id as recording_id,
+        r.meeting_id,
         r.file_path,
         r.duration_seconds,
         r.created_at as recording_created_at,
@@ -369,9 +426,11 @@ export class DatabaseService {
         d.id as diarization_id,
         d.num_speakers,
         d.created_at as diarization_created_at,
-        m.id as meeting_id,
+        m.id as calendar_meeting_id,
         m.subject as meeting_subject,
-        m.start_time as meeting_start_time
+        m.start_time as meeting_start_time,
+        (SELECT id FROM meeting_summaries WHERE transcript_id = t.id ORDER BY created_at DESC LIMIT 1) as summary_id,
+        (SELECT overall_status FROM meeting_summaries WHERE transcript_id = t.id ORDER BY created_at DESC LIMIT 1) as summary_status
       FROM recordings r
       LEFT JOIN transcripts t ON t.recording_id = r.id
       LEFT JOIN diarization_results d ON d.transcript_id = t.id
@@ -393,14 +452,39 @@ export class DatabaseService {
   }): string {
     const summaryId = randomUUID()
 
+    console.log(`[Database] createSummary called:`, {
+      summaryId,
+      meeting_id: data.meeting_id,
+      transcript_id: data.transcript_id,
+      dbPath: this.dbPath
+    })
+
     const stmt = this.db.prepare(`
       INSERT INTO meeting_summaries (
         id, meeting_id, transcript_id, overall_status
       ) VALUES (?, ?, ?, 'pending')
     `)
 
-    stmt.run(summaryId, data.meeting_id || null, data.transcript_id)
-    return summaryId
+    try {
+      const result = stmt.run(summaryId, data.meeting_id || null, data.transcript_id)
+      console.log(`[Database] INSERT result:`, {
+        changes: result.changes,
+        lastInsertRowid: result.lastInsertRowid
+      })
+
+      // Immediately verify
+      const verify = this.db.prepare('SELECT id, overall_status, created_at FROM meeting_summaries WHERE id = ?').get(summaryId)
+      console.log(`[Database] Immediate verification:`, verify)
+
+      if (!verify) {
+        throw new Error(`CRITICAL: Summary ${summaryId} not found immediately after INSERT!`)
+      }
+
+      return summaryId
+    } catch (error) {
+      console.error(`[Database] createSummary ERROR:`, error)
+      throw error
+    }
   }
 
   getSummary(summaryId: string): MeetingSummary | null {
@@ -452,17 +536,20 @@ export class DatabaseService {
     batchId: string,
     data?: Pass1Result
   ): void {
+    console.log(`[Database] updateSummaryPass1:`, { summaryId, batchId, hasData: !!data })
+
     if (!data) {
       // Just update batch ID (when submitting)
       const stmt = this.db.prepare(`
-        UPDATE meeting_summaries 
+        UPDATE meeting_summaries
         SET pass1_batch_id = ?,
             pass1_status = 'submitted',
             overall_status = 'pass1_submitted',
             updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
       `)
-      stmt.run(batchId, summaryId)
+      const result = stmt.run(batchId, summaryId)
+      console.log(`[Database] Pass1 batch submitted, changes: ${result.changes}`)
       return
     }
 
@@ -481,7 +568,7 @@ export class DatabaseService {
       WHERE id = ?
     `)
 
-    stmt.run(
+    const result = stmt.run(
       JSON.stringify(data.speaker_mappings),
       data.executive_summary || data.summary, // Support both field names
       JSON.stringify(data.action_items),
@@ -489,6 +576,11 @@ export class DatabaseService {
       data.detailed_notes ? JSON.stringify(data.detailed_notes) : null,
       summaryId
     )
+    console.log(`[Database] Pass1 complete updated, changes: ${result.changes}`)
+
+    // Verify update
+    const verify = this.db.prepare('SELECT id, overall_status FROM meeting_summaries WHERE id = ?').get(summaryId)
+    console.log(`[Database] Pass1 verification:`, verify)
   }
 
   updateSummaryPass2(
@@ -496,17 +588,20 @@ export class DatabaseService {
     batchId: string,
     data?: Pass2Result
   ): void {
+    console.log(`[Database] updateSummaryPass2:`, { summaryId, batchId, hasData: !!data })
+
     if (!data) {
       // Just update batch ID (when submitting)
       const stmt = this.db.prepare(`
-        UPDATE meeting_summaries 
+        UPDATE meeting_summaries
         SET pass2_batch_id = ?,
             pass2_status = 'submitted',
             overall_status = 'pass2_submitted',
             updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
       `)
-      stmt.run(batchId, summaryId)
+      const result = stmt.run(batchId, summaryId)
+      console.log(`[Database] Pass2 batch submitted, changes: ${result.changes}`)
       return
     }
 
@@ -526,7 +621,7 @@ export class DatabaseService {
       WHERE id = ?
     `)
 
-    stmt.run(
+    const result = stmt.run(
       data.refined_executive_summary || data.refined_summary, // Support both field names
       JSON.stringify(data.validated_speakers),
       JSON.stringify(data.validated_action_items),
@@ -535,6 +630,11 @@ export class DatabaseService {
       JSON.stringify(data.corrections),
       summaryId
     )
+    console.log(`[Database] Pass2 complete updated, changes: ${result.changes}`)
+
+    // Verify update
+    const verify = this.db.prepare('SELECT id, overall_status FROM meeting_summaries WHERE id = ?').get(summaryId)
+    console.log(`[Database] Pass2 verification:`, verify)
   }
 
   /**

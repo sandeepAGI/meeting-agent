@@ -898,6 +898,22 @@ ipcMain.handle('db-get-meetings-in-date-range', async (_event, startDate: string
   }
 })
 
+// Get meetings with recordings and summaries (with full JOIN)
+ipcMain.handle('db-get-meetings-with-recordings-and-summaries', async (_event, startDate: string, endDate: string) => {
+  try {
+    console.log('[Database] Fetching meetings with recordings and summaries:', startDate, '-', endDate)
+    const meetings = dbService.getMeetingsWithRecordingsAndSummaries(startDate, endDate)
+    console.log('[Database] Found meetings with details:', meetings.length)
+    return { success: true, meetings }
+  } catch (error) {
+    console.error('[Database] Get meetings with recordings and summaries failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get meetings'
+    }
+  }
+})
+
 // Search meetings by title
 ipcMain.handle('db-search-meetings-by-title', async (_event, query: string, limit: number = 50) => {
   try {
