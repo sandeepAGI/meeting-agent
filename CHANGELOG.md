@@ -7,10 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Phase 4b: Summary Editor & Email (Planned)
+- **Next Phase**: Inline editing capabilities for summaries
+- **Planned Features**:
+  - Summary text editor with save/cancel
+  - Action items editor (add/edit/delete)
+  - Key decisions editor (add/edit/delete)
+  - Speaker mappings editor
+  - Recipient selector from meeting attendees
+  - Email preview with Aileron branding
+  - Subject line editor
+- **Estimated Timeline**: ~20 hours development
+
 ## [0.4.0] - 2025-10-21
 
 ### Added
-- **Phase 4: Browse Mode**:
+- **Phase 4a: Browse Mode & Branding** (COMPLETE):
   - Browse/Generate mode toggle in Meeting Intelligence section
   - Unified recording list showing all recordings with status badges (✅ Summary | 📝 Transcript)
   - TranscriptViewer component for viewing past transcripts with speaker labels
@@ -43,6 +55,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **SQL Join Error**: Fixed "no such column: s.recording_id" by correcting join to use transcript_id
 - **Asset Loading**: Fixed logo display using Vite module imports
 - **Type Safety**: Added TypeScript declarations for image imports
+
+### Known Limitations (Phase 4a)
+- **Summary Editing**: View-only mode (inline editing planned for Phase 4b)
+  - Edit infrastructure exists in code (state, handlers) but no UI to activate
+  - Users can only view summaries, not edit them before export
+- **Recipient Selection**: Not implemented (planned for Phase 4b)
+- **Email Preview**: Not implemented (planned for Phase 4b)
+- **Export**: Basic markdown download only (no format options, no email sending)
 
 ## [0.3.2] - 2025-10-21
 

@@ -27,8 +27,9 @@ Meeting Agent is being developed in 10 phases, from foundation to production-rea
 | 2.1 | M365 Authentication | ✅ Complete | 2025-10-13 |
 | 2.2 | Calendar & Meeting Context | ✅ Complete | 2025-10-14 |
 | 2.3-3 | LLM Meeting Intelligence (Backend + UI) | ✅ Complete | 2025-10-21 |
-| 2.3-4 | Meeting-Recording Association | 🔄 In Progress | - |
-| 4 | GUI Development | 📅 Planned | - |
+| 2.3-4 | Meeting-Recording Association | ✅ Complete | 2025-10-21 |
+| 4a | Browse Mode & Branding | ✅ Complete | 2025-10-21 |
+| 4b | Summary Editor & Email | 📅 Planned (Next) | - |
 | 5 | Email Distribution | 📅 Planned | - |
 | 6 | Data Management | 📅 Planned | - |
 | 7 | Settings UI | 📅 Planned | - |
@@ -988,21 +989,190 @@ npm run build       # Must succeed
 
 ---
 
-## Phase 4: GUI Development 📅
+## Phase 4a: Browse Mode & Branding ✅
 
-**Goals**:
-- Build intuitive Electron interface
-- Summary editor with recipient selection
+**Completed**: 2025-10-21
+**Duration**: ~8 hours (2 commits)
 
-**Tasks**:
-- [ ] Meeting list component
-- [ ] Recording controls (already done in Phase 1.1)
-- [ ] Live transcript view (already done in Phase 1.2/1.3)
-- [ ] Summary editor
-- [ ] Recipient selector
-- [ ] Email preview
+### Overview
+Enhanced user experience with browse mode for viewing past recordings and complete Aileron brand integration.
 
-**Success Criteria**: Complete user flow from meeting selection to edited summary
+### Goals
+- Enable browsing of past transcripts and summaries
+- Apply professional Aileron branding throughout application
+
+### Deliverables
+- ✅ **Browse/Generate Mode Toggle**: Switch between viewing past recordings and generating new summaries
+- ✅ **TranscriptViewer Component**: Full viewer for past transcripts with speaker labels and metadata
+- ✅ **Unified Recording List**: Shows all recordings with status badges (✅ Summary | 📝 Transcript)
+- ✅ **Smart Navigation**: Click recordings to view transcript or summary based on status
+- ✅ **Search Functionality**: Filter recordings by title or transcript content
+- ✅ **Recording Metadata Display**: Date, duration, speaker count
+- ✅ **Aileron Design System**: Complete CSS design system with brand colors and typography
+- ✅ **Aileron Logo Integration**: Logo in app header with proper Vite asset handling
+- ✅ **Montserrat Font**: Google Fonts integration with CSP updates
+- ✅ **Brand Colors**: Purple (#2D2042), Blue (#60B5E5), Light Blue (#B3DCF3), Light Gray (#F2F2F2)
+
+### Backend
+- ✅ **3 New Database Methods**: `getTranscriptByRecordingId()`, `getSummaryByRecordingId()`, `getRecordingsWithSummaries()`
+- ✅ **3 New IPC Handlers**: Browse mode functionality
+- ✅ **SQL Query Optimization**: Explicit field selection for better performance
+
+### Success Criteria
+✅ Users can browse past recordings and view transcripts/summaries
+✅ Professional Aileron branding applied consistently
+✅ State management properly clears on mode switch
+✅ No duplicate React keys
+
+### Documentation
+- Updated: `CHANGELOG.md` v0.4.0
+- Updated: `README.md` with Browse Mode section
+- Updated: `CLAUDE.md` to v0.4.0
+
+---
+
+## Phase 4b: Summary Editor & Email 📅
+
+**Status**: Planned (Next Phase)
+**Estimated Duration**: ~20 hours
+
+### Overview
+Complete the GUI development phase by adding inline editing capabilities, recipient selection, and email preview functionality.
+
+### Goals
+- Enable inline editing of summaries before distribution
+- Add recipient selection from meeting attendees
+- Preview formatted email before sending
+- Complete original Phase 4 roadmap goals
+
+### Tasks
+- [ ] **Summary Text Editor**: Inline editing of summary text with save/cancel
+- [ ] **Action Items Editor**: Add/edit/delete action items with assignee and due date
+- [ ] **Key Decisions Editor**: Add/edit/delete key decisions
+- [ ] **Speaker Mappings Editor**: Edit speaker names, emails, and mappings
+- [ ] **Recipient Selector Component**: Select email recipients from meeting attendees
+- [ ] **Custom Recipients**: Add recipients not in meeting attendee list
+- [ ] **Email Preview Component**: Preview formatted email before sending
+- [ ] **Subject Line Editor**: Customize email subject line
+- [ ] **Database Updates**: Persist edited summaries and recipient selections
+
+### Detailed Task Breakdown
+
+#### Task 1: Inline Summary Editor (10 hours)
+**Subtasks**:
+- 1.1: Summary text editing (textarea, save/cancel buttons) - 2h
+- 1.2: Action items editing (add/edit/delete with form inputs) - 3h
+- 1.3: Key decisions editing (add/edit/delete functionality) - 2h
+- 1.4: Speaker mappings editing (name, email inputs with autocomplete) - 3h
+
+**Components to Modify**:
+- `src/renderer/components/SummaryDisplay.tsx` - Add edit mode UI
+- State variables already exist (`isEditing`, `editedSummary`)
+- Handlers already exist (`handleSave`, `handleCancel`)
+- Need: UI elements to trigger editing, input fields, buttons
+
+#### Task 2: Recipient Selector (5 hours)
+**Subtasks**:
+- 2.1: Create RecipientSelector component - 2h
+- 2.2: Fetch and display meeting attendees - 1h
+- 2.3: Checkbox selection + "Select All" functionality - 1h
+- 2.4: Custom recipient input with validation - 1h
+
+**New Files**:
+- `src/renderer/components/RecipientSelector.tsx`
+
+**Integration**:
+- Add to SummaryDisplay below summary content
+- Pass attendee data from meeting context
+- Update export button behavior when recipients selected
+
+#### Task 3: Email Preview (5 hours)
+**Subtasks**:
+- 3.1: Email template system (HTML + plain text) - 2h
+- 3.2: EmailPreview component with iframe/styled preview - 2h
+- 3.3: Subject line editor - 0.5h
+- 3.4: Integration with SummaryDisplay (preview modal) - 0.5h
+
+**New Files**:
+- `src/renderer/components/EmailPreview.tsx`
+- `src/templates/email-template.html`
+
+**Features**:
+- Show formatted email with Aileron branding
+- Toggle between HTML and plain text views
+- Editable subject line
+- Recipient list display
+- "Send" button (integrates with Phase 5)
+
+#### Task 4: Database & IPC Updates (2 hours)
+**Subtasks**:
+- Add `final_recipients_json` column to meeting_summaries table
+- Add `final_subject_line` column to meeting_summaries table
+- Add `edited_by_user` boolean flag
+- Update `updateSummary()` method in DatabaseService
+- Update IPC handlers for new fields
+
+**Files to Modify**:
+- `src/services/database.ts`
+- `src/main/index.ts` (IPC handlers)
+
+### Implementation Timeline
+
+**Week 1** (10 hours):
+- Day 1-2: Task 1.1-1.2 (Summary text + Action items editing) - 5h
+- Day 3: Task 1.3-1.4 (Key decisions + Speaker mappings) - 5h
+
+**Week 2** (10 hours):
+- Day 1: Task 4 (Database & IPC updates) - 3h
+- Day 2: Task 2 (Recipient selector) - 5h
+- Day 3: Task 3 (Email preview) - 5h
+- Day 4: Testing & bug fixes - 2h
+
+### Dependencies
+- Task 1 → Task 4 (editing requires persistence)
+- Task 2 → Task 3 (preview needs recipients)
+- Task 3 → Phase 5 (send email requires preview)
+
+### Success Criteria
+- [ ] Users can edit summary text inline before export
+- [ ] Users can add/edit/delete action items
+- [ ] Users can add/edit/delete key decisions
+- [ ] Users can edit speaker name mappings
+- [ ] Users can select email recipients from meeting attendees
+- [ ] Users can add custom recipients (not in meeting)
+- [ ] Users can preview formatted email with Aileron branding
+- [ ] Edited summaries persist to database
+- [ ] All edits survive page refresh/app restart
+
+### Testing Protocol (Per CLAUDE.md)
+
+**Level 1: Static Analysis**:
+```bash
+npm run type-check  # Must pass
+npm run build       # Must succeed
+```
+
+**Level 2: Logic Review**:
+- Verify edit state management
+- Check validation logic (email addresses, required fields)
+- Ensure data persistence correctness
+- Test edge cases (empty fields, long text, special characters)
+- Check race conditions in save operations
+
+**Level 3: Manual Testing**:
+- Edit summary text → Save → Verify persistence → Export → Verify content
+- Edit action items → Add new → Delete existing → Save → Verify
+- Edit speaker mappings → Save → Verify in database
+- Select recipients → Preview email → Verify formatting
+- Test with and without meeting association
+- Test regenerate after edit (should confirm before resetting edits)
+- Test concurrent editing (multiple fields changed, then save)
+
+### Documentation Updates Required
+- Update `CHANGELOG.md` with v0.5.0 (Phase 4b completion)
+- Update `README.md` "What Works Now" section
+- Update `CLAUDE.md` current status
+- Update `roadmap.md` to mark Phase 4b complete
 
 ---
 

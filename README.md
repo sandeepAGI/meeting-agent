@@ -4,9 +4,9 @@ AI-powered meeting transcription and summarization tool for macOS.
 
 ## Status
 
-**Current Version**: 0.4.0 - Phase 4: Browse Mode Complete ✅
+**Current Version**: 0.4.0 - Phase 4a: Browse Mode & Branding Complete ✅
 
-This project is in active development. Phases 0-4 (Browse Mode) are complete (audio capture, transcription, speaker diarization, M365 integration, LLM intelligence backend + UI, meeting-recording association, browse mode, Aileron branding). See [CHANGELOG.md](./CHANGELOG.md) for version history and [docs/planning/roadmap.md](./docs/planning/roadmap.md) for the full development plan.
+This project is in active development. Phases 0-4a are complete (audio capture, transcription, speaker diarization, M365 integration, LLM intelligence backend + UI, meeting-recording association, browse mode, Aileron branding). **Phase 4b (Summary Editor & Email)** is next. See [CHANGELOG.md](./CHANGELOG.md) for version history and [docs/planning/roadmap.md](./docs/planning/roadmap.md) for the full development plan.
 
 ## Overview
 
@@ -20,7 +20,9 @@ Meeting Agent is a desktop application that:
 - ✅ **Browse past recordings** with transcript and summary viewing
 - ✅ **Provides export** to save summaries as markdown files with clipboard copy
 - ✅ **Aileron branding** with professional design system
-- 🔜 **Enhanced editor** to customize summaries with inline editing (Phase 4 continued)
+- 🔜 **Enhanced editor** to customize summaries with inline editing (Phase 4b)
+- 🔜 **Recipient selector** to choose email recipients from meeting attendees (Phase 4b)
+- 🔜 **Email preview** with formatted template before sending (Phase 4b)
 
 ## What Works Now (v0.4.0)
 
@@ -83,15 +85,24 @@ Meeting Agent is a desktop application that:
 - **Back to Selection**: Easy navigation between summary and selection views
 - **Automatic UI updates**: Recording moves between tabs after linking
 
-### Browse Mode (Phase 4 Complete)
-- **Browse/Generate toggle**: Switch between viewing past recordings and generating new summaries
-- **Unified recording list**: Shows all recordings with status badges (✅ Summary | 📝 Transcript)
-- **TranscriptViewer**: Full viewer for past transcripts with speaker labels and metadata
-- **Smart navigation**: Click to view transcript or summary based on recording status
-- **Search recordings**: Filter by meeting title or transcript content
-- **Recording metadata**: Date, duration, speaker count displayed for each recording
-- **Generate from transcript**: Option to create summary from transcript viewer
-- **Aileron branding**: Professional design system with logo, colors, and Montserrat font
+### Browse Mode & Branding (Phase 4a Complete)
+- ✅ **Browse/Generate toggle**: Switch between viewing past recordings and generating new summaries
+- ✅ **Unified recording list**: Shows all recordings with status badges (✅ Summary | 📝 Transcript)
+- ✅ **TranscriptViewer**: Full viewer for past transcripts with speaker labels and metadata
+- ✅ **Smart navigation**: Click to view transcript or summary based on recording status
+- ✅ **Search recordings**: Filter by meeting title or transcript content
+- ✅ **Recording metadata**: Date, duration, speaker count displayed for each recording
+- ✅ **Generate from transcript**: Option to create summary from transcript viewer
+- ✅ **Aileron branding**: Professional design system with logo, colors, and Montserrat font
+- ✅ **Export**: Download summaries as markdown with clipboard copy
+- ⚠️ **View-only summaries**: Editing not yet implemented (coming in Phase 4b)
+
+### Planned (Phase 4b - Next)
+- 🔜 **Inline editing** of summary text, action items, key decisions, and speaker mappings
+- 🔜 **Recipient selector** to choose email recipients from meeting attendees
+- 🔜 **Email preview** with formatted Aileron-branded template
+- 🔜 **Subject line editor** for customizing email subject
+- 🔜 **Persistent edits** saved to database
 
 ## Key Features
 
@@ -359,17 +370,25 @@ meeting-agent/
 - Background async processing
 - **UI components complete** (recording browser, summary display, export)
 
-### 🔄 Phase 2.3-4: Meeting-Recording Association (In Progress)
+### ✅ Phase 2.3-4: Meeting-Recording Association (Complete - 2025-10-21)
 - Meeting selection during summary generation (Option C)
 - Week view with date range filters
 - Search meetings by title and attendees
 - Link recordings to calendar meetings
 - "Back to Selection" navigation
 
-### 📅 Phase 4: GUI Development
-- Meeting list UI
-- Summary editor
+### ✅ Phase 4a: Browse Mode & Branding (Complete - 2025-10-21)
+- Browse/Generate mode toggle
+- TranscriptViewer component
+- Aileron design system integration
+- Recording status badges
+- Smart navigation
+
+### 📅 Phase 4b: Summary Editor & Email (Next - ~20 hours)
+- Inline editing of summaries
+- Action items and key decisions editor
 - Recipient selector
+- Email preview with Aileron branding
 
 ### 📅 Phase 5-10
 - Email distribution, data management, settings, error handling, performance optimization, documentation

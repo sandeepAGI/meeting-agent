@@ -8,8 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Current Status
 
-**Version**: 0.4.0 (Phase 4: Browse Mode Complete ✅)
-**Last Updated**: 2025-10-21
+**Version**: 0.4.0 (Phase 4a: Browse Mode & Branding Complete ✅)
+**Last Updated**: 2025-01-15
 
 **What Works Now**:
 - ✅ Native system audio + microphone capture (no virtual drivers)
@@ -36,11 +36,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ✅ **Mode Toggle**: Switch between Browse and Generate modes
 - ✅ **Aileron Branding**: Logo, colors, and Montserrat font integrated
 
-**Next Phase**: Enhanced Summary Editor with inline editing
+**Next Phase**: Phase 4b - Summary Editor & Email (inline editing, recipient selector, email preview)
 
 ### Recent Updates
 
-**Phase 4: Browse Mode (October 21, 2025) ✅**:
+**Phase 4a: Browse Mode & Branding (October 21, 2025) ✅**:
 - ✅ **Browse/Generate Mode Toggle**: Switch between viewing past recordings and generating new summaries
 - ✅ **Unified Recording List**: Shows all recordings with status badges (✅ Summary | 📝 Transcript)
 - ✅ **TranscriptViewer Component**: Full viewer for past transcripts with speaker labels
@@ -52,8 +52,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ✅ **Aileron Branding**: Complete design system with purple (#2D2042) and blue (#60B5E5) colors
 - ✅ **Logo Integration**: Aileron logo in app header with proper Vite asset handling
 - ✅ **Typography**: Montserrat font family via Google Fonts
-- **Duration**: ~4 hours (implementation + bug fixes)
-- **Known Issues**: UI rendering needs polish (minor visual improvements needed)
+- **Duration**: ~8 hours (2 commits: branding + browse mode)
+- **Status**: Production-ready
+
+**Phase 4b: Summary Editor & Email (Next Phase) 📅**:
+- 🔜 **Inline Editing**: Edit summary text, action items, key decisions, speaker mappings
+- 🔜 **Recipient Selector**: Choose email recipients from meeting attendees
+- 🔜 **Email Preview**: Formatted email with Aileron branding before sending
+- 🔜 **Subject Line Editor**: Customize email subject
+- 🔜 **Persistent Edits**: Save edits to database
+- **Estimated Duration**: ~20 hours
+- **Current State**: Edit infrastructure exists (state, handlers) but no UI to activate it
+- **See**: `docs/analysis/phase-4-status-analysis.md` for detailed breakdown
 
 **Phase 2.3-4 Complete: Meeting-Recording Association (October 21, 2025) ✅**:
 - ✅ **Complete Option C Implementation**: Link recordings to meetings during summary generation
@@ -691,9 +701,9 @@ MIT License - See LICENSE file
 
 ---
 
-**Current Status**: Phase 2.3-3 UI Components Complete ✅ (Audio + Transcription + Diarization + GPU Acceleration + M365 Auth + Calendar + LLM Intelligence Backend + UI)
-**Next Milestone**: Manual testing and Phase 2.3-3 completion review
-**Last Updated**: 2025-10-14
+**Current Status**: Phase 4a Complete ✅ (Audio + Transcription + Diarization + GPU + M365 Auth + Calendar + LLM Intelligence + Meeting Association + Browse Mode + Aileron Branding)
+**Next Milestone**: Phase 4b - Summary Editor & Email (inline editing, recipient selector, email preview)
+**Last Updated**: 2025-01-15
 **Built with**: Claude Code (Sonnet 4.5) 🤖
 
 ---
