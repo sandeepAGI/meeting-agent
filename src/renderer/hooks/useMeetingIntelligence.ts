@@ -148,6 +148,7 @@ export function useMeetingIntelligence() {
 
         setState(prev => ({
           ...prev,
+          summaryId: summaryId, // FIX: Store summaryId for edit operations
           summary: result.summary || null,
           isLoading: false
         }))
@@ -172,7 +173,8 @@ export function useMeetingIntelligence() {
 
         setState(prev => ({
           ...prev,
-          summary: result.summary || null,
+          // FIX: Keep existing summary if server doesn't return updated one (safety fallback)
+          summary: result.summary || prev.summary,
           isLoading: false
         }))
       } catch (error) {

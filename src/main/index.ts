@@ -797,8 +797,11 @@ ipcMain.handle('meeting-intelligence-update-summary', async (_event, summaryId: 
   try {
     dbService.updateSummaryFinal(summaryId, updates)
 
+    // FIX: Return updated summary so UI can refresh
+    const updatedSummary = dbService.getSummary(summaryId)
+
     console.log(`[MeetingIntelligence] Updated summary: ${summaryId}`)
-    return { success: true }
+    return { success: true, summary: updatedSummary }
   } catch (error) {
     console.error('[MeetingIntelligence] Update summary failed:', error)
     return {
