@@ -51,14 +51,15 @@ export function EmailPreview({
       </div>
     `
 
-    // Speaker Identification
-    if (speakers.length > 0) {
+    // Speaker Identification (filter out Unknown speakers - typically the recording announcement)
+    const knownSpeakers = speakers.filter(s => s.name.toLowerCase() !== 'unknown')
+    if (knownSpeakers.length > 0) {
       html += `
         <div style="margin-bottom: 30px;">
-          <h2 style="color: #2D2042; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #60B5E5; padding-bottom: 10px;">👥 Participants (${speakers.length})</h2>
+          <h2 style="color: #2D2042; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #60B5E5; padding-bottom: 10px;">👥 Participants (${knownSpeakers.length})</h2>
           <div style="display: grid; gap: 10px;">
       `
-      speakers.forEach(speaker => {
+      knownSpeakers.forEach(speaker => {
         // Extract organization from email domain (e.g., gil@aileron-group.com → Aileron Group)
         let organization = ''
         if (speaker.email) {
