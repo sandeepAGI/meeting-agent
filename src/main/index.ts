@@ -882,6 +882,21 @@ ipcMain.handle('db-get-recordings-with-transcripts', async (_event, limit: numbe
 
 // Phase 2.3-4: Meeting-Recording Association - Database Query Handlers
 
+// Get meeting by ID (Phase 4b: RecipientSelector)
+ipcMain.handle('db-get-meeting-by-id', async (_event, meetingId: string) => {
+  try {
+    console.log('[Database] Fetching meeting by ID:', meetingId)
+    const meeting = dbService.getMeeting(meetingId)
+    return { success: true, meeting }
+  } catch (error) {
+    console.error('[Database] Get meeting by ID failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get meeting'
+    }
+  }
+})
+
 // Get meetings in date range
 ipcMain.handle('db-get-meetings-in-date-range', async (_event, startDate: string, endDate: string) => {
   try {

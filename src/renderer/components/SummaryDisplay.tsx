@@ -7,7 +7,9 @@
  */
 
 import { useState } from 'react'
-import type { MeetingSummary, SpeakerMapping, ActionItem, DetailedNotes } from '../../types/meetingSummary'
+import type { MeetingSummary, SpeakerMapping, ActionItem, DetailedNotes, EmailRecipient } from '../../types/meetingSummary'
+import { RecipientSelector } from './RecipientSelector'
+import { EmailPreview } from './EmailPreview'
 
 interface SummaryDisplayProps {
   summary: MeetingSummary
@@ -16,6 +18,8 @@ interface SummaryDisplayProps {
     speakers?: SpeakerMapping[]
     actionItems?: ActionItem[]
     keyDecisions?: string[]
+    recipients?: EmailRecipient[]
+    subjectLine?: string
   }) => void
   onRegenerate: () => void
   onBack?: () => void  // Phase 2.3-4: Navigate back to selection
@@ -26,17 +30,10 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
   const [isEditing, setIsEditing] = useState(false)
   const [editedSummary, setEditedSummary] = useState(summary.final_summary || summary.pass2_refined_summary || summary.pass1_summary || '')
 
-  // Handle back navigation - safe to call since this component only renders when summary is complete
-  const handleBack = () => {
-    if (isEditing) {
-      // Warn user if they have unsaved edits
-      if (confirm('You have unsaved edits. Are you sure you want to go back?')) {
-        onBack?.()
-      }
-    } else {
-      onBack?.()
-    }
-  }
+  // Phase 4b: Editing state for other sections
+  const [isEditingActionItems, setIsEditingActionItems] = useState(false)
+  const [isEditingKeyDecisions, setIsEditingKeyDecisions] = useState(false)
+  const [isEditingSpeakers, setIsEditingSpeakers] = useState(false)
 
   // Parse JSON fields
   const speakers: SpeakerMapping[] = JSON.parse(
@@ -48,7 +45,44 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
   const keyDecisions: string[] = JSON.parse(
     summary.final_key_decisions_json || summary.pass2_validated_key_decisions_json || summary.pass1_key_decisions_json || '[]'
   )
+  const detailedNotes: DetailedNotes | null = (() => {
+    const notesJson = summary.pass2_refined_detailed_notes_json || summary.pass1_detailed_notes_json
+    if (!notesJson) return null
+    try {
+      return JSON.parse(notesJson)
+    } catch (e) {
+      return null
+    }
+  })()
 
+  // Phase 4b: Edited values
+  const [editedSpeakers, setEditedSpeakers] = useState<SpeakerMapping[]>(speakers)
+  const [editedActionItems, setEditedActionItems] = useState<ActionItem[]>(actionItems)
+  const [editedKeyDecisions, setEditedKeyDecisions] = useState<string[]>(keyDecisions)
+
+  // Phase 4b: Email distribution
+  const initialRecipients: EmailRecipient[] = summary.final_recipients_json
+    ? JSON.parse(summary.final_recipients_json)
+    : []
+  const [selectedRecipients, setSelectedRecipients] = useState<EmailRecipient[]>(initialRecipients)
+  const [subjectLine, setSubjectLine] = useState<string>(
+    summary.final_subject_line || `Meeting Summary: ${summary.meeting_subject || 'Standalone Recording'}`
+  )
+  const [showEmailPreview, setShowEmailPreview] = useState(false)
+
+  // Handle back navigation - safe to call since this component only renders when summary is complete
+  const handleBack = () => {
+    if (isEditing || isEditingActionItems || isEditingKeyDecisions || isEditingSpeakers) {
+      // Warn user if they have unsaved edits
+      if (confirm('You have unsaved edits. Are you sure you want to go back?')) {
+        onBack?.()
+      }
+    } else {
+      onBack?.()
+    }
+  }
+
+  // Summary text save/cancel
   const handleSave = () => {
     onUpdate({ summary: editedSummary })
     setIsEditing(false)
@@ -57,6 +91,89 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
   const handleCancel = () => {
     setEditedSummary(summary.final_summary || summary.pass2_refined_summary || summary.pass1_summary || '')
     setIsEditing(false)
+  }
+
+  // Phase 4b: Action items save/cancel
+  const handleSaveActionItems = () => {
+    onUpdate({ actionItems: editedActionItems })
+    setIsEditingActionItems(false)
+  }
+
+  const handleCancelActionItems = () => {
+    setEditedActionItems(actionItems)
+    setIsEditingActionItems(false)
+  }
+
+  // Phase 4b: Key decisions save/cancel
+  const handleSaveKeyDecisions = () => {
+    onUpdate({ keyDecisions: editedKeyDecisions })
+    setIsEditingKeyDecisions(false)
+  }
+
+  const handleCancelKeyDecisions = () => {
+    setEditedKeyDecisions(keyDecisions)
+    setIsEditingKeyDecisions(false)
+  }
+
+  // Phase 4b: Speaker mappings save/cancel
+  const handleSaveSpeakers = () => {
+    onUpdate({ speakers: editedSpeakers })
+    setIsEditingSpeakers(false)
+  }
+
+  const handleCancelSpeakers = () => {
+    setEditedSpeakers(speakers)
+    setIsEditingSpeakers(false)
+  }
+
+  // Phase 4b: Action item manipulation
+  const handleAddActionItem = () => {
+    setEditedActionItems([...editedActionItems, {
+      description: '',
+      assignee: null,
+      priority: 'medium',
+      dueDate: null
+    }])
+  }
+
+  const handleUpdateActionItem = (index: number, field: keyof ActionItem, value: any) => {
+    const updated = [...editedActionItems]
+    updated[index] = { ...updated[index], [field]: value }
+    setEditedActionItems(updated)
+  }
+
+  const handleDeleteActionItem = (index: number) => {
+    setEditedActionItems(editedActionItems.filter((_, i) => i !== index))
+  }
+
+  // Phase 4b: Key decision manipulation
+  const handleAddKeyDecision = () => {
+    setEditedKeyDecisions([...editedKeyDecisions, ''])
+  }
+
+  const handleUpdateKeyDecision = (index: number, value: string) => {
+    const updated = [...editedKeyDecisions]
+    updated[index] = value
+    setEditedKeyDecisions(updated)
+  }
+
+  const handleDeleteKeyDecision = (index: number) => {
+    setEditedKeyDecisions(editedKeyDecisions.filter((_, i) => i !== index))
+  }
+
+  // Phase 4b: Speaker mapping manipulation
+  const handleUpdateSpeaker = (index: number, field: keyof SpeakerMapping, value: any) => {
+    const updated = [...editedSpeakers]
+    updated[index] = { ...updated[index], [field]: value }
+    setEditedSpeakers(updated)
+  }
+
+  // Phase 4b: Save recipients and subject line
+  const handleSaveEmailSettings = () => {
+    onUpdate({
+      recipients: selectedRecipients,
+      subjectLine: subjectLine
+    })
   }
 
   const handleExport = () => {
@@ -284,25 +401,103 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
 
       {/* Speaker Mappings */}
       <div className="summary-section">
-        <h4>👥 Speaker Identification ({speakers.length})</h4>
-        <div className="speakers-list">
-          {speakers.map((speaker, index) => (
-            <div key={index} className="speaker-card">
-              <div className="speaker-header">
-                <span className="speaker-label">{speaker.label}</span>
-                <span className="speaker-arrow">→</span>
-                <span className="speaker-name">{speaker.name}</span>
-                {speaker.email && (
-                  <span className="speaker-email">({speaker.email})</span>
-                )}
-                <span className={`badge ${getConfidenceBadgeClass(speaker.confidence)}`}>
-                  {speaker.confidence}
-                </span>
-              </div>
-              <p className="speaker-reasoning">{speaker.reasoning}</p>
-            </div>
-          ))}
+        <div className="section-header">
+          <h4>👥 Speaker Identification ({editedSpeakers.length})</h4>
+          {!isEditingSpeakers && (
+            <button
+              onClick={() => setIsEditingSpeakers(true)}
+              className="btn btn-small btn-edit"
+            >
+              ✏️ Edit
+            </button>
+          )}
         </div>
+
+        {isEditingSpeakers ? (
+          <div className="editor-container">
+            <div className="speakers-list">
+              {editedSpeakers.map((speaker, index) => (
+                <div key={index} className="speaker-card editing">
+                  <div className="speaker-edit-form">
+                    <div className="form-row">
+                      <label className="form-label">
+                        <span className="speaker-label-readonly">{speaker.label}</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={speaker.name}
+                        onChange={(e) => handleUpdateSpeaker(index, 'name', e.target.value)}
+                        placeholder="Speaker name"
+                        className="form-input"
+                      />
+                      <input
+                        type="email"
+                        value={speaker.email || ''}
+                        onChange={(e) => handleUpdateSpeaker(index, 'email', e.target.value)}
+                        placeholder="Email (optional)"
+                        className="form-input"
+                      />
+                    </div>
+                    <div className="form-row">
+                      <label>Confidence:</label>
+                      <select
+                        value={speaker.confidence}
+                        onChange={(e) => handleUpdateSpeaker(index, 'confidence', e.target.value)}
+                        className="form-select"
+                      >
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                      </select>
+                    </div>
+                    <textarea
+                      value={speaker.reasoning}
+                      onChange={(e) => handleUpdateSpeaker(index, 'reasoning', e.target.value)}
+                      placeholder="Reasoning for this mapping"
+                      className="form-textarea"
+                      rows={2}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="editor-actions">
+              <button
+                onClick={handleSaveSpeakers}
+                disabled={isUpdating}
+                className="btn btn-primary"
+              >
+                💾 Save
+              </button>
+              <button
+                onClick={handleCancelSpeakers}
+                disabled={isUpdating}
+                className="btn btn-secondary"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="speakers-list">
+            {editedSpeakers.map((speaker, index) => (
+              <div key={index} className="speaker-card">
+                <div className="speaker-header">
+                  <span className="speaker-label">{speaker.label}</span>
+                  <span className="speaker-arrow">→</span>
+                  <span className="speaker-name">{speaker.name}</span>
+                  {speaker.email && (
+                    <span className="speaker-email">({speaker.email})</span>
+                  )}
+                  <span className={`badge ${getConfidenceBadgeClass(speaker.confidence)}`}>
+                    {speaker.confidence}
+                  </span>
+                </div>
+                <p className="speaker-reasoning">{speaker.reasoning}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Summary */}
@@ -352,46 +547,245 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
       </div>
 
       {/* Action Items */}
-      {actionItems.length > 0 && (
+      {(editedActionItems.length > 0 || isEditingActionItems) && (
         <div className="summary-section">
-          <h4>✅ Action Items ({actionItems.length})</h4>
-          <div className="action-items-list">
-            {actionItems.map((item, index) => (
-              <div key={index} className="action-item">
-                <div className="action-header">
-                  <span className={`badge ${getPriorityBadgeClass(item.priority)}`}>
-                    {item.priority}
-                  </span>
-                  {item.assignee && (
-                    <span className="action-assignee">
-                      👤 {item.assignee}
-                    </span>
-                  )}
-                  {item.dueDate && (
-                    <span className="action-due-date">
-                      📅 {new Date(item.dueDate).toLocaleDateString()}
-                    </span>
-                  )}
-                </div>
-                <p className="action-description">{item.description}</p>
-              </div>
-            ))}
+          <div className="section-header">
+            <h4>✅ Action Items ({editedActionItems.length})</h4>
+            {!isEditingActionItems && (
+              <button
+                onClick={() => setIsEditingActionItems(true)}
+                className="btn btn-small btn-edit"
+              >
+                ✏️ Edit
+              </button>
+            )}
           </div>
+
+          {isEditingActionItems ? (
+            <div className="editor-container">
+              <div className="action-items-list">
+                {editedActionItems.map((item, index) => (
+                  <div key={index} className="action-item editing">
+                    <div className="action-edit-form">
+                      <textarea
+                        value={item.description}
+                        onChange={(e) => handleUpdateActionItem(index, 'description', e.target.value)}
+                        placeholder="Action item description"
+                        className="form-textarea"
+                        rows={3}
+                      />
+                      <div className="form-row">
+                        <input
+                          type="text"
+                          value={item.assignee || ''}
+                          onChange={(e) => handleUpdateActionItem(index, 'assignee', e.target.value || null)}
+                          placeholder="Assignee (optional)"
+                          className="form-input"
+                        />
+                        <select
+                          value={item.priority}
+                          onChange={(e) => handleUpdateActionItem(index, 'priority', e.target.value)}
+                          className="form-select"
+                        >
+                          <option value="high">High</option>
+                          <option value="medium">Medium</option>
+                          <option value="low">Low</option>
+                        </select>
+                        <input
+                          type="date"
+                          value={item.dueDate || ''}
+                          onChange={(e) => handleUpdateActionItem(index, 'dueDate', e.target.value || null)}
+                          className="form-input"
+                        />
+                        <button
+                          onClick={() => handleDeleteActionItem(index)}
+                          className="btn btn-small btn-danger"
+                          title="Delete action item"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={handleAddActionItem}
+                className="btn btn-small btn-secondary"
+              >
+                ➕ Add Action Item
+              </button>
+              <div className="editor-actions">
+                <button
+                  onClick={handleSaveActionItems}
+                  disabled={isUpdating}
+                  className="btn btn-primary"
+                >
+                  💾 Save
+                </button>
+                <button
+                  onClick={handleCancelActionItems}
+                  disabled={isUpdating}
+                  className="btn btn-secondary"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="action-items-list">
+              {editedActionItems.map((item, index) => (
+                <div key={index} className="action-item">
+                  <div className="action-header">
+                    <span className={`badge ${getPriorityBadgeClass(item.priority)}`}>
+                      {item.priority}
+                    </span>
+                    {item.assignee && (
+                      <span className="action-assignee">
+                        👤 {item.assignee}
+                      </span>
+                    )}
+                    {item.dueDate && (
+                      <span className="action-due-date">
+                        📅 {new Date(item.dueDate).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
+                  <p className="action-description">{item.description}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
       {/* Key Decisions */}
-      {keyDecisions.length > 0 && (
+      {(editedKeyDecisions.length > 0 || isEditingKeyDecisions) && (
         <div className="summary-section">
-          <h4>🎯 Key Decisions ({keyDecisions.length})</h4>
-          <ul className="decisions-list">
-            {keyDecisions.map((decision, index) => (
-              <li key={index} className="decision-item">
-                {decision}
-              </li>
-            ))}
-          </ul>
+          <div className="section-header">
+            <h4>🎯 Key Decisions ({editedKeyDecisions.length})</h4>
+            {!isEditingKeyDecisions && (
+              <button
+                onClick={() => setIsEditingKeyDecisions(true)}
+                className="btn btn-small btn-edit"
+              >
+                ✏️ Edit
+              </button>
+            )}
+          </div>
+
+          {isEditingKeyDecisions ? (
+            <div className="editor-container">
+              <div className="decisions-list editing">
+                {editedKeyDecisions.map((decision, index) => (
+                  <div key={index} className="decision-item-edit">
+                    <textarea
+                      value={decision}
+                      onChange={(e) => handleUpdateKeyDecision(index, e.target.value)}
+                      placeholder="Key decision"
+                      className="form-textarea"
+                      rows={2}
+                    />
+                    <button
+                      onClick={() => handleDeleteKeyDecision(index)}
+                      className="btn btn-small btn-danger"
+                      title="Delete decision"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={handleAddKeyDecision}
+                className="btn btn-small btn-secondary"
+              >
+                ➕ Add Decision
+              </button>
+              <div className="editor-actions">
+                <button
+                  onClick={handleSaveKeyDecisions}
+                  disabled={isUpdating}
+                  className="btn btn-primary"
+                >
+                  💾 Save
+                </button>
+                <button
+                  onClick={handleCancelKeyDecisions}
+                  disabled={isUpdating}
+                  className="btn btn-secondary"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <ul className="decisions-list">
+              {editedKeyDecisions.map((decision, index) => (
+                <li key={index} className="decision-item">
+                  {decision}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
+      )}
+
+      {/* Phase 4b: Email Recipients and Subject Line */}
+      <div className="summary-section">
+        <h4>📧 Email Distribution</h4>
+
+        <div className="email-settings">
+          <div className="subject-line-editor">
+            <label htmlFor="subject-line">Subject Line:</label>
+            <input
+              id="subject-line"
+              type="text"
+              value={subjectLine}
+              onChange={(e) => setSubjectLine(e.target.value)}
+              className="form-input subject-input"
+              placeholder="Email subject line"
+            />
+          </div>
+
+          <RecipientSelector
+            meetingId={summary.meeting_id}
+            selectedRecipients={selectedRecipients}
+            onRecipientsChange={setSelectedRecipients}
+          />
+
+          <div className="email-actions">
+            <button
+              onClick={handleSaveEmailSettings}
+              disabled={isUpdating}
+              className="btn btn-primary"
+            >
+              💾 Save Email Settings
+            </button>
+            <button
+              onClick={() => setShowEmailPreview(true)}
+              className="btn btn-secondary"
+              disabled={selectedRecipients.length === 0}
+              title={selectedRecipients.length === 0 ? 'Add recipients to preview email' : 'Preview formatted email'}
+            >
+              👁️ Preview Email
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Email Preview Modal */}
+      {showEmailPreview && (
+        <EmailPreview
+          summary={editedSummary}
+          speakers={editedSpeakers}
+          actionItems={editedActionItems}
+          keyDecisions={editedKeyDecisions}
+          detailedNotes={detailedNotes}
+          recipients={selectedRecipients}
+          subjectLine={subjectLine}
+          onClose={() => setShowEmailPreview(false)}
+        />
       )}
 
       {/* Pass 2 Corrections (if available) */}

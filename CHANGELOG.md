@@ -7,17 +7,93 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Phase 4b: Summary Editor & Email (Planned)
-- **Next Phase**: Inline editing capabilities for summaries
-- **Planned Features**:
-  - Summary text editor with save/cancel
-  - Action items editor (add/edit/delete)
-  - Key decisions editor (add/edit/delete)
-  - Speaker mappings editor
-  - Recipient selector from meeting attendees
-  - Email preview with Aileron branding
-  - Subject line editor
-- **Estimated Timeline**: ~20 hours development
+## [0.5.0] - 2025-01-23
+
+### Added
+- **Phase 4b: Summary Editor & Email** (COMPLETE):
+  - **Inline Editing for All Summary Components**:
+    - Summary text editor with save/cancel (verified working from Phase 4a)
+    - Action items editor: add/edit/delete with assignee, priority, due date fields
+    - Key decisions editor: add/edit/delete decisions
+    - Speaker mappings editor: edit name, email, confidence, and reasoning
+  - **Email Distribution Features**:
+    - RecipientSelector component for choosing email recipients
+    - Load meeting attendees from database automatically
+    - Select All / Deselect All functionality
+    - Custom recipient input with email validation
+    - Support for standalone recordings without meeting context
+  - **Email Preview**:
+    - EmailPreview component with Aileron-branded HTML template
+    - Preview formatted email before sending
+    - Gradient header with brand colors (Purple #2D2042 → Blue #60B5E5)
+    - Responsive email layout with proper styling
+    - Recipients and subject line display
+  - **Database Schema Updates**:
+    - Added `final_recipients_json` column for storing selected recipients
+    - Added `final_subject_line` column for custom email subjects
+    - Added `edited_by_user` flag to track user edits
+    - Migration logic for existing databases
+  - **Backend Support**:
+    - `getMeeting()` database method for fetching meeting details
+    - `db-get-meeting-by-id` IPC handler
+    - Updated `updateSummaryFinal()` to save recipients and subject line
+    - Preload API: `database.getMeetingById()`
+  - **TypeScript Types**:
+    - `EmailRecipient` interface (name, email)
+    - Updated `UpdateSummaryRequest` with recipients and subjectLine fields
+    - Updated `MeetingSummary` with Phase 4b columns
+
+### Changed
+- **SummaryDisplay Component**: Major enhancements for editing workflow
+  - Added edit mode for speakers, action items, and key decisions
+  - Integrated RecipientSelector and EmailPreview components
+  - Subject line editor with auto-generated default
+  - Save Email Settings button for persisting recipient/subject changes
+  - Preview Email button (disabled when no recipients selected)
+- **Edit State Management**: Proper save/cancel handling for all sections
+- **Navigation Safety**: Warns user about unsaved edits before navigating away
+
+### Technical Details
+- **Components Created**: RecipientSelector.tsx, EmailPreview.tsx
+- **Build Status**: ✅ Type-check passes, ✅ Build succeeds
+- **Bundle Size**: 961 KB (renderer), 121 KB (main), 5 KB (preload)
+- **Development Time**: ~8 hours
+
+### Fixed (Post-UAT)
+- **Browse Mode Priority Query**: Fixed `getRecordingsWithTranscripts()` to prioritize latest complete summary over any summary (database.ts:453-467)
+  - Uses COALESCE with cascading priority: complete → processing → submitted → any
+  - Resolves issue where recordings with multiple summaries showed wrong status badge
+- **UX Consistency**: Added summary badges to Generate mode Standalone Recordings (MeetingSelector.tsx:535-539)
+  - Generate mode now consistently shows "✅ Has Summary" badge across both tabs
+  - Matches Calendar Meetings tab behavior for unified user experience
+- **Email Subject Line**: Changed to use meeting subject instead of meeting_id UUID (database.ts:524-531, SummaryDisplay.tsx:60)
+  - `getSummary()` now JOINs with meetings table to fetch `meeting_subject`
+  - Subject line format: "Meeting Summary: [Meeting Title]" (not "Meeting Summary: AAMkADE...")
+  - Fallback to "Standalone Recording" for non-meeting recordings
+- **Participant Formatting**: Cleaned up email participant display (EmailPreview.tsx:59-79)
+  - Removed technical speaker labels (SPEAKER_00 →) from email
+  - Now shows: "Name, Organization" extracted from email domain
+  - Example: "Gil Brodnitz, Aileron Group" (was "SPEAKER_00 → Gil Brodnitz")
+  - Email address shown below name in smaller font
+- **Complete Email Content**: Added all detailed notes sections to email preview (EmailPreview.tsx:135-243)
+  - 💬 Discussion by Topic (with key points, decisions, and action items)
+  - 💭 Notable Quotes (quoted text with speaker attribution)
+  - ❓ Open Questions (with orange accent)
+  - 🅿️ Parking Lot (with gray accent)
+  - Email now includes full meeting intelligence, not just summary/actions/decisions
+- **Organizer Inclusion**: Meeting organizer now always included in recipient list (RecipientSelector.tsx:49-69)
+  - Loads organizer from `meeting.organizer_name` and `organizer_email`
+  - Adds organizer as first recipient (type: required)
+  - Filters duplicates if organizer also appears in attendees_json
+  - Ensures meeting owner is always BC'd on summary emails
+
+### Notes
+- Email sending functionality (Phase 5) is prepared but not yet implemented
+- `onSend` callback is available in EmailPreview for future Graph API integration
+- All editing features are fully functional with database persistence
+- Graceful handling of standalone recordings vs calendar meetings
+- **Manual Testing**: Complete end-to-end workflow verified by user
+- **UI/UX Feedback**: Additional look-and-feel improvements deferred to future phase
 
 ## [0.4.0] - 2025-10-21
 

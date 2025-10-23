@@ -86,10 +86,15 @@ export class DatabaseService {
    */
   private runMigrations(): void {
     try {
-      // Check if pass1_detailed_notes_json column exists
+      // Check if columns exist
       const columns = this.db.prepare(`PRAGMA table_info(meeting_summaries)`).all() as any[]
       const hasDetailedNotesPass1 = columns.some(col => col.name === 'pass1_detailed_notes_json')
       const hasDetailedNotesPass2 = columns.some(col => col.name === 'pass2_refined_detailed_notes_json')
+
+      // Phase 4b: Editor columns
+      const hasRecipients = columns.some(col => col.name === 'final_recipients_json')
+      const hasSubjectLine = columns.some(col => col.name === 'final_subject_line')
+      const hasEditedByUser = columns.some(col => col.name === 'edited_by_user')
 
       if (!hasDetailedNotesPass1) {
         console.log('Migration: Adding pass1_detailed_notes_json column')
@@ -101,7 +106,23 @@ export class DatabaseService {
         this.db.exec('ALTER TABLE meeting_summaries ADD COLUMN pass2_refined_detailed_notes_json TEXT')
       }
 
-      if (!hasDetailedNotesPass1 || !hasDetailedNotesPass2) {
+      // Phase 4b migrations
+      if (!hasRecipients) {
+        console.log('Migration: Adding final_recipients_json column (Phase 4b)')
+        this.db.exec('ALTER TABLE meeting_summaries ADD COLUMN final_recipients_json TEXT')
+      }
+
+      if (!hasSubjectLine) {
+        console.log('Migration: Adding final_subject_line column (Phase 4b)')
+        this.db.exec('ALTER TABLE meeting_summaries ADD COLUMN final_subject_line TEXT')
+      }
+
+      if (!hasEditedByUser) {
+        console.log('Migration: Adding edited_by_user column (Phase 4b)')
+        this.db.exec('ALTER TABLE meeting_summaries ADD COLUMN edited_by_user INTEGER DEFAULT 0')
+      }
+
+      if (!hasDetailedNotesPass1 || !hasDetailedNotesPass2 || !hasRecipients || !hasSubjectLine || !hasEditedByUser) {
         console.log('Database migrations completed successfully')
       }
     } catch (error) {
@@ -429,8 +450,21 @@ export class DatabaseService {
         m.id as calendar_meeting_id,
         m.subject as meeting_subject,
         m.start_time as meeting_start_time,
-        (SELECT id FROM meeting_summaries WHERE transcript_id = t.id ORDER BY created_at DESC LIMIT 1) as summary_id,
-        (SELECT overall_status FROM meeting_summaries WHERE transcript_id = t.id ORDER BY created_at DESC LIMIT 1) as summary_status
+        -- Priority: latest complete summary, then latest in-progress, then any latest
+        COALESCE(
+          (SELECT id FROM meeting_summaries WHERE transcript_id = t.id AND overall_status = 'complete' ORDER BY created_at DESC LIMIT 1),
+          (SELECT id FROM meeting_summaries WHERE transcript_id = t.id AND overall_status LIKE '%processing%' ORDER BY created_at DESC LIMIT 1),
+          (SELECT id FROM meeting_summaries WHERE transcript_id = t.id AND overall_status LIKE '%submitted%' ORDER BY created_at DESC LIMIT 1),
+          (SELECT id FROM meeting_summaries WHERE transcript_id = t.id ORDER BY created_at DESC LIMIT 1)
+        ) as summary_id,
+        (SELECT overall_status FROM meeting_summaries WHERE id = (
+          COALESCE(
+            (SELECT id FROM meeting_summaries WHERE transcript_id = t.id AND overall_status = 'complete' ORDER BY created_at DESC LIMIT 1),
+            (SELECT id FROM meeting_summaries WHERE transcript_id = t.id AND overall_status LIKE '%processing%' ORDER BY created_at DESC LIMIT 1),
+            (SELECT id FROM meeting_summaries WHERE transcript_id = t.id AND overall_status LIKE '%submitted%' ORDER BY created_at DESC LIMIT 1),
+            (SELECT id FROM meeting_summaries WHERE transcript_id = t.id ORDER BY created_at DESC LIMIT 1)
+          )
+        )) as summary_status
       FROM recordings r
       LEFT JOIN transcripts t ON t.recording_id = r.id
       LEFT JOIN diarization_results d ON d.transcript_id = t.id
@@ -488,7 +522,12 @@ export class DatabaseService {
   }
 
   getSummary(summaryId: string): MeetingSummary | null {
-    const stmt = this.db.prepare('SELECT * FROM meeting_summaries WHERE id = ?')
+    const stmt = this.db.prepare(`
+      SELECT s.*, m.subject as meeting_subject
+      FROM meeting_summaries s
+      LEFT JOIN meetings m ON s.meeting_id = m.id
+      WHERE s.id = ?
+    `)
     return stmt.get(summaryId) as MeetingSummary | null
   }
 
@@ -675,14 +714,27 @@ export class DatabaseService {
       values.push(JSON.stringify(userEdits.keyDecisions))
     }
 
+    // Phase 4b: Email distribution fields
+    if (userEdits.recipients !== undefined) {
+      updates.push('final_recipients_json = ?')
+      values.push(JSON.stringify(userEdits.recipients))
+    }
+
+    if (userEdits.subjectLine !== undefined) {
+      updates.push('final_subject_line = ?')
+      values.push(userEdits.subjectLine)
+    }
+
     if (updates.length === 0) return
 
+    // Mark as edited by user
+    updates.push('edited_by_user = 1')
     updates.push('edited_at = CURRENT_TIMESTAMP')
     updates.push('updated_at = CURRENT_TIMESTAMP')
     values.push(summaryId)
 
     const stmt = this.db.prepare(`
-      UPDATE meeting_summaries 
+      UPDATE meeting_summaries
       SET ${updates.join(', ')}
       WHERE id = ?
     `)

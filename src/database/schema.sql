@@ -126,6 +126,11 @@ CREATE TABLE IF NOT EXISTS meeting_summaries (
   final_key_decisions_json TEXT,
   edited_at DATETIME,
 
+  -- Phase 4b: Email distribution
+  final_recipients_json TEXT,          -- JSON: [{name, email}] - selected recipients
+  final_subject_line TEXT,             -- Custom email subject line
+  edited_by_user INTEGER DEFAULT 0,    -- Flag: 1 if user has edited this summary
+
   -- Overall status
   overall_status TEXT DEFAULT 'pending',
 

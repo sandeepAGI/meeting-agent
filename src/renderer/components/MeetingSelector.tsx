@@ -21,6 +21,8 @@ interface Recording {
   meeting_id: string | null
   meeting_subject: string | null
   meeting_start_time: string | null
+  summary_id: string | null
+  summary_status: string | null
 }
 
 interface CalendarMeeting {
@@ -531,6 +533,11 @@ export function MeetingSelector({ onStartSummary, onViewTranscript, onViewSummar
                         {recording.num_speakers} {recording.num_speakers === 1 ? 'speaker' : 'speakers'}
                       </span>
                     )}
+                  </div>
+                  <div className="recording-badges">
+                    {recording.summary_id ? (
+                      <span className="recording-badge summary-available">✅ Has Summary</span>
+                    ) : null}
                   </div>
                   <div className="recording-preview">
                     {recording.transcript_text.substring(0, 120)}...

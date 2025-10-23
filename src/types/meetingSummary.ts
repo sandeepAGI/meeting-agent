@@ -69,6 +69,7 @@ export interface MeetingSummary {
   id: string
   meeting_id: string
   transcript_id: string
+  meeting_subject?: string // Optional: fetched via JOIN with meetings table
 
   // Pass 1
   pass1_batch_id: string | null
@@ -99,6 +100,11 @@ export interface MeetingSummary {
   final_action_items_json: string | null
   final_key_decisions_json: string | null
   edited_at: string | null
+
+  // Phase 4b: Email distribution
+  final_recipients_json: string | null
+  final_subject_line: string | null
+  edited_by_user: number // 0 or 1
 
   overall_status: SummaryStatus
   created_at: string
@@ -154,6 +160,12 @@ export interface CreateSummaryRequest {
   transcript_id: string
 }
 
+// Recipient for email distribution (Phase 4b)
+export interface EmailRecipient {
+  name: string
+  email: string
+}
+
 // User edit request
 export interface UpdateSummaryRequest {
   summaryId: string
@@ -161,4 +173,7 @@ export interface UpdateSummaryRequest {
   speakers?: SpeakerMapping[]
   actionItems?: ActionItem[]
   keyDecisions?: string[]
+  // Phase 4b: Email distribution
+  recipients?: EmailRecipient[]
+  subjectLine?: string
 }

@@ -1031,30 +1031,30 @@ Enhanced user experience with browse mode for viewing past recordings and comple
 
 ---
 
-## Phase 4b: Summary Editor & Email 📅
+## Phase 4b: Summary Editor & Email ✅
 
-**Status**: Planned (Next Phase)
-**Estimated Duration**: ~20 hours
+**Status**: Complete (2025-01-23)
+**Actual Duration**: ~12 hours (8h initial + 4h UAT fixes)
 
 ### Overview
 Complete the GUI development phase by adding inline editing capabilities, recipient selection, and email preview functionality.
 
 ### Goals
-- Enable inline editing of summaries before distribution
-- Add recipient selection from meeting attendees
-- Preview formatted email before sending
-- Complete original Phase 4 roadmap goals
+- ✅ Enable inline editing of summaries before distribution
+- ✅ Add recipient selection from meeting attendees
+- ✅ Preview formatted email before sending
+- ✅ Complete original Phase 4 roadmap goals
 
 ### Tasks
-- [ ] **Summary Text Editor**: Inline editing of summary text with save/cancel
-- [ ] **Action Items Editor**: Add/edit/delete action items with assignee and due date
-- [ ] **Key Decisions Editor**: Add/edit/delete key decisions
-- [ ] **Speaker Mappings Editor**: Edit speaker names, emails, and mappings
-- [ ] **Recipient Selector Component**: Select email recipients from meeting attendees
-- [ ] **Custom Recipients**: Add recipients not in meeting attendee list
-- [ ] **Email Preview Component**: Preview formatted email before sending
-- [ ] **Subject Line Editor**: Customize email subject line
-- [ ] **Database Updates**: Persist edited summaries and recipient selections
+- [x] **Summary Text Editor**: Inline editing of summary text with save/cancel
+- [x] **Action Items Editor**: Add/edit/delete action items with assignee and due date
+- [x] **Key Decisions Editor**: Add/edit/delete key decisions
+- [x] **Speaker Mappings Editor**: Edit speaker names, emails, and mappings
+- [x] **Recipient Selector Component**: Select email recipients from meeting attendees (includes organizer)
+- [x] **Custom Recipients**: Add recipients not in meeting attendee list
+- [x] **Email Preview Component**: Preview formatted email before sending (with complete content)
+- [x] **Subject Line Editor**: Customize email subject line (uses meeting title)
+- [x] **Database Updates**: Persist edited summaries and recipient selections
 
 ### Detailed Task Breakdown
 
@@ -1134,15 +1134,15 @@ Complete the GUI development phase by adding inline editing capabilities, recipi
 - Task 3 → Phase 5 (send email requires preview)
 
 ### Success Criteria
-- [ ] Users can edit summary text inline before export
-- [ ] Users can add/edit/delete action items
-- [ ] Users can add/edit/delete key decisions
-- [ ] Users can edit speaker name mappings
-- [ ] Users can select email recipients from meeting attendees
-- [ ] Users can add custom recipients (not in meeting)
-- [ ] Users can preview formatted email with Aileron branding
-- [ ] Edited summaries persist to database
-- [ ] All edits survive page refresh/app restart
+- [x] Users can edit summary text inline before export
+- [x] Users can add/edit/delete action items
+- [x] Users can add/edit/delete key decisions
+- [x] Users can edit speaker name mappings
+- [x] Users can select email recipients from meeting attendees
+- [x] Users can add custom recipients (not in meeting)
+- [x] Users can preview formatted email with Aileron branding
+- [x] Edited summaries persist to database
+- [x] All edits survive page refresh/app restart
 
 ### Testing Protocol (Per CLAUDE.md)
 
