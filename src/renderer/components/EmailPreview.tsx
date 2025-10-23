@@ -52,7 +52,7 @@ export function EmailPreview({
     `
 
     // Speaker Identification (filter out Unknown speakers - typically the recording announcement)
-    const knownSpeakers = speakers.filter(s => s.name.toLowerCase() !== 'unknown')
+    const knownSpeakers = speakers.filter(s => !s.name.toLowerCase().includes('unknown'))
     if (knownSpeakers.length > 0) {
       html += `
         <div style="margin-bottom: 30px;">
