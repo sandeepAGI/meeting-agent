@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2025-01-23
+
+### Fixed (Critical Post-Release)
+- **All Edit Flows Broken**: Fixed critical architecture bugs that prevented all editing from working
+  - **Root Cause 1**: `fetchSummary()` didn't store `summaryId` → caused navigation bug on save
+  - **Root Cause 2**: IPC handler didn't return updated summary → UI couldn't refresh with changes
+  - **Root Cause 3**: Hook set `summary` to null on successful update → UI disappeared
+  - **Impact**: ALL 4 edit types (summary, actions, decisions, speakers) + email settings were non-functional
+  - **Fix 1** (useMeetingIntelligence.ts:151): Store summaryId when browsing to enable edit operations
+  - **Fix 2** (main/index.ts:801): Return updated summary from IPC handler so UI can refresh
+  - **Fix 3** (useMeetingIntelligence.ts:177): Keep existing summary if update doesn't return new one (safety)
+  - **Verified**: Manual testing confirms all edit flows now work correctly
+- **Unknown Speaker in Email**: Filter speakers containing "unknown" from email participant list (EmailPreview.tsx:55)
+  - Changed from exact match to substring match to catch "Unknown Speaker" variant
+  - Recording announcement kept in transcript for compliance purposes
+
+### Notes
+- These were critical bugs discovered during initial user testing after Phase 4b release
+- All edit functionality now fully operational with immediate UI updates and database persistence
+
 ## [0.5.0] - 2025-01-23
 
 ### Added
