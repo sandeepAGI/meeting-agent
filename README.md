@@ -6,7 +6,7 @@ AI-powered meeting transcription and summarization tool for macOS.
 
 **Current Version**: 0.6.1 - Phase 5: Email Distribution Complete ✅ (Production-Ready)
 
-This project is in active development. Phases 0-5 are complete and **fully tested** (audio capture, transcription, speaker diarization, M365 integration, LLM intelligence backend + UI, meeting-recording association, browse mode, Aileron branding, summary editor, email distribution). **Phase 6 (Data Management & Persistence)** is next. See [CHANGELOG.md](./CHANGELOG.md) for version history and [docs/planning/roadmap.md](./docs/planning/roadmap.md) for the full development plan.
+This project is in active development. Phases 0-5 are complete and **fully tested** (audio capture, transcription, speaker diarization, M365 integration, LLM intelligence backend + UI, meeting-recording association, browse mode, Aileron branding, summary editor, email distribution). **Phase 5.5 (Enhanced Email Customization)** is next, followed by Settings UI, Storage Management, Performance, Error Handling, and Packaging. See [CHANGELOG.md](./CHANGELOG.md) for version history and [docs/planning/roadmap.md](./docs/planning/roadmap.md) for the full development plan.
 
 ## Overview
 
@@ -108,11 +108,13 @@ Meeting Agent is a desktop application that:
 - ✅ **Persistent edits**: All changes saved to database
 - ✅ **Complete email content**: Summary, participants, actions, decisions, discussion topics, quotes, questions, parking lot
 
-### Planned (Phase 6 - Next)
-- 🔜 **Storage quotas** for audio files with configurable limits
-- 🔜 **Auto-deletion** of audio files after specified period
-- 🔜 **Advanced search** across all recordings and summaries
-- 🔜 **Meeting history** browser with filtering and sorting
+### Planned (Phase 5.5-10)
+- 🔜 **Phase 5.5**: Enhanced email customization (section toggles, edit all sections, custom intro, AI disclaimer)
+- 🔜 **Phase 6**: Configuration & Settings UI (API keys, preferences, quotas)
+- 🔜 **Phase 7**: Data management (storage quotas, auto-deletion, cleanup automation)
+- 🔜 **Phase 8**: Performance optimization (large meetings, memory efficiency)
+- 🔜 **Phase 9**: Error handling & logging (production-grade reliability)
+- 🔜 **Phase 10**: Documentation & packaging (macOS .dmg, auto-updates)
 
 ## Key Features
 
@@ -269,7 +271,7 @@ npm start
 - ✅ **Automatic announcement** informs participants when recording starts (Phase 1.4)
 - 🔒 All transcription and diarization happen locally on your machine
 - 👤 User reviews and approves summaries before distribution (Phase 4)
-- 🗑️ Configurable data retention and auto-deletion (Phase 6)
+- 🗑️ Configurable data retention and auto-deletion (Phase 7)
 - 🚫 No telemetry or usage tracking
 
 ## Development
@@ -332,7 +334,7 @@ meeting-agent/
 1. **macOS Only**: Currently requires macOS 12.3+ for native audio loopback
 2. **Batch Processing Latency**: Summaries take 30-60 minutes to generate (due to 50% cost savings)
 3. **Manual Testing Pending**: End-to-end workflow needs user testing and validation
-4. **English-Focused**: Multi-language support planned for Phase 7
+4. **English-Focused**: Multi-language support planned for future enhancement
 
 ## Roadmap
 

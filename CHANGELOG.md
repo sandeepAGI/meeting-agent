@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Phase Reorganization
+
+**Note**: Phases 6-10 have been reorganized based on user priorities and logical dependencies:
+- **Phase 6**: Configuration & Settings (was Phase 7)
+- **Phase 7**: Data Management & Storage (was Phase 6)
+- **Phase 8**: Performance Optimization (was Phase 9)
+- **Phase 9**: Error Handling & Logging (was Phase 8)
+- **Phase 10**: Documentation & Packaging (unchanged)
+
+**Rationale**: Settings UI (Phase 6) is needed before storage management (Phase 7) to configure quota settings. Performance optimization moved earlier for better user experience.
+
+---
+
 ### Planned - Phase 5.5: Enhanced Email Customization
 
 **Status**: Planned (Next implementation phase)

@@ -6,7 +6,15 @@
 
 ## Overview
 
-Meeting Agent is being developed in 10 phases, from foundation to production-ready application. Current status: **Phase 5 Complete** (Audio + Transcription + Diarization + M365 + Calendar + LLM Intelligence + Browse Mode + Summary Editor + Email Distribution). **Phase 5.5 (Enhanced Email Customization)** is next.
+Meeting Agent is being developed in 10 phases, from foundation to production-ready application. Current status: **Phase 5 Complete** (Audio + Transcription + Diarization + M365 + Calendar + LLM Intelligence + Browse Mode + Summary Editor + Email Distribution).
+
+**Prioritized Roadmap**:
+1. **Phase 5.5** (Next): Enhanced Email Customization - User-requested features
+2. **Phase 6**: Configuration & Settings - Enable UI-based configuration
+3. **Phase 7**: Data Management & Storage - Automated audio cleanup
+4. **Phase 8**: Performance Optimization - Handle large meetings smoothly
+5. **Phase 9**: Error Handling & Logging - Production-grade reliability
+6. **Phase 10**: Documentation & Packaging - Production deployment
 
 ---
 
@@ -32,10 +40,10 @@ Meeting Agent is being developed in 10 phases, from foundation to production-rea
 | 4b | Summary Editor & Email | ✅ Complete | 2025-01-23 |
 | 5 | Email Distribution | ✅ Complete | 2025-01-27 |
 | 5.5 | Enhanced Email Customization | 📅 Planned (Next) | - |
-| 6 | Data Management | 📅 Planned | - |
-| 7 | Settings UI | 📅 Planned | - |
-| 8 | Error Handling & Logging | 📅 Planned | - |
-| 9 | Performance Optimization | 📅 Planned | - |
+| 6 | Configuration & Settings | 📅 Planned | - |
+| 7 | Data Management & Storage | 📅 Planned | - |
+| 8 | Performance Optimization | 📅 Planned | - |
+| 9 | Error Handling & Logging | 📅 Planned | - |
 | 10 | Documentation & Packaging | 📅 Planned | - |
 
 ---
@@ -1461,95 +1469,188 @@ npm run build       # Must succeed
 
 ---
 
-## Phase 6: Data Management & Persistence 📅
+## Phase 6: Configuration & Settings 📅
 
 **Goals**:
-- Store recordings, transcripts, summaries locally
-- Smart storage management with quotas
+- Make application configurable via Settings UI
+- Enable users to customize application behavior
+- Secure credential management
 
 **Tasks**:
-- [ ] Set up SQLite database
-- [ ] Create schema (meetings, transcripts, summaries)
-- [ ] Meeting history view in GUI
-- [ ] Search functionality
-- [ ] Audio file lifecycle management:
-  - Delete audio after transcription (default)
-  - Optional: keep audio with 5GB quota
-  - Auto-delete oldest files when quota exceeded
-
-**Storage Strategy**:
-- Default: Delete audio immediately after transcription
-- Optional: Keep audio files with configurable quota (default 5GB)
-- FIFO cleanup when quota exceeded
-
-**Success Criteria**: View history of past meetings, storage stays under quota
-
----
-
-## Phase 7: Configuration & Settings 📅
-
-**Goals**:
-- Make application configurable
-
-**Tasks**:
-- [ ] Build settings UI panel
-- [ ] API key configuration (encrypted)
-- [ ] Whisper model selection (tiny/base/small)
+- [ ] Build settings UI panel (tabbed interface)
+- [ ] API key configuration (encrypted storage)
+  - Claude API key management
+  - M365 credentials management
+  - HuggingFace token
+- [ ] Whisper model selection (tiny/base/small/medium)
 - [ ] Summary style preferences
+  - Verbosity level (concise/detailed/comprehensive)
+  - Custom AI disclaimer text (Phase 5.5 uses hardcoded)
+  - Default email template customization
 - [ ] Data retention settings
-- [ ] Audio device selection
-- [ ] Audio file retention toggle
+  - Audio file retention (on/off, quota size)
+  - Transcript retention period
+  - Summary retention period
+- [ ] Audio device selection (input device picker)
+- [ ] UI preferences
+  - Theme (light/dark - future)
+  - Font size
+  - Default view (Browse/Generate)
 
 **Configuration Options**:
-- API credentials (encrypted)
-- Whisper model size
-- Summary verbosity
-- Audio file retention (on/off, quota)
-- Transcript/summary retention period
+- API credentials (encrypted in system keychain)
+- Whisper model size (affects speed vs accuracy)
+- Summary verbosity (affects LLM token usage)
+- Audio file retention (on/off, quota 1-10GB)
+- Transcript/summary retention period (30/60/90 days, forever)
 - Default email template
-- Audio input device
+- Audio input device selection
 
-**Success Criteria**: Configure API keys and preferences, persist across restarts
+**Priority**: HIGH (needed before Phase 7 storage management)
 
----
-
-## Phase 8: Error Handling & Logging 📅
-
-**Goals**:
-- Robust error handling and debugging support
-
-**Tasks**:
-- [ ] Centralized error handling
-- [ ] Logging service (winston or pino)
-- [ ] Log all API calls and responses
-- [ ] User-friendly error messages
-- [ ] Crash reporting (optional: Sentry)
-- [ ] Debug mode
-
-**Success Criteria**: Application handles all common errors gracefully
+**Success Criteria**:
+- Configure API keys and preferences via UI (no .env editing)
+- Settings persist across restarts
+- Encrypted credential storage
+- Settings validation with error messages
 
 ---
 
-## Phase 9: Performance Optimization 📅
+## Phase 7: Data Management & Storage 📅
 
 **Goals**:
-- Ensure smooth performance with large meetings
+- Smart storage management for audio files
+- Prevent disk space issues with automatic cleanup
+- Configurable retention policies
 
 **Tasks**:
-- [ ] Profile memory usage during long recordings
-- [ ] Optimize Whisper processing (chunking, parallelization)
-- [ ] Implement transcript streaming (don't wait for full audio)
-- [ ] Parallel transcription + diarization
-- [ ] GPU acceleration for diarization (PyTorch Metal)
-- [ ] Lazy-load meeting history
+- [x] Set up SQLite database (✅ Done in Phase 2.3-3)
+- [x] Create schema (meetings, transcripts, summaries) (✅ Done)
+- [x] Meeting history view in GUI (✅ Done in Phase 4a - Browse Mode)
+- [x] Search functionality (✅ Done in Phase 2.3-4)
+- [ ] Audio file lifecycle management:
+  - Delete audio after transcription (default behavior)
+  - Optional: Keep audio with configurable quota (from Phase 6 settings)
+  - Auto-delete oldest files when quota exceeded (FIFO)
+  - Track disk usage in database
+  - Warning when approaching quota limit
+- [ ] Cleanup service:
+  - Background job to monitor storage
+  - Automatic deletion based on retention policy
+  - Manual cleanup option in UI
+  - Safe deletion (only after summary generated)
+
+**Storage Strategy**:
+- **Default**: Delete audio immediately after transcription succeeds
+- **Optional**: Keep audio with configurable quota (default 5GB, max 10GB)
+- **FIFO cleanup**: Delete oldest recordings when quota exceeded
+- **Safety**: Never delete audio if summary generation failed
+
+**Dependencies**:
+- Phase 6 (Settings UI for quota configuration)
+
+**Success Criteria**:
+- Audio files automatically deleted based on policy
+- Storage stays under configured quota
+- Users warned before quota exceeded
+- Manual cleanup available in UI
+
+---
+
+## Phase 8: Performance Optimization 📅
+
+**Goals**:
+- Ensure smooth performance with large/long meetings
+- Optimize memory usage and processing speed
+- Improve user experience during intensive operations
+
+**Tasks**:
+- [ ] Profile memory usage during long recordings (60+ min)
+- [ ] Optimize Whisper processing:
+  - Chunk large audio files (>30 min) for processing
+  - Parallel processing of chunks
+  - Progress reporting per chunk
+- [ ] Implement transcript streaming (show results as they arrive)
+- [ ] Parallel transcription + diarization (run simultaneously if possible)
+- [x] GPU acceleration for diarization (✅ Done in Phase 1.6 - PyTorch Metal, 5.8x speedup)
+- [ ] Lazy-load meeting history (virtual scrolling for 100+ meetings)
+- [ ] Database query optimization:
+  - Add indexes on frequently queried columns
+  - Optimize JOIN queries
+  - Cache commonly accessed data
+- [ ] React component optimization:
+  - Memoization for expensive renders
+  - Virtual scrolling for long lists
+  - Code splitting for faster initial load
 
 **Performance Targets**:
 - Max memory: <500MB during 60-min meeting
 - Transcript latency: <30 seconds behind real-time
-- Summary generation: <60 seconds for 60-min meeting
-- GUI responsiveness: <100ms for interactions
+- Summary generation: <60 seconds for 60-min meeting (excluding LLM batch wait)
+- GUI responsiveness: <100ms for all interactions
+- App startup time: <3 seconds
 
-**Success Criteria**: Handle 2-hour meeting without performance degradation
+**Already Optimized**:
+- ✅ GPU acceleration (Metal) for diarization - 5.8x speedup
+- ✅ Chunked recording (Phase 1.5) - prevents memory exhaustion
+- ✅ FFmpeg preprocessing - optimized audio pipeline
+
+**Success Criteria**:
+- Handle 2-hour meeting without performance degradation
+- Memory usage stays under 500MB
+- No UI freezes during processing
+- Smooth scrolling with 200+ meetings in history
+
+---
+
+## Phase 9: Error Handling & Logging 📅
+
+**Goals**:
+- Robust error handling throughout application
+- Comprehensive logging for debugging
+- User-friendly error messages
+
+**Tasks**:
+- [ ] Centralized error handling service
+  - Error boundary components in React
+  - Global error handler in main process
+  - IPC error propagation standardization
+- [ ] Logging service (winston or pino)
+  - Structured logging (JSON format)
+  - Log levels (debug/info/warn/error)
+  - Log rotation (max 10 files, 10MB each)
+  - Separate logs per service (audio, transcription, LLM, etc.)
+- [ ] Log all API calls and responses
+  - Microsoft Graph API calls
+  - Claude API batch jobs
+  - External process calls (whisper, ffmpeg, python)
+- [ ] User-friendly error messages
+  - Replace technical errors with actionable messages
+  - Suggest fixes for common errors
+  - "Report Issue" button with log attachment
+- [ ] Crash reporting (optional: Sentry integration)
+  - Automatic error reporting (opt-in)
+  - Stack trace capture
+  - User context (OS, app version, recent actions)
+- [ ] Debug mode
+  - Verbose logging toggle in settings
+  - Developer tools access
+  - Network request inspection
+
+**Error Scenarios to Handle**:
+- API authentication failures (M365, Claude)
+- Network connectivity issues
+- Disk space exhausted
+- Audio device not available
+- Transcription/diarization failures
+- Database corruption
+- Invalid file formats
+
+**Success Criteria**:
+- Application handles all common errors gracefully (no crashes)
+- Error messages guide users to solutions
+- Logs provide enough context for debugging
+- Debug mode helps troubleshoot issues
 
 ---
 

@@ -62,6 +62,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Status**: Production-ready, fully tested (UAT passed)
 - **Cost**: $0.00/email (included in M365 subscription)
 
+**Phase Reorganization (January 2025)**:
+- Reorganized Phases 6-10 based on user priorities
+- **New order**: 5.5 → 6 (Settings) → 7 (Storage) → 8 (Performance) → 9 (Error Handling) → 10 (Packaging)
+- **Rationale**: Settings UI needed before storage management (quota configuration)
+- All phase content preserved, only reordered for logical dependencies
+
 **Phase 5.5: Enhanced Email Customization (Planned - January 2025) 📅**:
 - 📋 **Section Toggles**: Show/hide any email section (participants, quotes, questions, parking lot)
 - 📋 **Edit All Sections**: Make detailed notes fully editable (discussion topics, quotes, questions, parking lot)
