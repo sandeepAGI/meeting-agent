@@ -7,6 +7,74 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Planned - Phase 5.5: Enhanced Email Customization
+
+**Status**: Planned (Next implementation phase)
+**Estimated Duration**: 7-10 hours
+
+#### Features to Add
+
+- **Section Toggles**:
+  - Show/hide any email section (summary, participants, actions, decisions, discussion topics, quotes, questions, parking lot)
+  - Checkbox UI for easy control
+  - Persist to database as `enabled_sections_json`
+  - Email generator respects toggles when building HTML
+
+- **Edit All Detailed Notes Sections**:
+  - Discussion topics editor (by topic, with points)
+  - Notable quotes editor (speaker + quote text)
+  - Open questions editor
+  - Parking lot items editor
+  - Consistent UI pattern with existing action items editor
+
+- **Custom Introduction Note**:
+  - Optional textarea field (max 500 chars)
+  - Add personalized context before AI summary
+  - Display in blue box with user icon in email
+  - Database: `custom_introduction` column
+
+- **AI Disclaimer**:
+  - Auto-include disclaimer at bottom of all emails
+  - Warning about AI-generated content and potential errors
+  - Styled gray box with small font
+  - Always visible (no toggle)
+
+- **Preview UX Improvements**:
+  - Two-column layout: Left (edit controls) | Right (live preview)
+  - Sticky preview positioning
+  - Debounced live updates (500ms)
+  - "Save Draft" button to persist edits without sending
+  - Responsive: stack on narrow screens (<1200px)
+
+#### Database Schema Changes
+
+```sql
+ALTER TABLE meeting_summaries ADD COLUMN enabled_sections_json TEXT
+  DEFAULT '{"summary":true,"participants":true,"actionItems":true,"decisions":true,"discussionTopics":true,"quotes":true,"questions":true,"parkingLot":true}';
+
+ALTER TABLE meeting_summaries ADD COLUMN custom_introduction TEXT;
+```
+
+#### User Stories
+
+1. **Hide Irrelevant Sections**: "As a meeting organizer, I want to hide the 'Parking Lot' section when empty, so recipients see a cleaner email."
+2. **Edit Discussion Content**: "As a summary editor, I want to edit discussion topics text to clarify vague AI-generated descriptions."
+3. **Add Personal Context**: "As a meeting host, I want to add a brief introduction explaining the meeting's purpose before the AI summary."
+4. **Include Disclaimer**: "As a compliance officer, I want all AI-generated summaries to include a disclaimer about potential errors."
+5. **Save Work in Progress**: "As a busy professional, I want to save my edits as a draft and finish customizing the email later."
+
+#### Implementation Tasks
+
+1. Database migrations (30 min)
+2. EmailSectionToggles component (2h)
+3. Detailed notes editors for 4 sections (3h)
+4. Custom introduction field (1h)
+5. AI disclaimer implementation (30 min)
+6. Two-column preview layout (1h)
+7. Testing & documentation (1-2h)
+
+---
+
 ## [0.6.1] - 2025-01-27
 
 ### Added

@@ -42,7 +42,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ✅ **Email Distribution**: Send emails via Microsoft Graph API with Aileron branding
 - ✅ **Email Tracking**: Database tracks sent emails with timestamp and recipients
 
-**Next Phase**: Phase 6 - Data Management & Persistence (storage quotas, auto-deletion, advanced search)
+**Next Phase**: Phase 5.5 - Enhanced Email Customization (edit all sections, toggle sections, custom intro, AI disclaimer)
 
 ### Recent Updates
 
@@ -61,6 +61,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Duration**: ~8 hours (initial implementation + branding enhancement)
 - **Status**: Production-ready, fully tested (UAT passed)
 - **Cost**: $0.00/email (included in M365 subscription)
+
+**Phase 5.5: Enhanced Email Customization (Planned - January 2025) 📅**:
+- 📋 **Section Toggles**: Show/hide any email section (participants, quotes, questions, parking lot)
+- 📋 **Edit All Sections**: Make detailed notes fully editable (discussion topics, quotes, questions, parking lot)
+- 📋 **Custom Introduction**: Add personalized note before summary
+- 📋 **AI Disclaimer**: Auto-include disclaimer at bottom ("AI-generated, may contain errors")
+- 📋 **Live Preview**: Two-column layout (settings | preview) with real-time updates
+- 📋 **Save Draft**: Save email customizations without sending
+- 📋 **Reset to Original**: Restore AI-generated content
+- 📋 **Database Schema**: New columns for `custom_intro_note`, `email_section_preferences`, `edited_detailed_notes_json`
+- **Duration**: ~7-10 hours (5 tasks)
+- **Priority**: HIGH (user-requested, improves daily workflow)
+- **Benefits**: Full control over email content, professional customization, legal compliance (disclaimer)
 
 **Phase 4a: Browse Mode & Branding (October 21, 2025) ✅**:
 - ✅ **Browse/Generate Mode Toggle**: Switch between viewing past recordings and generating new summaries

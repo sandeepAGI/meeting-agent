@@ -1,12 +1,12 @@
 # Development Roadmap
 
 **Project**: Meeting Agent
-**Version**: 0.2.1
-**Last Updated**: 2025-10-14
+**Version**: 0.6.1
+**Last Updated**: 2025-01-27
 
 ## Overview
 
-Meeting Agent is being developed in 10 phases, from foundation to production-ready application. Current status: **Phase 2.2 Complete** (Audio + Transcription + Diarization + M365 Auth + Calendar).
+Meeting Agent is being developed in 10 phases, from foundation to production-ready application. Current status: **Phase 5 Complete** (Audio + Transcription + Diarization + M365 + Calendar + LLM Intelligence + Browse Mode + Summary Editor + Email Distribution). **Phase 5.5 (Enhanced Email Customization)** is next.
 
 ---
 
@@ -29,8 +29,9 @@ Meeting Agent is being developed in 10 phases, from foundation to production-rea
 | 2.3-3 | LLM Meeting Intelligence (Backend + UI) | ✅ Complete | 2025-10-21 |
 | 2.3-4 | Meeting-Recording Association | ✅ Complete | 2025-10-21 |
 | 4a | Browse Mode & Branding | ✅ Complete | 2025-10-21 |
-| 4b | Summary Editor & Email | 📅 Planned (Next) | - |
-| 5 | Email Distribution | 📅 Planned | - |
+| 4b | Summary Editor & Email | ✅ Complete | 2025-01-23 |
+| 5 | Email Distribution | ✅ Complete | 2025-01-27 |
+| 5.5 | Enhanced Email Customization | 📅 Planned (Next) | - |
 | 6 | Data Management | 📅 Planned | - |
 | 7 | Settings UI | 📅 Planned | - |
 | 8 | Error Handling & Logging | 📅 Planned | - |
@@ -1211,6 +1212,252 @@ npm run build       # Must succeed
 - UI components with loading/error/success states
 - Complete TypeScript type definitions
 - **Version**: v0.6.1 (Production-Ready)
+
+---
+
+## Phase 5.5: Enhanced Email Customization 📅 **PLANNED** (January 2025)
+
+**Status**: Planned (Next)
+**Priority**: HIGH (user-requested, improves daily workflow)
+**Estimated Duration**: 7-10 hours
+
+### Overview
+
+Comprehensive email customization enhancements to give users complete control over what content appears in emails and how it's presented. This phase addresses real-world usage feedback: users want to customize which sections appear, edit all content (not just summary/actions/decisions), add personal context, and include AI disclaimers.
+
+### Goals
+
+- Enable section-level toggles to show/hide any email content
+- Make all detailed notes sections (discussion topics, quotes, questions, parking lot) fully editable
+- Add custom introduction note field for personalized context
+- Include AI-generated disclaimer at bottom of all emails
+- Improve preview UX with two-column layout and live updates
+- Add save draft functionality
+
+### Deliverables
+
+#### **Task 1: Section Toggles (2-3 hours)**
+
+**New UI Component**: `EmailSectionToggles.tsx`
+- Checkbox list for all email sections
+- Sections: Summary, Participants, Action Items, Decisions, Discussion Topics, Notable Quotes, Open Questions, Parking Lot
+- Default: All checked (show all)
+- Persist to database as JSON: `enabled_sections_json`
+
+**Database Schema**:
+```sql
+ALTER TABLE meeting_summaries ADD COLUMN enabled_sections_json TEXT DEFAULT '{"summary":true,"participants":true,"actionItems":true,"decisions":true,"discussionTopics":true,"quotes":true,"questions":true,"parkingLot":true}';
+```
+
+**Integration**:
+- Add to SummaryDisplay below RecipientSelector
+- Update `emailGenerator.ts` to respect toggles
+- Update EmailPreview to hide disabled sections
+
+#### **Task 2: Edit Detailed Notes Sections (3-4 hours)**
+
+**Extend Editing to All Sections**:
+- Discussion topics (by topic, with points)
+- Notable quotes (speaker + quote)
+- Open questions (question text)
+- Parking lot items (description)
+
+**UI Pattern** (consistent with existing action items editor):
+- Display mode: Read-only formatted view
+- Edit mode: Inline forms with add/edit/delete buttons
+- State: `editedDetailedNotes` (matches database schema)
+
+**Database**: Already exists as `detailed_notes_json` column (no schema changes needed)
+
+**Files to Modify**:
+- `SummaryDisplay.tsx` - Add editing UI for 4 new sections
+- `EmailPreview.tsx` - Update to use edited detailed notes
+
+#### **Task 3: Custom Introduction Note (1-2 hours)**
+
+**New Field**: `custom_introduction` (TEXT)
+
+**Database Schema**:
+```sql
+ALTER TABLE meeting_summaries ADD COLUMN custom_introduction TEXT;
+```
+
+**UI**:
+- Add textarea above summary section in SummaryDisplay
+- Label: "Custom Introduction (optional)"
+- Placeholder: "Add personal context or instructions before the summary..."
+- Character limit: 500 chars
+
+**Email Template**:
+- Display introduction in blue box before summary section
+- Style: Same as "Meeting Context" but with user icon
+- Only include if non-empty
+
+#### **Task 4: AI Disclaimer (30 minutes)**
+
+**Disclaimer Text** (configurable in future):
+```
+⚠️ AI-Generated Summary Disclaimer
+This summary was automatically generated using AI and may contain errors or omissions. Please review carefully and verify critical information against the original recording or transcript.
+```
+
+**Email Template**:
+- Add disclaimer section at bottom (after all content, before signature)
+- Style: Gray box with warning icon
+- Small font (12px)
+- Always included (no toggle)
+
+**Implementation**:
+- Update `emailGenerator.ts` to append disclaimer
+- No database changes needed (hardcoded text)
+
+#### **Task 5: Preview Improvements (1 hour)**
+
+**Two-Column Layout**:
+- Left: Edit controls (current SummaryDisplay content)
+- Right: Live email preview (sticky position)
+- Responsive: Stack on narrow screens (<1200px)
+
+**Live Preview Updates**:
+- Preview updates automatically when edits made
+- Debounced refresh (500ms delay)
+- Show "Preview updating..." indicator
+
+**Save Draft Button**:
+- Save all edits without sending email
+- Position: Next to "Preview Email" button
+- Persist to database immediately
+- Success toast: "Draft saved"
+
+### Implementation Tasks
+
+**Estimated Breakdown**:
+
+1. **Database Migrations** (30 min):
+   - Add `enabled_sections_json` column
+   - Add `custom_introduction` column
+   - Update DatabaseService with new methods
+
+2. **Section Toggles Component** (2 hours):
+   - Create EmailSectionToggles.tsx
+   - Checkbox list with state management
+   - Integrate with SummaryDisplay
+   - Update emailGenerator.ts to filter sections
+
+3. **Detailed Notes Editors** (3 hours):
+   - Discussion Topics editor (1h)
+   - Notable Quotes editor (1h)
+   - Open Questions & Parking Lot editors (1h)
+   - Consistent UI pattern across all editors
+
+4. **Custom Introduction Field** (1 hour):
+   - Add textarea to SummaryDisplay
+   - Database persistence
+   - Email template integration
+
+5. **AI Disclaimer** (30 min):
+   - Update emailGenerator.ts footer
+   - Add disclaimer text constant
+   - Style disclaimer section
+
+6. **Preview Layout Improvements** (1 hour):
+   - Two-column CSS layout
+   - Sticky preview positioning
+   - Debounced preview updates
+   - Save draft button
+
+7. **Testing & Documentation** (1-2 hours):
+   - Manual testing (all edit flows)
+   - Update CHANGELOG.md
+   - Update README.md
+   - Update CLAUDE.md
+
+### Database Schema Changes
+
+```sql
+-- Phase 5.5 migrations
+ALTER TABLE meeting_summaries ADD COLUMN enabled_sections_json TEXT
+  DEFAULT '{"summary":true,"participants":true,"actionItems":true,"decisions":true,"discussionTopics":true,"quotes":true,"questions":true,"parkingLot":true}';
+
+ALTER TABLE meeting_summaries ADD COLUMN custom_introduction TEXT;
+```
+
+### Success Criteria
+
+- ✅ Users can toggle any email section on/off
+- ✅ Toggled sections don't appear in email preview or sent emails
+- ✅ Users can edit discussion topics, quotes, questions, parking lot items
+- ✅ Users can add custom introduction note (max 500 chars)
+- ✅ AI disclaimer appears at bottom of all emails
+- ✅ Two-column preview layout works on wide screens (≥1200px)
+- ✅ Preview updates automatically when edits made (debounced)
+- ✅ "Save Draft" button persists all changes without sending
+- ✅ All edits survive page refresh
+- ✅ TypeScript type-check passes
+- ✅ Build succeeds without errors
+
+### Testing Protocol
+
+**Level 1: Static Analysis**:
+```bash
+npm run type-check  # Must pass
+npm run build       # Must succeed
+```
+
+**Level 2: Logic Review**:
+- Verify section toggle logic filters email content correctly
+- Check detailed notes editing doesn't lose data
+- Validate custom introduction character limit enforcement
+- Ensure disclaimer always appears (no accidental omission)
+- Review debounce logic for preview updates
+
+**Level 3: Manual Testing**:
+- Toggle sections off → Verify hidden in preview and sent email
+- Edit discussion topics → Save → Verify in email
+- Edit quotes, questions, parking lot → Verify persistence
+- Add custom introduction → Verify appears before summary
+- Send email → Verify disclaimer at bottom
+- Save draft → Refresh page → Verify edits persist
+- Test two-column layout on wide/narrow screens
+- Test preview live updates with various edits
+
+### User Stories
+
+**Story 1: Hide Irrelevant Sections**
+> "As a meeting organizer, I want to hide the 'Parking Lot' section when there are no items, so recipients see a cleaner email."
+
+**Story 2: Edit Discussion Content**
+> "As a summary editor, I want to edit the discussion topics text to clarify vague AI-generated descriptions."
+
+**Story 3: Add Personal Context**
+> "As a meeting host, I want to add a brief introduction explaining the meeting's purpose before the AI summary."
+
+**Story 4: Include Disclaimer**
+> "As a compliance officer, I want all AI-generated summaries to include a disclaimer about potential errors."
+
+**Story 5: Save Work in Progress**
+> "As a busy professional, I want to save my edits as a draft and finish customizing the email later."
+
+### Dependencies
+
+- Phase 5 (Email Distribution) ✅ Complete
+- Phase 4b (Summary Editor) ✅ Complete
+- EmailPreview component ✅ Exists
+- emailGenerator.ts utility ✅ Exists
+
+### Documentation Updates Required
+
+- Update `CHANGELOG.md` with v0.6.5 (Phase 5.5 completion)
+- Update `README.md` "What Works Now" section
+- Update `CLAUDE.md` current status
+- Update `roadmap.md` to mark Phase 5.5 complete (this file)
+
+### Known Limitations
+
+- Disclaimer text is hardcoded (not customizable until Phase 7: Settings)
+- Two-column layout may be cramped on screens <1400px
+- Live preview uses client-side debounce (not optimized for very large summaries)
+- Save draft doesn't trigger email validation (can save with no recipients)
 
 ---
 
