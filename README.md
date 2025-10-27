@@ -4,9 +4,9 @@ AI-powered meeting transcription and summarization tool for macOS.
 
 ## Status
 
-**Current Version**: 0.4.0 - Phase 4a: Browse Mode & Branding Complete ✅
+**Current Version**: 0.6.1 - Phase 5: Email Distribution Complete ✅ (Production-Ready)
 
-This project is in active development. Phases 0-4a are complete (audio capture, transcription, speaker diarization, M365 integration, LLM intelligence backend + UI, meeting-recording association, browse mode, Aileron branding). **Phase 4b (Summary Editor & Email)** is next. See [CHANGELOG.md](./CHANGELOG.md) for version history and [docs/planning/roadmap.md](./docs/planning/roadmap.md) for the full development plan.
+This project is in active development. Phases 0-5 are complete and **fully tested** (audio capture, transcription, speaker diarization, M365 integration, LLM intelligence backend + UI, meeting-recording association, browse mode, Aileron branding, summary editor, email distribution). **Phase 6 (Data Management & Persistence)** is next. See [CHANGELOG.md](./CHANGELOG.md) for version history and [docs/planning/roadmap.md](./docs/planning/roadmap.md) for the full development plan.
 
 ## Overview
 
@@ -18,13 +18,12 @@ Meeting Agent is a desktop application that:
 - ✅ **Integrates with Microsoft 365** for meeting context and calendar
 - ✅ **Generates AI summaries** with speaker identification and action items using Claude API
 - ✅ **Browse past recordings** with transcript and summary viewing
+- ✅ **Inline editing** to customize summaries, action items, decisions, and speakers
+- ✅ **Email distribution** via Microsoft 365 with branded HTML templates
 - ✅ **Provides export** to save summaries as markdown files with clipboard copy
 - ✅ **Aileron branding** with professional design system
-- 🔜 **Enhanced editor** to customize summaries with inline editing (Phase 4b)
-- 🔜 **Recipient selector** to choose email recipients from meeting attendees (Phase 4b)
-- 🔜 **Email preview** with formatted template before sending (Phase 4b)
 
-## What Works Now (v0.4.0)
+## What Works Now (v0.6.1 - Production Ready)
 
 ### Audio Capture
 - Native system audio capture (no virtual drivers required!)
@@ -95,14 +94,25 @@ Meeting Agent is a desktop application that:
 - ✅ **Generate from transcript**: Option to create summary from transcript viewer
 - ✅ **Aileron branding**: Professional design system with logo, colors, and Montserrat font
 - ✅ **Export**: Download summaries as markdown with clipboard copy
-- ⚠️ **View-only summaries**: Editing not yet implemented (coming in Phase 4b)
 
-### Planned (Phase 4b - Next)
-- 🔜 **Inline editing** of summary text, action items, key decisions, and speaker mappings
-- 🔜 **Recipient selector** to choose email recipients from meeting attendees
-- 🔜 **Email preview** with formatted Aileron-branded template
-- 🔜 **Subject line editor** for customizing email subject
-- 🔜 **Persistent edits** saved to database
+### Summary Editor & Email (Phases 4b-5 Complete)
+- ✅ **Inline editing**: Edit summary text, action items, key decisions, and speaker mappings
+- ✅ **Recipient selector**: Choose email recipients from meeting attendees
+- ✅ **Custom recipients**: Add additional recipients with email validation
+- ✅ **Email preview**: Formatted Aileron-branded HTML template before sending
+- ✅ **Subject line editor**: Customize email subject line
+- ✅ **Send via M365**: Email distribution through Microsoft Graph API
+- ✅ **Email tracking**: Database tracks sent emails with timestamp and recipients
+- ✅ **Loading states**: Visual feedback during send operation
+- ✅ **Error handling**: User-friendly error messages for auth and permission issues
+- ✅ **Persistent edits**: All changes saved to database
+- ✅ **Complete email content**: Summary, participants, actions, decisions, discussion topics, quotes, questions, parking lot
+
+### Planned (Phase 6 - Next)
+- 🔜 **Storage quotas** for audio files with configurable limits
+- 🔜 **Auto-deletion** of audio files after specified period
+- 🔜 **Advanced search** across all recordings and summaries
+- 🔜 **Meeting history** browser with filtering and sorting
 
 ## Key Features
 

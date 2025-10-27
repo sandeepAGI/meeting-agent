@@ -67,7 +67,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getMeetingById: (eventId: string) => ipcRenderer.invoke('graph-get-meeting-by-id', eventId),
     // Phase 2.3-4: Date range sync for historical meetings
     getMeetingsInDateRange: (startDate: string, endDate: string) =>
-      ipcRenderer.invoke('graph-get-meetings-in-date-range', startDate, endDate)
+      ipcRenderer.invoke('graph-get-meetings-in-date-range', startDate, endDate),
+    // Phase 5: Email Distribution - Send email via Graph API
+    sendEmail: (options: {
+      to: { name: string; email: string }[]
+      cc?: { name: string; email: string }[]
+      subject: string
+      bodyHtml: string
+    }) => ipcRenderer.invoke('graph-send-email', options)
   },
 
   // Phase 2.3-3: Meeting Intelligence
@@ -113,7 +120,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getSummaryByRecordingId: (recordingId: string) =>
       ipcRenderer.invoke('db-get-summary-by-recording-id', recordingId),
     getRecordingsWithSummaries: (limit?: number) =>
-      ipcRenderer.invoke('db-get-recordings-with-summaries', limit)
+      ipcRenderer.invoke('db-get-recordings-with-summaries', limit),
+    // Phase 5: Email Distribution
+    markSummarySent: (summaryId: string, recipients: { name: string; email: string }[]) =>
+      ipcRenderer.invoke('db-mark-summary-sent', summaryId, recipients)
   }
 })
 

@@ -66,6 +66,13 @@ export interface ElectronAPI {
     getMeetingById: (eventId: string) => Promise<{ success: boolean; meeting?: MeetingInfo; error?: string }>
     // Phase 2.3-4: Date range sync for historical meetings
     getMeetingsInDateRange: (startDate: string, endDate: string) => Promise<{ success: boolean; meetings?: MeetingInfo[]; error?: string }>
+    // Phase 5: Email Distribution
+    sendEmail: (options: {
+      to: { name: string; email: string }[]
+      cc?: { name: string; email: string }[]
+      subject: string
+      bodyHtml: string
+    }) => Promise<{ success: boolean; error?: string }>
   }
 
   // Phase 2.3-3: Meeting Intelligence
@@ -99,6 +106,8 @@ export interface ElectronAPI {
     getTranscriptByRecordingId: (recordingId: string) => Promise<{ success: boolean; transcript?: any; error?: string }>
     getSummaryByRecordingId: (recordingId: string) => Promise<{ success: boolean; summary?: any; error?: string }>
     getRecordingsWithSummaries: (limit?: number) => Promise<{ success: boolean; recordings?: any[]; error?: string }>
+    // Phase 5: Email Distribution
+    markSummarySent: (summaryId: string, recipients: { name: string; email: string }[]) => Promise<{ success: boolean; error?: string }>
   }
 }
 

@@ -708,6 +708,41 @@ ipcMain.handle('graph-get-meeting-by-id', async (_event, eventId: string) => {
   }
 })
 
+// Phase 5: Email Distribution - Send email via Graph API
+ipcMain.handle('graph-send-email', async (_event, options: {
+  to: { name: string; email: string }[]
+  cc?: { name: string; email: string }[]
+  subject: string
+  bodyHtml: string
+}) => {
+  try {
+    if (!m365AuthService) {
+      return {
+        success: false,
+        error: 'Microsoft 365 authentication not configured.'
+      }
+    }
+
+    // Get fresh access token
+    const accessToken = await m365AuthService.getAccessToken()
+
+    // Initialize Graph API client
+    graphApiService.initialize(accessToken)
+
+    // Send email
+    await graphApiService.sendEmail(options)
+
+    console.log('[Main] Email sent successfully')
+    return { success: true }
+  } catch (error) {
+    console.error('[Main] Failed to send email:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to send email'
+    }
+  }
+})
+
 // ===== Phase 2.3-3: Meeting Intelligence IPC Handlers =====
 
 // Helper to ensure intelligence service is initialized
@@ -1054,6 +1089,20 @@ ipcMain.handle('db-get-recordings-with-summaries', async (_event, limit: number 
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to get recordings'
+    }
+  }
+})
+
+// Phase 5: Email Distribution - Mark summary as sent
+ipcMain.handle('db-mark-summary-sent', async (_event, summaryId: string, recipients: { name: string; email: string }[]) => {
+  try {
+    dbService.markSummaryAsSent(summaryId, recipients)
+    return { success: true }
+  } catch (error) {
+    console.error('[Database] Mark summary sent failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to mark summary as sent'
     }
   }
 })

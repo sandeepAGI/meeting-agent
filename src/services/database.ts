@@ -96,6 +96,10 @@ export class DatabaseService {
       const hasSubjectLine = columns.some(col => col.name === 'final_subject_line')
       const hasEditedByUser = columns.some(col => col.name === 'edited_by_user')
 
+      // Phase 5: Email distribution tracking
+      const hasSentAt = columns.some(col => col.name === 'sent_at')
+      const hasSentTo = columns.some(col => col.name === 'sent_to_json')
+
       if (!hasDetailedNotesPass1) {
         console.log('Migration: Adding pass1_detailed_notes_json column')
         this.db.exec('ALTER TABLE meeting_summaries ADD COLUMN pass1_detailed_notes_json TEXT')
@@ -122,7 +126,18 @@ export class DatabaseService {
         this.db.exec('ALTER TABLE meeting_summaries ADD COLUMN edited_by_user INTEGER DEFAULT 0')
       }
 
-      if (!hasDetailedNotesPass1 || !hasDetailedNotesPass2 || !hasRecipients || !hasSubjectLine || !hasEditedByUser) {
+      // Phase 5 migrations
+      if (!hasSentAt) {
+        console.log('Migration: Adding sent_at column (Phase 5)')
+        this.db.exec('ALTER TABLE meeting_summaries ADD COLUMN sent_at DATETIME')
+      }
+
+      if (!hasSentTo) {
+        console.log('Migration: Adding sent_to_json column (Phase 5)')
+        this.db.exec('ALTER TABLE meeting_summaries ADD COLUMN sent_to_json TEXT')
+      }
+
+      if (!hasDetailedNotesPass1 || !hasDetailedNotesPass2 || !hasRecipients || !hasSubjectLine || !hasEditedByUser || !hasSentAt || !hasSentTo) {
         console.log('Database migrations completed successfully')
       }
     } catch (error) {
@@ -740,6 +755,27 @@ export class DatabaseService {
     `)
 
     stmt.run(...values)
+  }
+
+  /**
+   * Mark summary as sent via email
+   * Phase 5: Email Distribution
+   *
+   * @param summaryId - Summary ID
+   * @param recipients - List of email recipients who received the summary
+   */
+  markSummaryAsSent(summaryId: string, recipients: { name: string; email: string }[]): void {
+    const stmt = this.db.prepare(`
+      UPDATE meeting_summaries
+      SET
+        sent_at = CURRENT_TIMESTAMP,
+        sent_to_json = ?,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `)
+
+    stmt.run(JSON.stringify(recipients), summaryId)
+    console.log(`[DB] Marked summary ${summaryId} as sent to ${recipients.length} recipient(s)`)
   }
 
   // ===========================================================================

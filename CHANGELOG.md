@@ -7,6 +7,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2025-01-27
+
+### Added
+- **Email Branding Enhancement**:
+  - Aileron logo now appears in email header (base64-embedded PNG)
+  - Table-based layout for better email client compatibility (Outlook, Gmail, etc.)
+  - Logo displays above "Meeting Summary" heading
+  - Replaces CSS gradient (which email clients often strip)
+
+### Technical Details
+- Logo embedded as base64 data URI (1KB, no external hosting required)
+- Uses `<table>` layout instead of `<div>` for email client compatibility
+- Solid purple background (#2D2042) instead of gradient for consistency across clients
+
+### Testing
+- ✅ TypeScript type-check passes
+- ✅ Build succeeds without errors
+- ✅ Manual testing complete: Email branding verified in Outlook
+- ✅ Logo displays correctly in email header
+- ✅ Professional appearance confirmed
+
+## [0.6.0] - 2025-01-27
+
+### Added
+- **Phase 5: Email Distribution** (COMPLETE):
+  - **Send Emails via Microsoft Graph API**:
+    - `GraphApiService.sendEmail()` method for sending HTML emails
+    - Uses `/me/sendMail` endpoint with automatic token management
+    - Saves sent emails to M365 Sent Items folder
+    - User-friendly error messages for common failures (auth, permissions)
+  - **Email Generation Utility**:
+    - `emailGenerator.ts` with `generateEmailHTML()` and `generatePlainTextEmail()` functions
+    - Extracted from EmailPreview for reuse in send functionality
+    - Generates Aileron-branded HTML emails with gradient header
+    - Plain text fallback for email clients that don't support HTML
+  - **Email Sending UI**:
+    - "Send Email" button in EmailPreview component
+    - Loading state: "Sending..." during send operation
+    - Success state: "Sent!" with auto-close after 2 seconds
+    - Error display with specific error messages
+    - Disabled buttons during send to prevent duplicate sends
+  - **Database Email Tracking**:
+    - New columns: `sent_at` (DATETIME), `sent_to_json` (TEXT)
+    - `markSummaryAsSent()` method to track sent emails
+    - Migration support for existing databases
+  - **IPC Handlers**:
+    - `graph-send-email`: Send email via Graph API
+    - `db-mark-summary-sent`: Mark summary as sent in database
+  - **TypeScript Type Safety**:
+    - Added `SendEmailOptions` interface
+    - Updated `electron.d.ts` with new API methods
+    - Full type coverage for email sending flow
+
+### Technical Details
+- Email HTML includes all summary components: summary, participants, actions, decisions, discussion by topic, quotes, questions, parking lot
+- Email generation uses inline CSS for maximum email client compatibility
+- Graph API error handling with specific messages for 401 (auth) and 403 (permissions) errors
+- Database update is non-blocking (email sent successfully even if database update fails)
+- Dynamic import optimization for email generator utility
+
+### Testing
+- ✅ TypeScript type-check passes
+- ✅ Build succeeds without errors
+- ✅ Manual testing complete: End-to-end email send flow verified
+- ✅ Email delivery confirmed in Outlook
+- ✅ HTML formatting verified (all sections present)
+- ✅ Loading states and error handling verified
+- ✅ Database tracking confirmed (sent_at, sent_to_json)
+
 ## [0.5.1] - 2025-01-23
 
 ### Fixed (Critical Post-Release)

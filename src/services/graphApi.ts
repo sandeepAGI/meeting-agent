@@ -17,11 +17,24 @@
 import { Client } from '@microsoft/microsoft-graph-client'
 import { Event, Attendee } from '@microsoft/microsoft-graph-types'
 import type { DatabaseService } from './database'
+import type { EmailRecipient } from '../types/meetingSummary'
 
 export interface MeetingAttendee {
   name: string
   email: string
   type: 'required' | 'optional' | 'organizer'
+}
+
+/**
+ * Options for sending email via Graph API
+ * Phase 5: Email Distribution
+ */
+export interface SendEmailOptions {
+  to: EmailRecipient[]
+  cc?: EmailRecipient[]
+  subject: string
+  bodyHtml: string
+  bodyText?: string // Plain text fallback
 }
 
 export interface MeetingInfo {
@@ -389,6 +402,77 @@ export class GraphApiService {
     } catch (error) {
       console.error('[GraphAPI] Failed to fetch calendar events:', error)
       throw new Error(`Failed to fetch calendar events: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
+  /**
+   * Send email via Microsoft Graph API
+   * Phase 5: Email Distribution
+   *
+   * Uses the /me/sendMail endpoint to send HTML-formatted emails
+   * with meeting summaries to selected recipients.
+   *
+   * @param options - Email options (to, cc, subject, body)
+   * @throws Error if Graph API client not initialized or send fails
+   */
+  async sendEmail(options: SendEmailOptions): Promise<void> {
+    if (!this.client) {
+      throw new Error('Graph API client not initialized. Please log in to M365.')
+    }
+
+    // Validate recipients
+    if (!options.to || options.to.length === 0) {
+      throw new Error('At least one recipient is required')
+    }
+
+    try {
+      // Build message object for Graph API
+      const message = {
+        subject: options.subject,
+        body: {
+          contentType: 'HTML' as const,
+          content: options.bodyHtml
+        },
+        toRecipients: options.to.map(recipient => ({
+          emailAddress: {
+            name: recipient.name,
+            address: recipient.email
+          }
+        })),
+        ccRecipients: options.cc?.map(recipient => ({
+          emailAddress: {
+            name: recipient.name,
+            address: recipient.email
+          }
+        })) || []
+      }
+
+      console.log(`[GraphAPI] Sending email to ${options.to.length} recipient(s)...`)
+
+      // Send email via Graph API
+      await this.client
+        .api('/me/sendMail')
+        .post({
+          message,
+          saveToSentItems: true
+        })
+
+      console.log('[GraphAPI] Email sent successfully')
+    } catch (error) {
+      console.error('[GraphAPI] Failed to send email:', error)
+
+      // Provide user-friendly error messages
+      if (error instanceof Error) {
+        if (error.message.includes('403') || error.message.includes('Forbidden')) {
+          throw new Error('Permission denied. Please ensure Mail.Send permission is granted.')
+        }
+        if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+          throw new Error('Authentication expired. Please log in again.')
+        }
+        throw new Error(`Failed to send email: ${error.message}`)
+      }
+
+      throw new Error('Failed to send email: Unknown error')
     }
   }
 }

@@ -70,6 +70,11 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
   )
   const [showEmailPreview, setShowEmailPreview] = useState(false)
 
+  // Phase 5: Email sending state
+  const [isSending, setIsSending] = useState(false)
+  const [sendError, setSendError] = useState<string | null>(null)
+  const [sendSuccess, setSendSuccess] = useState(false)
+
   // Handle back navigation - safe to call since this component only renders when summary is complete
   const handleBack = () => {
     if (isEditing || isEditingActionItems || isEditingKeyDecisions || isEditingSpeakers) {
@@ -174,6 +179,63 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
       recipients: selectedRecipients,
       subjectLine: subjectLine
     })
+  }
+
+  // Phase 5: Send email handler
+  const handleSendEmail = async () => {
+    setIsSending(true)
+    setSendError(null)
+    setSendSuccess(false)
+
+    try {
+      // Import email generator to create HTML
+      const { generateEmailHTML } = await import('../../utils/emailGenerator')
+
+      // Generate email HTML
+      const emailHtml = generateEmailHTML({
+        summary: editedSummary,
+        speakers: editedSpeakers,
+        actionItems: editedActionItems,
+        keyDecisions: editedKeyDecisions,
+        detailedNotes
+      })
+
+      // Send via Graph API
+      const result = await window.electronAPI.graphApi.sendEmail({
+        to: selectedRecipients,
+        subject: subjectLine,
+        bodyHtml: emailHtml
+      })
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to send email')
+      }
+
+      // Mark as sent in database
+      const markResult = await window.electronAPI.database.markSummarySent(
+        summary.id,
+        selectedRecipients
+      )
+
+      if (!markResult.success) {
+        console.error('Failed to mark summary as sent:', markResult.error)
+        // Don't throw - email was sent successfully, just database update failed
+      }
+
+      setSendSuccess(true)
+
+      // Close preview after 2 seconds
+      setTimeout(() => {
+        setShowEmailPreview(false)
+        setSendSuccess(false)
+      }, 2000)
+
+    } catch (error) {
+      console.error('Failed to send email:', error)
+      setSendError(error instanceof Error ? error.message : 'Failed to send email')
+    } finally {
+      setIsSending(false)
+    }
   }
 
   const handleExport = () => {
@@ -785,6 +847,10 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
           recipients={selectedRecipients}
           subjectLine={subjectLine}
           onClose={() => setShowEmailPreview(false)}
+          onSend={handleSendEmail}
+          isSending={isSending}
+          sendError={sendError}
+          sendSuccess={sendSuccess}
         />
       )}
 
