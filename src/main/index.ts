@@ -918,6 +918,22 @@ ipcMain.handle('db-get-recordings-with-transcripts', async (_event, limit: numbe
   }
 })
 
+// Get untranscribed recordings (for "Untranscribed" tab)
+ipcMain.handle('db-get-untranscribed-recordings', async (_event, limit: number = 50) => {
+  try {
+    console.log('[Database] Fetching untranscribed recordings, limit:', limit)
+    const recordings = dbService.getUntranscribedRecordings(limit)
+    console.log('[Database] Found untranscribed recordings:', recordings.length)
+    return { success: true, recordings }
+  } catch (error) {
+    console.error('[Database] Get untranscribed recordings failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get untranscribed recordings'
+    }
+  }
+})
+
 // Phase 2.3-4: Meeting-Recording Association - Database Query Handlers
 
 // Get meeting by ID (Phase 4b: RecipientSelector)

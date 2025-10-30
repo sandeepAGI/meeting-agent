@@ -3,11 +3,12 @@
  *
  * Generates HTML and plain text email bodies for meeting summaries
  * Phase 5: Email Distribution
+ * Phase 5.5: Enhanced Email Customization (section toggles, custom introduction, AI disclaimer)
  *
  * Extracted from EmailPreview component for reuse in send functionality
  */
 
-import type { SpeakerMapping, ActionItem, DetailedNotes } from '../types/meetingSummary'
+import type { SpeakerMapping, ActionItem, DetailedNotes, EmailSectionToggles } from '../types/meetingSummary'
 
 export interface EmailContent {
   summary: string
@@ -15,14 +16,36 @@ export interface EmailContent {
   actionItems: ActionItem[]
   keyDecisions: string[]
   detailedNotes: DetailedNotes | null
+  customIntroduction?: string
+  enabledSections?: EmailSectionToggles
 }
+
+// Default section toggles (all enabled)
+const DEFAULT_ENABLED_SECTIONS: EmailSectionToggles = {
+  summary: true,
+  participants: true,
+  actionItems: true,
+  decisions: true,
+  discussionTopics: true,
+  quotes: true,
+  questions: true,
+  parkingLot: true
+}
+
+// AI-generated disclaimer text
+const AI_DISCLAIMER = `⚠️ AI-Generated Summary Disclaimer
+
+This summary was automatically generated using AI and may contain errors or omissions. Please review carefully and verify critical information against the original recording or transcript.`
 
 /**
  * Generate HTML email body with Aileron branding
  */
 export function generateEmailHTML(content: EmailContent): string {
   // Aileron logo as base64 data URI (1KB PNG)
-  const aileronLogoBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA51JREFUeNrsWc1vElEQf6XEpl4kYtWYJt3+AY1w60VL/TpYE+DglY+zB+DoqXLwKvTgwVMX07PFRE8mluqlBxuoPTSxiS6JMTFas1VD1daPGZwldLOwbz9YnoZJXnZT3qO/387Mb2YWxgY2sIF1syFRgCQev4vBJQkrBEuBtQqreH/ujOopEQAS4dimADDF4GwKLosG+2uwZnnI+F0iIcFlhWOrDCttcHaxw370TkF/xsh8LjkkxbsPgAd0f4uZnOHxtGtEkhb26oEHTPZLnhCh3JAsHMno88Zkf80rjyQt7g9RXmhWhtUtmRd6ToTiPWXjaMsrpEizHcjI8LnshUdibpwDsBg+k7BysPK0UHbTvF845NAjVZJIOxYHoGW36pjfAQnJAQmtRpRJLLrVoDwQvtXL0MqI1Gv5+pAf4hChBk/6HzwS5eyrVGGJWKgdeSp2wnqEJzdq1K6XRCbCo1YLVOgqHL2U90Qs1I72kPLEK/4eeEPWTXSY9PN2Ae5uViempAtaQTwLa4PuK5vK04pdIjz5UTcYexW7cn1sKlwHwK3KDqQkGrYycI+TZRw+r/kthBVv7Zh34gEzA9AKeVkGIqiey9hwWsmRKBPPFG3C9HF6w+7c0TMDbwToxYRsRbVigpHAHKm2FV7uZM8I5AXMvyxJfBpyRuUi4sLc4RaBbNsDzQGBIndBRFV4/+TRcr8I/Nj5yF7fu4Mi84Y8gV4I60l09AjFIB7Mn7p8LeA1gU9rz9nO2jP2dXurNUkiFqwX3JUdSBRI0uLhu0sRjtqB73MnnYLf3Vhn6st1uL5gP/cabHj0KDs+fZ4Fp8/lH2Qvmo66fh0JVIISMMe3GSzMVzvKDuI+tnnzRvT3/n4TPNro+ASCb5JAMpZ7LepnFC3+LNSOBQvgI9ReRDUBOfi8y44Ex7Sn3yTitGmc0TTZxtxhBFpTuxm66vsvbPgejl9PsLHIlYKb3S8CKgCAHHWVXHMHhUiIcklqA64XiRqBX6XOtan/4chSxO02PkdKtQLg1O3i7QC6fCR4orXhoNFge2/rzXuMabjH7rPTDzQKtdyH2u2ezyP0hHJAIn/y0tzi8MhI7MurLdDyD4YHf33/phDgjbZQUbtJpKeDFRJKxP+6+/TVrmfTNMqK+TqI5g6zIqiIRKJTi8Lze0eJCWY+g7mDR3ZloYlwFsBKp9ohEpF/MqwOqRbNHSrJqOu9VRcz+58KG9jA+md/BBgAghtDH9U4XqYAAAAASUVORK5CYII='
+  const aileronLogoBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA51JREFUeNrsWc1vElEQf6XEpl4kYtWYJt3+AY1w60VL/TpYE+DglY+zB+DoqXLwKvTgwVMX07PFRE8mluqlBxuoPTSxiS6JMTFas1VD1daPGZwldLOwbz9YnoZJXnZT3qO/387Mb2YWxgY2sIF1syFRgCQev4vBJQkrBEuBtQqreH/ujOopEQAS4timADDF4GwKLosG+2uwZnnI+F0iIcFlhWOrDCttcHaxw370TkF/xsh8LjkkxbsPgAd0f4uZnOHxtGtEkhb26oEHTPZLnhCh3JAsHMno88Zkf80rjyQt7g9RXmhWhtUtmRd6ToTiPWXjaMsrpEizHcjI8LnshUdibpwDsBg+k7BysPK0UHbTvF845NAjVZJIOxYHoGW36pjfAQnJAQmtRpRJLLrVoDwQvtXL0MqI1Gv5+pAf4hChBk/6HzwS5eyrVGGJWKgdeSp2wnqEJzdq1K6XRCbCo1YLVOgqHL2U90Qs1I72kPLEK/4eeEPWTXSY9PN2Ae5uVienpAtaQTwLa4PuK5vK04pdIjz5UTcYexW7cn1sKlwHwK3KDqQkGrYycI+TZRw+r/kthBVv7Zh34gEzA9AKeVkGIqiey9hwWsmRKBPPFG3C9HF6w+7c0TMDbwToxYRsRbVigpHAHKm2FV7uZM8I5AXMvyxJfBpyRuUi4sLc4RaBbNsDzQGBIndBRFV4/+TRcr8I/Nj5yF7fu4Mi84Y8gV4I60l09AjFIB7Mn7p8LeA1gU9rz9nO2jP2dXurNUkiFqwX3JUdSBRI0uLhu0sRjtqB73MnnYLf3Vhn6st1uL5gP/cabHj0KDs+fZ4Fp8/lH2Qvmo66fh0JVIISMMe3GSzMVzvKDuI+tnnzRvT3/n4TPNro+ASCb5JAMpZ7LepnFC3+LNSOBQvgI9ReRDUBOfi8y44Ex7Sn3yTitGmc0TTZxtxhBFpTuxm66vsvbPgejl9PsLHIlYKb3S8CKgCAHHWVXHMHhUiIcklqA64XiRqBX6XOtan/4chSxO02PkdKtQLg1O3i7QC6fCR4orXhoNFge2/rzXuMabjH7rPTDzQKtdyH2u2ezyP0hHJAIn/y0tzi8MhI7MurLdDyD4YHf33/phDgjbZQUbtJpKeDFRJKxP+6+/TVrmfTNMqK+TqI5g6zIqiIRKJTi8Lze0eJCWY+g7mDR3ZloYlwFsBKp9ohEpF/MqwOqRbNHSrJqOu9VRcz+58KG9jA+md/BBgAghtDH9U4XqYAAAAASUVORK5CYII='
+
+  // Get enabled sections (default to all enabled)
+  const sections = content.enabledSections || DEFAULT_ENABLED_SECTIONS
 
   let html = `
     <div style="font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 800px; margin: 0 auto; color: #333;">
@@ -40,17 +63,29 @@ export function generateEmailHTML(content: EmailContent): string {
       <div style="background: white; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 8px 8px;">
   `
 
+  // Custom Introduction (if provided)
+  if (content.customIntroduction && content.customIntroduction.trim()) {
+    html += `
+      <div style="margin-bottom: 30px; background: #EBF4FF; padding: 20px; border-radius: 6px; border-left: 4px solid #60B5E5;">
+        <h2 style="color: #2D2042; font-size: 18px; margin-top: 0; margin-bottom: 12px;">👋 Introduction</h2>
+        <p style="line-height: 1.6; color: #555; margin: 0;">${content.customIntroduction.replace(/\n/g, '<br>')}</p>
+      </div>
+    `
+  }
+
   // Summary
-  html += `
-    <div style="margin-bottom: 30px;">
-      <h2 style="color: #2D2042; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #60B5E5; padding-bottom: 10px;">📄 Summary</h2>
-      <p style="line-height: 1.6; color: #555;">${content.summary.replace(/\n/g, '<br>')}</p>
-    </div>
-  `
+  if (sections.summary) {
+    html += `
+      <div style="margin-bottom: 30px;">
+        <h2 style="color: #2D2042; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #60B5E5; padding-bottom: 10px;">📄 Summary</h2>
+        <p style="line-height: 1.6; color: #555;">${content.summary.replace(/\n/g, '<br>')}</p>
+      </div>
+    `
+  }
 
   // Speaker Identification (filter out Unknown speakers - typically the recording announcement)
   const knownSpeakers = content.speakers.filter(s => !s.name.toLowerCase().includes('unknown'))
-  if (knownSpeakers.length > 0) {
+  if (sections.participants && knownSpeakers.length > 0) {
     html += `
       <div style="margin-bottom: 30px;">
         <h2 style="color: #2D2042; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #60B5E5; padding-bottom: 10px;">👥 Participants (${knownSpeakers.length})</h2>
@@ -85,7 +120,7 @@ export function generateEmailHTML(content: EmailContent): string {
   }
 
   // Action Items
-  if (content.actionItems.length > 0) {
+  if (sections.actionItems && content.actionItems.length > 0) {
     html += `
       <div style="margin-bottom: 30px;">
         <h2 style="color: #2D2042; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #60B5E5; padding-bottom: 10px;">✅ Action Items (${content.actionItems.length})</h2>
@@ -111,7 +146,7 @@ export function generateEmailHTML(content: EmailContent): string {
   }
 
   // Key Decisions
-  if (content.keyDecisions.length > 0) {
+  if (sections.decisions && content.keyDecisions.length > 0) {
     html += `
       <div style="margin-bottom: 30px;">
         <h2 style="color: #2D2042; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #60B5E5; padding-bottom: 10px;">🎯 Key Decisions (${content.keyDecisions.length})</h2>
@@ -131,7 +166,7 @@ export function generateEmailHTML(content: EmailContent): string {
   }
 
   // Detailed Notes: Discussion by Topic
-  if (content.detailedNotes && content.detailedNotes.discussion_by_topic && content.detailedNotes.discussion_by_topic.length > 0) {
+  if (sections.discussionTopics && content.detailedNotes && content.detailedNotes.discussion_by_topic && content.detailedNotes.discussion_by_topic.length > 0) {
     html += `
       <div style="margin-bottom: 30px;">
         <h2 style="color: #2D2042; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #60B5E5; padding-bottom: 10px;">💬 Discussion by Topic</h2>
@@ -182,7 +217,7 @@ export function generateEmailHTML(content: EmailContent): string {
   }
 
   // Notable Quotes
-  if (content.detailedNotes && content.detailedNotes.notable_quotes && content.detailedNotes.notable_quotes.length > 0) {
+  if (sections.quotes && content.detailedNotes && content.detailedNotes.notable_quotes && content.detailedNotes.notable_quotes.length > 0) {
     html += `
       <div style="margin-bottom: 30px;">
         <h2 style="color: #2D2042; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #60B5E5; padding-bottom: 10px;">💭 Notable Quotes</h2>
@@ -201,7 +236,7 @@ export function generateEmailHTML(content: EmailContent): string {
   }
 
   // Open Questions
-  if (content.detailedNotes && content.detailedNotes.open_questions && content.detailedNotes.open_questions.length > 0) {
+  if (sections.questions && content.detailedNotes && content.detailedNotes.open_questions && content.detailedNotes.open_questions.length > 0) {
     html += `
       <div style="margin-bottom: 30px;">
         <h2 style="color: #2D2042; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #60B5E5; padding-bottom: 10px;">❓ Open Questions</h2>
@@ -221,7 +256,7 @@ export function generateEmailHTML(content: EmailContent): string {
   }
 
   // Parking Lot
-  if (content.detailedNotes && content.detailedNotes.parking_lot && content.detailedNotes.parking_lot.length > 0) {
+  if (sections.parkingLot && content.detailedNotes && content.detailedNotes.parking_lot && content.detailedNotes.parking_lot.length > 0) {
     html += `
       <div style="margin-bottom: 30px;">
         <h2 style="color: #2D2042; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #60B5E5; padding-bottom: 10px;">🅿️ Parking Lot</h2>
@@ -240,6 +275,21 @@ export function generateEmailHTML(content: EmailContent): string {
     `
   }
 
+  // AI Disclaimer (Phase 5.5 - always included)
+  html += `
+    <div style="margin-top: 30px; margin-bottom: 30px; background: #f5f5f5; padding: 15px; border-radius: 6px; border-left: 4px solid #95a5a6;">
+      <div style="display: flex; align-items: flex-start;">
+        <span style="font-size: 20px; margin-right: 10px;">⚠️</span>
+        <div>
+          <strong style="color: #555; font-size: 14px;">AI-Generated Summary Disclaimer</strong>
+          <p style="margin: 8px 0 0 0; color: #666; font-size: 13px; line-height: 1.5;">
+            This summary was automatically generated using AI and may contain errors or omissions. Please review carefully and verify critical information against the original recording or transcript.
+          </p>
+        </div>
+      </div>
+    </div>
+  `
+
   // Footer
   html += `
         <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #e0e0e0; text-align: center; color: #999; font-size: 14px;">
@@ -257,17 +307,29 @@ export function generateEmailHTML(content: EmailContent): string {
  * Generate plain text email body (fallback for clients that don't support HTML)
  */
 export function generatePlainTextEmail(content: EmailContent): string {
+  // Get enabled sections (default to all enabled)
+  const sections = content.enabledSections || DEFAULT_ENABLED_SECTIONS
+
   let text = 'MEETING SUMMARY\n'
   text += '='.repeat(50) + '\n\n'
 
+  // Custom Introduction
+  if (content.customIntroduction && content.customIntroduction.trim()) {
+    text += '👋 INTRODUCTION\n'
+    text += '-'.repeat(50) + '\n'
+    text += content.customIntroduction + '\n\n'
+  }
+
   // Summary
-  text += '📄 SUMMARY\n'
-  text += '-'.repeat(50) + '\n'
-  text += content.summary + '\n\n'
+  if (sections.summary) {
+    text += '📄 SUMMARY\n'
+    text += '-'.repeat(50) + '\n'
+    text += content.summary + '\n\n'
+  }
 
   // Participants
   const knownSpeakers = content.speakers.filter(s => !s.name.toLowerCase().includes('unknown'))
-  if (knownSpeakers.length > 0) {
+  if (sections.participants && knownSpeakers.length > 0) {
     text += `👥 PARTICIPANTS (${knownSpeakers.length})\n`
     text += '-'.repeat(50) + '\n'
     knownSpeakers.forEach(speaker => {
@@ -281,7 +343,7 @@ export function generatePlainTextEmail(content: EmailContent): string {
   }
 
   // Action Items
-  if (content.actionItems.length > 0) {
+  if (sections.actionItems && content.actionItems.length > 0) {
     text += `✅ ACTION ITEMS (${content.actionItems.length})\n`
     text += '-'.repeat(50) + '\n'
     content.actionItems.forEach((item, index) => {
@@ -297,7 +359,7 @@ export function generatePlainTextEmail(content: EmailContent): string {
   }
 
   // Key Decisions
-  if (content.keyDecisions.length > 0) {
+  if (sections.decisions && content.keyDecisions.length > 0) {
     text += `🎯 KEY DECISIONS (${content.keyDecisions.length})\n`
     text += '-'.repeat(50) + '\n'
     content.keyDecisions.forEach((decision, index) => {
@@ -307,7 +369,7 @@ export function generatePlainTextEmail(content: EmailContent): string {
   }
 
   // Discussion by Topic
-  if (content.detailedNotes && content.detailedNotes.discussion_by_topic && content.detailedNotes.discussion_by_topic.length > 0) {
+  if (sections.discussionTopics && content.detailedNotes && content.detailedNotes.discussion_by_topic && content.detailedNotes.discussion_by_topic.length > 0) {
     text += '💬 DISCUSSION BY TOPIC\n'
     text += '-'.repeat(50) + '\n'
     content.detailedNotes.discussion_by_topic.forEach((topic, index) => {
@@ -343,7 +405,7 @@ export function generatePlainTextEmail(content: EmailContent): string {
   }
 
   // Notable Quotes
-  if (content.detailedNotes && content.detailedNotes.notable_quotes && content.detailedNotes.notable_quotes.length > 0) {
+  if (sections.quotes && content.detailedNotes && content.detailedNotes.notable_quotes && content.detailedNotes.notable_quotes.length > 0) {
     text += '💭 NOTABLE QUOTES\n'
     text += '-'.repeat(50) + '\n'
     content.detailedNotes.notable_quotes.forEach(quote => {
@@ -353,7 +415,7 @@ export function generatePlainTextEmail(content: EmailContent): string {
   }
 
   // Open Questions
-  if (content.detailedNotes && content.detailedNotes.open_questions && content.detailedNotes.open_questions.length > 0) {
+  if (sections.questions && content.detailedNotes && content.detailedNotes.open_questions && content.detailedNotes.open_questions.length > 0) {
     text += '❓ OPEN QUESTIONS\n'
     text += '-'.repeat(50) + '\n'
     content.detailedNotes.open_questions.forEach((question, index) => {
@@ -363,7 +425,7 @@ export function generatePlainTextEmail(content: EmailContent): string {
   }
 
   // Parking Lot
-  if (content.detailedNotes && content.detailedNotes.parking_lot && content.detailedNotes.parking_lot.length > 0) {
+  if (sections.parkingLot && content.detailedNotes && content.detailedNotes.parking_lot && content.detailedNotes.parking_lot.length > 0) {
     text += '🅿️ PARKING LOT\n'
     text += '-'.repeat(50) + '\n'
     content.detailedNotes.parking_lot.forEach((item, index) => {
@@ -371,6 +433,11 @@ export function generatePlainTextEmail(content: EmailContent): string {
     })
     text += '\n'
   }
+
+  // AI Disclaimer (Phase 5.5 - always included)
+  text += '⚠️  AI-GENERATED SUMMARY DISCLAIMER\n'
+  text += '-'.repeat(50) + '\n'
+  text += AI_DISCLAIMER.split('\n').slice(1).join('\n') + '\n\n'
 
   // Footer
   text += '-'.repeat(50) + '\n'

@@ -41,7 +41,7 @@ interface CalendarMeeting {
 }
 
 type DateRange = 'today' | 'week' | 'month' | 'all'
-type Tab = 'recordings' | 'calendar'
+type Tab = 'recordings' | 'calendar' | 'untranscribed'
 type Mode = 'browse' | 'generate'
 
 interface RecordingWithSummary {
@@ -56,24 +56,36 @@ interface RecordingWithSummary {
   meeting_subject: string | null
 }
 
+interface UntranscribedRecording {
+  recording_id: string
+  file_path: string
+  duration_seconds: number
+  created_at: string
+  meeting_id: string | null
+}
+
 interface MeetingSelectorProps {
   onStartSummary: (meetingId: string, transcriptId: string) => void
   onViewTranscript: (recordingId: string, recordingDate: string, recordingDuration: number) => void
   onViewSummary: (summaryId: string) => void
+  onTranscribeRecording?: (recordingId: string) => Promise<void>
   isLoading: boolean
 }
 
-export function MeetingSelector({ onStartSummary, onViewTranscript, onViewSummary, isLoading }: MeetingSelectorProps) {
+export function MeetingSelector({ onStartSummary, onViewTranscript, onViewSummary, onTranscribeRecording, isLoading }: MeetingSelectorProps) {
   const [mode, setMode] = useState<Mode>('generate')
   const [activeTab, setActiveTab] = useState<Tab>('recordings')
   const [recordings, setRecordings] = useState<Recording[]>([])
   const [browseRecordings, setBrowseRecordings] = useState<RecordingWithSummary[]>([])
   const [calendarMeetings, setCalendarMeetings] = useState<CalendarMeeting[]>([])
+  const [untranscribedRecordings, setUntranscribedRecordings] = useState<UntranscribedRecording[]>([])
   const [selectedRecording, setSelectedRecording] = useState<Recording | null>(null)
   const [selectedMeeting, setSelectedMeeting] = useState<CalendarMeeting | null>(null)
   const [selectedBrowseRecording, setSelectedBrowseRecording] = useState<RecordingWithSummary | null>(null)
   const [isLoadingRecordings, setIsLoadingRecordings] = useState(true)
   const [isLoadingMeetings, setIsLoadingMeetings] = useState(false)
+  const [isLoadingUntranscribed, setIsLoadingUntranscribed] = useState(false)
+  const [transcribingRecordingId, setTranscribingRecordingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [dateRange, setDateRange] = useState<DateRange>('week')
   const [searchQuery, setSearchQuery] = useState('')
@@ -99,6 +111,8 @@ export function MeetingSelector({ onStartSummary, onViewTranscript, onViewSummar
   useEffect(() => {
     if (activeTab === 'calendar' && mode === 'generate') {
       syncAndFetchCalendarMeetings()
+    } else if (activeTab === 'untranscribed') {
+      fetchUntranscribedRecordings()
     }
   }, [activeTab, dateRange, mode])
 
@@ -142,6 +156,45 @@ export function MeetingSelector({ onStartSummary, onViewTranscript, onViewSummar
       console.error('[MeetingSelector] Fetch browse recordings error:', err)
     } finally {
       setIsLoadingRecordings(false)
+    }
+  }
+
+  const fetchUntranscribedRecordings = async () => {
+    setIsLoadingUntranscribed(true)
+    setError(null)
+    try {
+      const result = await window.electronAPI.database.getUntranscribedRecordings(100)
+      if (result.success && result.recordings) {
+        setUntranscribedRecordings(result.recordings)
+      } else {
+        setError(result.error || 'Failed to load untranscribed recordings')
+      }
+    } catch (err) {
+      setError('Failed to fetch untranscribed recordings')
+      console.error('[MeetingSelector] Fetch untranscribed recordings error:', err)
+    } finally {
+      setIsLoadingUntranscribed(false)
+    }
+  }
+
+  const handleTranscribeClick = async (recordingId: string) => {
+    if (!onTranscribeRecording) return
+
+    setTranscribingRecordingId(recordingId)
+    try {
+      await onTranscribeRecording(recordingId)
+      // Refresh both lists after transcription
+      await fetchUntranscribedRecordings()
+      if (mode === 'generate') {
+        await fetchRecordings()
+      } else {
+        await fetchBrowseRecordings()
+      }
+    } catch (err) {
+      console.error('[MeetingSelector] Transcribe error:', err)
+      setError('Failed to start transcription')
+    } finally {
+      setTranscribingRecordingId(null)
     }
   }
 
@@ -408,6 +461,17 @@ export function MeetingSelector({ onStartSummary, onViewTranscript, onViewSummar
         >
           📅 Calendar Meetings ({filteredMeetings.length})
         </button>
+        <button
+          className={`selector-tab ${activeTab === 'untranscribed' ? 'active' : ''}`}
+          onClick={() => {
+            setActiveTab('untranscribed')
+            setSelectedRecording(null)
+            setSelectedMeeting(null)
+            setSearchQuery('')
+          }}
+        >
+          ⏳ Untranscribed ({untranscribedRecordings.length})
+        </button>
       </div>
       )}
 
@@ -493,10 +557,61 @@ export function MeetingSelector({ onStartSummary, onViewTranscript, onViewSummar
               ))}
           </div>
         )
-      ) : isLoadingData ? (
-        <div className="loading-state">Loading {activeTab === 'recordings' ? 'recordings' : 'meetings'}...</div>
+      ) : isLoadingData || (activeTab === 'untranscribed' && isLoadingUntranscribed) ? (
+        <div className="loading-state">Loading {activeTab === 'recordings' ? 'recordings' : activeTab === 'untranscribed' ? 'untranscribed recordings' : 'meetings'}...</div>
       ) : error ? (
         <div className="error-message">{error}</div>
+      ) : activeTab === 'untranscribed' ? (
+        /* Untranscribed Recordings Tab */
+        untranscribedRecordings.length === 0 ? (
+          <div className="empty-state">
+            <p>✅ All recordings have been transcribed!</p>
+            <p className="form-hint">
+              Record a new meeting to see untranscribed recordings here.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="recordings-list">
+              {untranscribedRecordings.map((recording) => (
+                <div
+                  key={recording.recording_id}
+                  className="recording-card untranscribed"
+                >
+                  <div className="recording-header">
+                    <span className="recording-title">
+                      {recording.file_path.split('/').pop() || 'Recording'}
+                    </span>
+                    <span className="recording-duration">
+                      {formatDuration(recording.duration_seconds)}
+                    </span>
+                  </div>
+                  <div className="recording-meta">
+                    <span className="recording-date">
+                      {formatDate(recording.created_at)}
+                    </span>
+                    <span className="recording-badge untranscribed-badge">⏳ Not Transcribed</span>
+                  </div>
+                  <button
+                    onClick={() => handleTranscribeClick(recording.recording_id)}
+                    disabled={transcribingRecordingId === recording.recording_id}
+                    className="btn btn-primary"
+                    style={{ marginTop: '10px', width: '100%' }}
+                  >
+                    {transcribingRecordingId === recording.recording_id ? (
+                      '⏳ Transcribing...'
+                    ) : (
+                      '📝 Transcribe & Diarize'
+                    )}
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className="form-hint" style={{ marginTop: '15px', textAlign: 'center' }}>
+              💡 Tip: After transcription completes, the recording will appear in the "Standalone Recordings" tab.
+            </div>
+          </>
+        )
       ) : activeTab === 'recordings' ? (
         filteredRecordings.length === 0 ? (
           <div className="empty-state">

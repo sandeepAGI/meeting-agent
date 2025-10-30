@@ -137,7 +137,22 @@ export class DatabaseService {
         this.db.exec('ALTER TABLE meeting_summaries ADD COLUMN sent_to_json TEXT')
       }
 
-      if (!hasDetailedNotesPass1 || !hasDetailedNotesPass2 || !hasRecipients || !hasSubjectLine || !hasEditedByUser || !hasSentAt || !hasSentTo) {
+      // Phase 5.5 migrations
+      const hasEnabledSections = columns.some(col => col.name === 'enabled_sections_json')
+      const hasCustomIntroduction = columns.some(col => col.name === 'custom_introduction')
+
+      if (!hasEnabledSections) {
+        console.log('Migration: Adding enabled_sections_json column (Phase 5.5)')
+        this.db.exec(`ALTER TABLE meeting_summaries ADD COLUMN enabled_sections_json TEXT
+          DEFAULT '{"summary":true,"participants":true,"actionItems":true,"decisions":true,"discussionTopics":true,"quotes":true,"questions":true,"parkingLot":true}'`)
+      }
+
+      if (!hasCustomIntroduction) {
+        console.log('Migration: Adding custom_introduction column (Phase 5.5)')
+        this.db.exec('ALTER TABLE meeting_summaries ADD COLUMN custom_introduction TEXT')
+      }
+
+      if (!hasDetailedNotesPass1 || !hasDetailedNotesPass2 || !hasRecipients || !hasSubjectLine || !hasEditedByUser || !hasSentAt || !hasSentTo || !hasEnabledSections || !hasCustomIntroduction) {
         console.log('Database migrations completed successfully')
       }
     } catch (error) {
@@ -445,6 +460,28 @@ export class DatabaseService {
   // ===========================================================================
 
   /**
+   * Get recordings that have NOT been transcribed yet
+   * Used for MeetingSelector "Untranscribed" tab
+   */
+  getUntranscribedRecordings(limit: number = 50) {
+    const stmt = this.db.prepare(`
+      SELECT
+        r.id as recording_id,
+        r.file_path,
+        r.duration_seconds,
+        r.created_at,
+        r.meeting_id
+      FROM recordings r
+      WHERE NOT EXISTS (
+        SELECT 1 FROM transcripts t WHERE t.recording_id = r.id
+      )
+      ORDER BY r.created_at DESC
+      LIMIT ?
+    `)
+    return stmt.all(limit)
+  }
+
+  /**
    * Get recordings with their transcripts and diarization results
    * Used for MeetingSelector UI
    */
@@ -738,6 +775,23 @@ export class DatabaseService {
     if (userEdits.subjectLine !== undefined) {
       updates.push('final_subject_line = ?')
       values.push(userEdits.subjectLine)
+    }
+
+    // Phase 5.5: Email customization fields
+    if (userEdits.detailedNotes !== undefined) {
+      // Store edited detailed notes - will be used instead of pass2_refined_detailed_notes_json
+      updates.push('pass2_refined_detailed_notes_json = ?')
+      values.push(JSON.stringify(userEdits.detailedNotes))
+    }
+
+    if (userEdits.enabledSections !== undefined) {
+      updates.push('enabled_sections_json = ?')
+      values.push(JSON.stringify(userEdits.enabledSections))
+    }
+
+    if (userEdits.customIntroduction !== undefined) {
+      updates.push('custom_introduction = ?')
+      values.push(userEdits.customIntroduction)
     }
 
     if (updates.length === 0) return

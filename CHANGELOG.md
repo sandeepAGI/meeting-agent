@@ -7,6 +7,69 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.2] - 2025-10-30
+
+### Added - Phase 5.5: Enhanced Email Customization ✅
+
+**Complete Email Customization System**
+
+- **Section Toggles** (8 toggleable sections):
+  - ✅ Summary, Participants, Action Items, Decisions
+  - ✅ Discussion Topics, Notable Quotes, Open Questions, Parking Lot
+  - ✅ `EmailSectionToggles.tsx` component with checkboxes and live count
+  - ✅ Database: `enabled_sections_json` column with defaults
+  - ✅ Email generator respects toggles in both preview and sent emails
+
+- **Edit All Detailed Notes Sections**:
+  - ✅ Notable Quotes editor (speaker + quote text) - add/edit/delete
+  - ✅ Open Questions editor - add/edit/delete
+  - ✅ Parking Lot editor - add/edit/delete
+  - ✅ Consistent edit/view mode UI pattern
+  - ✅ Save/Cancel buttons with state management
+  - ✅ Database persistence via `detailedNotes` field
+
+- **Custom Introduction Note**:
+  - ✅ Optional textarea (500 char limit)
+  - ✅ Edit/view mode toggle
+  - ✅ Blue highlighted box in email preview
+  - ✅ Database: `custom_introduction` column
+  - ✅ Included in sent emails when non-empty
+
+- **AI Disclaimer**:
+  - ✅ Auto-included at bottom of all emails
+  - ✅ Warning about AI-generated content
+  - ✅ Gray styled box with ⚠️ icon
+  - ✅ Always visible (cannot be toggled off)
+
+### Fixed
+
+- **Email Generation**: Section toggles and custom intro now included in sent emails (not just preview)
+- **Save Functionality**: Type interfaces updated to support Phase 5.5 fields
+- **Database Persistence**: All Phase 5.5 fields properly saved via `updateSummaryFinal()`
+
+### Technical Details
+
+**Modified Files**:
+- `src/renderer/components/SummaryDisplay.tsx` - Added editing UI for 3 detailed note sections
+- `src/renderer/components/EmailSectionToggles.tsx` - Section toggle component (existing)
+- `src/renderer/hooks/useMeetingIntelligence.ts` - Updated interface to include `detailedNotes`
+- `src/utils/emailGenerator.ts` - Already supports all Phase 5.5 fields (no changes needed)
+- `src/services/database.ts` - Already handles Phase 5.5 persistence (no changes needed)
+
+**State Management**:
+- Added `editedDetailedNotes` state with full CRUD operations
+- Added editing state flags for quotes, questions, parking lot
+- Unified save/cancel handlers for all detailed notes sections
+
+**Testing**:
+- ✅ TypeScript type-check passes
+- ✅ Build succeeds (1008.95 kB bundle)
+- ⏸️ Manual UAT pending (user testing offline)
+
+**Duration**: ~10 hours (full Phase 5.5 completion)
+
+---
+
 ### Phase Reorganization
 
 **Note**: Phases 6-10 have been reorganized based on user priorities and logical dependencies:

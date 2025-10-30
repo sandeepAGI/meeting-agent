@@ -106,6 +106,10 @@ export interface MeetingSummary {
   final_subject_line: string | null
   edited_by_user: number // 0 or 1
 
+  // Phase 5.5: Email customization
+  enabled_sections_json: string | null
+  custom_introduction: string | null
+
   overall_status: SummaryStatus
   created_at: string
   updated_at: string
@@ -166,6 +170,18 @@ export interface EmailRecipient {
   email: string
 }
 
+// Phase 5.5: Email section toggles
+export interface EmailSectionToggles {
+  summary: boolean
+  participants: boolean
+  actionItems: boolean
+  decisions: boolean
+  discussionTopics: boolean
+  quotes: boolean
+  questions: boolean
+  parkingLot: boolean
+}
+
 // User edit request
 export interface UpdateSummaryRequest {
   summaryId: string
@@ -173,7 +189,11 @@ export interface UpdateSummaryRequest {
   speakers?: SpeakerMapping[]
   actionItems?: ActionItem[]
   keyDecisions?: string[]
+  detailedNotes?: DetailedNotes // Phase 5.5: Edit detailed notes
   // Phase 4b: Email distribution
   recipients?: EmailRecipient[]
   subjectLine?: string
+  // Phase 5.5: Email customization
+  enabledSections?: EmailSectionToggles
+  customIntroduction?: string
 }

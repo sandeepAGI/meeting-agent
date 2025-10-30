@@ -131,6 +131,10 @@ CREATE TABLE IF NOT EXISTS meeting_summaries (
   final_subject_line TEXT,             -- Custom email subject line
   edited_by_user INTEGER DEFAULT 0,    -- Flag: 1 if user has edited this summary
 
+  -- Phase 5.5: Email customization
+  enabled_sections_json TEXT DEFAULT '{"summary":true,"participants":true,"actionItems":true,"decisions":true,"discussionTopics":true,"quotes":true,"questions":true,"parkingLot":true}',
+  custom_introduction TEXT,            -- Optional personalized introduction before summary
+
   -- Overall status
   overall_status TEXT DEFAULT 'pending',
 

@@ -74,6 +74,45 @@ function App() {
     }
   }
 
+  // Phase 5.5: Handle transcribing untranscribed recordings
+  const handleTranscribeRecording = async (recordingId: string) => {
+    try {
+      console.log('[App] Starting transcription for recording:', recordingId)
+
+      // Get the recording file path from database
+      const result = await window.electronAPI.database.getRecordingsByMeetingId(recordingId)
+      if (!result.success || !result.recordings || result.recordings.length === 0) {
+        // Try to get it directly by querying untranscribed recordings
+        const untranscribedResult = await window.electronAPI.database.getUntranscribedRecordings(100)
+        if (untranscribedResult.success && untranscribedResult.recordings) {
+          const recording = untranscribedResult.recordings.find((r: any) => r.recording_id === recordingId)
+          if (recording && recording.file_path) {
+            console.log('[App] Found recording file path:', recording.file_path)
+
+            // Start transcription + diarization
+            const transcribeResult = await window.electronAPI.transcribeAndDiarize(recording.file_path, {
+              language: 'en',
+              temperature: 0.0
+            })
+
+            if (transcribeResult.success) {
+              console.log('[App] Transcription completed successfully')
+            } else {
+              setError(transcribeResult.error || 'Transcription failed')
+            }
+          } else {
+            setError('Recording file not found')
+          }
+        } else {
+          setError('Failed to fetch recording details')
+        }
+      }
+    } catch (err) {
+      console.error('[App] Transcription error:', err)
+      setError(err instanceof Error ? err.message : 'Failed to transcribe recording')
+    }
+  }
+
   return (
     <div className="app">
       <header className="app-header">
@@ -165,6 +204,7 @@ function App() {
                 onStartSummary={intelligenceActions.startSummary}
                 onViewTranscript={handleViewTranscript}
                 onViewSummary={handleViewSummary}
+                onTranscribeRecording={handleTranscribeRecording}
                 isLoading={intelligenceState.isLoading}
               />
             )}

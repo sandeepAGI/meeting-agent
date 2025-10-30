@@ -6,10 +6,11 @@
  * Phase 2.3-3: LLM-Based Meeting Intelligence
  */
 
-import { useState } from 'react'
-import type { MeetingSummary, SpeakerMapping, ActionItem, DetailedNotes, EmailRecipient } from '../../types/meetingSummary'
+import { useState, useCallback } from 'react'
+import type { MeetingSummary, SpeakerMapping, ActionItem, DetailedNotes, EmailRecipient, EmailSectionToggles } from '../../types/meetingSummary'
 import { RecipientSelector } from './RecipientSelector'
 import { EmailPreview } from './EmailPreview'
+import { EmailSectionToggles as EmailSectionTogglesComponent } from './EmailSectionToggles'
 
 interface SummaryDisplayProps {
   summary: MeetingSummary
@@ -20,6 +21,10 @@ interface SummaryDisplayProps {
     keyDecisions?: string[]
     recipients?: EmailRecipient[]
     subjectLine?: string
+    // Phase 5.5: Email customization
+    detailedNotes?: DetailedNotes | null
+    customIntroduction?: string
+    enabledSections?: EmailSectionToggles
   }) => void
   onRegenerate: () => void
   onBack?: () => void  // Phase 2.3-4: Navigate back to selection
@@ -60,6 +65,13 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
   const [editedActionItems, setEditedActionItems] = useState<ActionItem[]>(actionItems)
   const [editedKeyDecisions, setEditedKeyDecisions] = useState<string[]>(keyDecisions)
 
+  // Phase 5.5: Detailed notes editing state
+  const [editedDetailedNotes, setEditedDetailedNotes] = useState<DetailedNotes | null>(detailedNotes)
+  const [isEditingDiscussionTopics, setIsEditingDiscussionTopics] = useState(false)
+  const [isEditingQuotes, setIsEditingQuotes] = useState(false)
+  const [isEditingQuestions, setIsEditingQuestions] = useState(false)
+  const [isEditingParkingLot, setIsEditingParkingLot] = useState(false)
+
   // Phase 4b: Email distribution
   const initialRecipients: EmailRecipient[] = summary.final_recipients_json
     ? JSON.parse(summary.final_recipients_json)
@@ -75,9 +87,28 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
   const [sendError, setSendError] = useState<string | null>(null)
   const [sendSuccess, setSendSuccess] = useState(false)
 
+  // Phase 5.5: Email customization
+  const defaultSections: EmailSectionToggles = {
+    summary: true,
+    participants: true,
+    actionItems: true,
+    decisions: true,
+    discussionTopics: true,
+    quotes: true,
+    questions: true,
+    parkingLot: true
+  }
+  const initialEnabledSections: EmailSectionToggles = summary.enabled_sections_json
+    ? JSON.parse(summary.enabled_sections_json)
+    : defaultSections
+  const [enabledSections, setEnabledSections] = useState<EmailSectionToggles>(initialEnabledSections)
+  const [customIntroduction, setCustomIntroduction] = useState<string>(summary.custom_introduction || '')
+  const [isEditingIntroduction, setIsEditingIntroduction] = useState(false)
+
   // Handle back navigation - safe to call since this component only renders when summary is complete
   const handleBack = () => {
-    if (isEditing || isEditingActionItems || isEditingKeyDecisions || isEditingSpeakers) {
+    if (isEditing || isEditingActionItems || isEditingKeyDecisions || isEditingSpeakers ||
+        isEditingDiscussionTopics || isEditingQuotes || isEditingQuestions || isEditingParkingLot) {
       // Warn user if they have unsaved edits
       if (confirm('You have unsaved edits. Are you sure you want to go back?')) {
         onBack?.()
@@ -173,6 +204,154 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
     setEditedSpeakers(updated)
   }
 
+  // Phase 5.5: Detailed notes save/cancel handlers
+  const handleSaveDetailedNotes = () => {
+    onUpdate({ detailedNotes: editedDetailedNotes })
+    setIsEditingDiscussionTopics(false)
+    setIsEditingQuotes(false)
+    setIsEditingQuestions(false)
+    setIsEditingParkingLot(false)
+  }
+
+  const handleCancelDetailedNotes = () => {
+    setEditedDetailedNotes(detailedNotes)
+    setIsEditingDiscussionTopics(false)
+    setIsEditingQuotes(false)
+    setIsEditingQuestions(false)
+    setIsEditingParkingLot(false)
+  }
+
+  // Phase 5.5: Discussion topics manipulation
+  const handleAddDiscussionTopic = () => {
+    if (!editedDetailedNotes) {
+      setEditedDetailedNotes({
+        discussion_by_topic: [{ topic: '', key_points: [], decisions: [], action_items: [] }],
+        notable_quotes: [],
+        open_questions: [],
+        parking_lot: []
+      })
+    } else {
+      setEditedDetailedNotes({
+        ...editedDetailedNotes,
+        discussion_by_topic: [
+          ...editedDetailedNotes.discussion_by_topic,
+          { topic: '', key_points: [], decisions: [], action_items: [] }
+        ]
+      })
+    }
+  }
+
+  const handleUpdateDiscussionTopic = (index: number, field: string, value: any) => {
+    if (!editedDetailedNotes) return
+    const updated = [...editedDetailedNotes.discussion_by_topic]
+    updated[index] = { ...updated[index], [field]: value }
+    setEditedDetailedNotes({ ...editedDetailedNotes, discussion_by_topic: updated })
+  }
+
+  const handleDeleteDiscussionTopic = (index: number) => {
+    if (!editedDetailedNotes) return
+    setEditedDetailedNotes({
+      ...editedDetailedNotes,
+      discussion_by_topic: editedDetailedNotes.discussion_by_topic.filter((_, i) => i !== index)
+    })
+  }
+
+  // Phase 5.5: Notable quotes manipulation
+  const handleAddQuote = () => {
+    if (!editedDetailedNotes) {
+      setEditedDetailedNotes({
+        discussion_by_topic: [],
+        notable_quotes: [{ speaker: '', quote: '' }],
+        open_questions: [],
+        parking_lot: []
+      })
+    } else {
+      setEditedDetailedNotes({
+        ...editedDetailedNotes,
+        notable_quotes: [...editedDetailedNotes.notable_quotes, { speaker: '', quote: '' }]
+      })
+    }
+  }
+
+  const handleUpdateQuote = (index: number, field: 'speaker' | 'quote', value: string) => {
+    if (!editedDetailedNotes) return
+    const updated = [...editedDetailedNotes.notable_quotes]
+    updated[index] = { ...updated[index], [field]: value }
+    setEditedDetailedNotes({ ...editedDetailedNotes, notable_quotes: updated })
+  }
+
+  const handleDeleteQuote = (index: number) => {
+    if (!editedDetailedNotes) return
+    setEditedDetailedNotes({
+      ...editedDetailedNotes,
+      notable_quotes: editedDetailedNotes.notable_quotes.filter((_, i) => i !== index)
+    })
+  }
+
+  // Phase 5.5: Open questions manipulation
+  const handleAddQuestion = () => {
+    if (!editedDetailedNotes) {
+      setEditedDetailedNotes({
+        discussion_by_topic: [],
+        notable_quotes: [],
+        open_questions: [''],
+        parking_lot: []
+      })
+    } else {
+      setEditedDetailedNotes({
+        ...editedDetailedNotes,
+        open_questions: [...editedDetailedNotes.open_questions, '']
+      })
+    }
+  }
+
+  const handleUpdateQuestion = (index: number, value: string) => {
+    if (!editedDetailedNotes) return
+    const updated = [...editedDetailedNotes.open_questions]
+    updated[index] = value
+    setEditedDetailedNotes({ ...editedDetailedNotes, open_questions: updated })
+  }
+
+  const handleDeleteQuestion = (index: number) => {
+    if (!editedDetailedNotes) return
+    setEditedDetailedNotes({
+      ...editedDetailedNotes,
+      open_questions: editedDetailedNotes.open_questions.filter((_, i) => i !== index)
+    })
+  }
+
+  // Phase 5.5: Parking lot manipulation
+  const handleAddParkingLotItem = () => {
+    if (!editedDetailedNotes) {
+      setEditedDetailedNotes({
+        discussion_by_topic: [],
+        notable_quotes: [],
+        open_questions: [],
+        parking_lot: ['']
+      })
+    } else {
+      setEditedDetailedNotes({
+        ...editedDetailedNotes,
+        parking_lot: [...editedDetailedNotes.parking_lot, '']
+      })
+    }
+  }
+
+  const handleUpdateParkingLotItem = (index: number, value: string) => {
+    if (!editedDetailedNotes) return
+    const updated = [...editedDetailedNotes.parking_lot]
+    updated[index] = value
+    setEditedDetailedNotes({ ...editedDetailedNotes, parking_lot: updated })
+  }
+
+  const handleDeleteParkingLotItem = (index: number) => {
+    if (!editedDetailedNotes) return
+    setEditedDetailedNotes({
+      ...editedDetailedNotes,
+      parking_lot: editedDetailedNotes.parking_lot.filter((_, i) => i !== index)
+    })
+  }
+
   // Phase 4b: Save recipients and subject line
   const handleSaveEmailSettings = () => {
     onUpdate({
@@ -180,6 +359,12 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
       subjectLine: subjectLine
     })
   }
+
+  // Phase 5.5: Handle section toggles change (memoized to prevent infinite loop)
+  const handleSectionsChange = useCallback((sections: EmailSectionToggles) => {
+    setEnabledSections(sections)
+    onUpdate({ enabledSections: sections })
+  }, [onUpdate])
 
   // Phase 5: Send email handler
   const handleSendEmail = async () => {
@@ -191,13 +376,15 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
       // Import email generator to create HTML
       const { generateEmailHTML } = await import('../../utils/emailGenerator')
 
-      // Generate email HTML
+      // Generate email HTML with Phase 5.5 customizations
       const emailHtml = generateEmailHTML({
         summary: editedSummary,
         speakers: editedSpeakers,
         actionItems: editedActionItems,
         keyDecisions: editedKeyDecisions,
-        detailedNotes
+        detailedNotes: editedDetailedNotes,
+        customIntroduction: customIntroduction || undefined,
+        enabledSections: enabledSections
       })
 
       // Send via Graph API
@@ -793,6 +980,223 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
         </div>
       )}
 
+      {/* Phase 5.5: Detailed Notes Sections */}
+      {editedDetailedNotes && editedDetailedNotes.notable_quotes && editedDetailedNotes.notable_quotes.length > 0 && (
+        <div className="summary-section">
+          <div className="section-header">
+            <h4>💬 Notable Quotes ({editedDetailedNotes.notable_quotes.length})</h4>
+            {!isEditingQuotes && (
+              <button
+                onClick={() => setIsEditingQuotes(true)}
+                className="btn-edit"
+              >
+                ✏️ Edit
+              </button>
+            )}
+          </div>
+
+          {isEditingQuotes ? (
+            <div className="editor-container">
+              <div className="quotes-list editing">
+                {editedDetailedNotes.notable_quotes.map((quote, index) => (
+                  <div key={index} className="quote-item editing">
+                    <input
+                      type="text"
+                      value={quote.speaker}
+                      onChange={(e) => handleUpdateQuote(index, 'speaker', e.target.value)}
+                      placeholder="Speaker name"
+                      className="form-input"
+                      style={{ marginBottom: '8px' }}
+                    />
+                    <textarea
+                      value={quote.quote}
+                      onChange={(e) => handleUpdateQuote(index, 'quote', e.target.value)}
+                      placeholder="Quote text"
+                      className="form-input"
+                      rows={2}
+                      style={{ marginBottom: '8px' }}
+                    />
+                    <button
+                      onClick={() => handleDeleteQuote(index)}
+                      className="btn btn-danger btn-small"
+                    >
+                      🗑️ Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={handleAddQuote}
+                className="btn btn-small btn-secondary"
+              >
+                ➕ Add Quote
+              </button>
+              <div className="editor-actions">
+                <button
+                  onClick={handleSaveDetailedNotes}
+                  disabled={isUpdating}
+                  className="btn btn-primary"
+                >
+                  💾 Save
+                </button>
+                <button
+                  onClick={handleCancelDetailedNotes}
+                  disabled={isUpdating}
+                  className="btn btn-secondary"
+                >
+                  ❌ Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="quotes-list">
+              {editedDetailedNotes.notable_quotes.map((quote, index) => (
+                <div key={index} className="quote-item">
+                  <blockquote>"{quote.quote}"</blockquote>
+                  <cite>— {quote.speaker}</cite>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {editedDetailedNotes && editedDetailedNotes.open_questions && editedDetailedNotes.open_questions.length > 0 && (
+        <div className="summary-section">
+          <div className="section-header">
+            <h4>❓ Open Questions ({editedDetailedNotes.open_questions.length})</h4>
+            {!isEditingQuestions && (
+              <button
+                onClick={() => setIsEditingQuestions(true)}
+                className="btn-edit"
+              >
+                ✏️ Edit
+              </button>
+            )}
+          </div>
+
+          {isEditingQuestions ? (
+            <div className="editor-container">
+              <div className="questions-list editing">
+                {editedDetailedNotes.open_questions.map((question, index) => (
+                  <div key={index} className="question-item editing">
+                    <textarea
+                      value={question}
+                      onChange={(e) => handleUpdateQuestion(index, e.target.value)}
+                      placeholder="Question text"
+                      className="form-input"
+                      rows={2}
+                    />
+                    <button
+                      onClick={() => handleDeleteQuestion(index)}
+                      className="btn btn-danger btn-small"
+                    >
+                      🗑️ Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={handleAddQuestion}
+                className="btn btn-small btn-secondary"
+              >
+                ➕ Add Question
+              </button>
+              <div className="editor-actions">
+                <button
+                  onClick={handleSaveDetailedNotes}
+                  disabled={isUpdating}
+                  className="btn btn-primary"
+                >
+                  💾 Save
+                </button>
+                <button
+                  onClick={handleCancelDetailedNotes}
+                  disabled={isUpdating}
+                  className="btn btn-secondary"
+                >
+                  ❌ Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <ul className="questions-list">
+              {editedDetailedNotes.open_questions.map((question, index) => (
+                <li key={index}>{question}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {editedDetailedNotes && editedDetailedNotes.parking_lot && editedDetailedNotes.parking_lot.length > 0 && (
+        <div className="summary-section">
+          <div className="section-header">
+            <h4>🅿️ Parking Lot ({editedDetailedNotes.parking_lot.length})</h4>
+            {!isEditingParkingLot && (
+              <button
+                onClick={() => setIsEditingParkingLot(true)}
+                className="btn-edit"
+              >
+                ✏️ Edit
+              </button>
+            )}
+          </div>
+
+          {isEditingParkingLot ? (
+            <div className="editor-container">
+              <div className="parking-lot-list editing">
+                {editedDetailedNotes.parking_lot.map((item, index) => (
+                  <div key={index} className="parking-lot-item editing">
+                    <textarea
+                      value={item}
+                      onChange={(e) => handleUpdateParkingLotItem(index, e.target.value)}
+                      placeholder="Parking lot item"
+                      className="form-input"
+                      rows={2}
+                    />
+                    <button
+                      onClick={() => handleDeleteParkingLotItem(index)}
+                      className="btn btn-danger btn-small"
+                    >
+                      🗑️ Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={handleAddParkingLotItem}
+                className="btn btn-small btn-secondary"
+              >
+                ➕ Add Item
+              </button>
+              <div className="editor-actions">
+                <button
+                  onClick={handleSaveDetailedNotes}
+                  disabled={isUpdating}
+                  className="btn btn-primary"
+                >
+                  💾 Save
+                </button>
+                <button
+                  onClick={handleCancelDetailedNotes}
+                  disabled={isUpdating}
+                  className="btn btn-secondary"
+                >
+                  ❌ Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <ul className="parking-lot-list">
+              {editedDetailedNotes.parking_lot.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
       {/* Phase 4b: Email Recipients and Subject Line */}
       <div className="summary-section">
         <h4>📧 Email Distribution</h4>
@@ -809,6 +1213,124 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
               placeholder="Email subject line"
             />
           </div>
+
+          {/* Phase 5.5: Custom Introduction */}
+          <div className="summary-section" style={{ marginTop: '30px' }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '15px'
+            }}>
+              <h3 style={{
+                color: '#2D2042',
+                fontSize: '18px',
+                margin: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span>👋</span>
+                <span>Custom Introduction (Optional)</span>
+              </h3>
+              {!isEditingIntroduction && (
+                <button
+                  onClick={() => setIsEditingIntroduction(true)}
+                  className="btn-edit"
+                  style={{
+                    padding: '6px 12px',
+                    background: '#60B5E5',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '13px'
+                  }}
+                >
+                  ✏️ Edit
+                </button>
+              )}
+            </div>
+
+            {isEditingIntroduction ? (
+              <div>
+                <textarea
+                  value={customIntroduction}
+                  onChange={(e) => setCustomIntroduction(e.target.value)}
+                  placeholder="Add a personalized introduction before the summary (e.g., context, follow-up instructions, or background info)..."
+                  maxLength={500}
+                  style={{
+                    width: '100%',
+                    minHeight: '100px',
+                    padding: '12px',
+                    borderRadius: '6px',
+                    border: '1px solid #e0e0e0',
+                    fontSize: '14px',
+                    fontFamily: 'inherit',
+                    lineHeight: '1.6',
+                    resize: 'vertical'
+                  }}
+                />
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginTop: '10px'
+                }}>
+                  <span style={{ fontSize: '13px', color: '#777' }}>
+                    {customIntroduction.length}/500 characters
+                  </span>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      onClick={() => {
+                        onUpdate({ customIntroduction })
+                        setIsEditingIntroduction(false)
+                      }}
+                      className="btn btn-primary"
+                      style={{
+                        padding: '6px 16px',
+                        fontSize: '14px'
+                      }}
+                    >
+                      💾 Save
+                    </button>
+                    <button
+                      onClick={() => {
+                        setCustomIntroduction(summary.custom_introduction || '')
+                        setIsEditingIntroduction(false)
+                      }}
+                      className="btn btn-secondary"
+                      style={{
+                        padding: '6px 16px',
+                        fontSize: '14px'
+                      }}
+                    >
+                      ✖️ Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div style={{
+                background: customIntroduction ? '#EBF4FF' : '#f8f8f8',
+                padding: '15px',
+                borderRadius: '6px',
+                border: `1px solid ${customIntroduction ? '#60B5E5' : '#e0e0e0'}`,
+                fontSize: '14px',
+                color: customIntroduction ? '#555' : '#999',
+                lineHeight: '1.6',
+                fontStyle: customIntroduction ? 'normal' : 'italic'
+              }}>
+                {customIntroduction || 'No custom introduction added. Click Edit to add one.'}
+              </div>
+            )}
+          </div>
+
+          {/* Phase 5.5: Email Section Toggles */}
+          <EmailSectionTogglesComponent
+            initialSections={enabledSections}
+            onChange={handleSectionsChange}
+          />
 
           <RecipientSelector
             meetingId={summary.meeting_id}
@@ -843,9 +1365,11 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
           speakers={editedSpeakers}
           actionItems={editedActionItems}
           keyDecisions={editedKeyDecisions}
-          detailedNotes={detailedNotes}
+          detailedNotes={editedDetailedNotes}
           recipients={selectedRecipients}
           subjectLine={subjectLine}
+          customIntroduction={customIntroduction}
+          enabledSections={enabledSections}
           onClose={() => setShowEmailPreview(false)}
           onSend={handleSendEmail}
           isSending={isSending}

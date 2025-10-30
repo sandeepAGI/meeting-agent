@@ -6,7 +6,7 @@
  * Phase 5: Uses emailGenerator utility for HTML generation
  */
 
-import type { MeetingSummary, SpeakerMapping, ActionItem, DetailedNotes, EmailRecipient } from '../../types/meetingSummary'
+import type { MeetingSummary, SpeakerMapping, ActionItem, DetailedNotes, EmailRecipient, EmailSectionToggles } from '../../types/meetingSummary'
 import { generateEmailHTML } from '../../utils/emailGenerator'
 
 interface EmailPreviewProps {
@@ -23,6 +23,9 @@ interface EmailPreviewProps {
   isSending?: boolean
   sendError?: string | null
   sendSuccess?: boolean
+  // Phase 5.5: Email customization
+  customIntroduction?: string
+  enabledSections?: EmailSectionToggles
 }
 
 export function EmailPreview({
@@ -37,7 +40,9 @@ export function EmailPreview({
   onSend,
   isSending = false,
   sendError = null,
-  sendSuccess = false
+  sendSuccess = false,
+  customIntroduction,
+  enabledSections
 }: EmailPreviewProps) {
   // Generate email HTML using utility
   const emailHtml = generateEmailHTML({
@@ -45,7 +50,9 @@ export function EmailPreview({
     speakers,
     actionItems,
     keyDecisions,
-    detailedNotes
+    detailedNotes,
+    customIntroduction,
+    enabledSections
   })
 
   return (

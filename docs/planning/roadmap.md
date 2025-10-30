@@ -1,16 +1,16 @@
 # Development Roadmap
 
 **Project**: Meeting Agent
-**Version**: 0.6.1
-**Last Updated**: 2025-01-27
+**Version**: 0.6.2
+**Last Updated**: 2025-10-30
 
 ## Overview
 
-Meeting Agent is being developed in 10 phases, from foundation to production-ready application. Current status: **Phase 5 Complete** (Audio + Transcription + Diarization + M365 + Calendar + LLM Intelligence + Browse Mode + Summary Editor + Email Distribution).
+Meeting Agent is being developed in 10 phases, from foundation to production-ready application. Current status: **Phase 5.5 Complete** (Audio + Transcription + Diarization + M365 + Calendar + LLM Intelligence + Browse Mode + Summary Editor + Email Distribution + Enhanced Email Customization).
 
 **Prioritized Roadmap**:
-1. **Phase 5.5** (Next): Enhanced Email Customization - User-requested features
-2. **Phase 6**: Configuration & Settings - Enable UI-based configuration
+1. **Phase 6** (Next): Configuration & Settings - Enable UI-based configuration
+2. **Phase 7**: Data Management & Storage - Automated audio cleanup
 3. **Phase 7**: Data Management & Storage - Automated audio cleanup
 4. **Phase 8**: Performance Optimization - Handle large meetings smoothly
 5. **Phase 9**: Error Handling & Logging - Production-grade reliability
@@ -39,8 +39,8 @@ Meeting Agent is being developed in 10 phases, from foundation to production-rea
 | 4a | Browse Mode & Branding | ✅ Complete | 2025-10-21 |
 | 4b | Summary Editor & Email | ✅ Complete | 2025-01-23 |
 | 5 | Email Distribution | ✅ Complete | 2025-01-27 |
-| 5.5 | Enhanced Email Customization | 📅 Planned (Next) | - |
-| 6 | Configuration & Settings | 📅 Planned | - |
+| 5.5 | Enhanced Email Customization | ✅ Complete | 2025-10-30 |
+| 6 | Configuration & Settings | 📅 Planned (Next) | - |
 | 7 | Data Management & Storage | 📅 Planned | - |
 | 8 | Performance Optimization | 📅 Planned | - |
 | 9 | Error Handling & Logging | 📅 Planned | - |
@@ -1223,11 +1223,11 @@ npm run build       # Must succeed
 
 ---
 
-## Phase 5.5: Enhanced Email Customization 📅 **PLANNED** (January 2025)
+## Phase 5.5: Enhanced Email Customization ✅ **COMPLETE** (October 30, 2025)
 
-**Status**: Planned (Next)
+**Status**: Complete
 **Priority**: HIGH (user-requested, improves daily workflow)
-**Estimated Duration**: 7-10 hours
+**Actual Duration**: ~10 hours (including implementation and bug fixes)
 
 ### Overview
 
@@ -1704,6 +1704,15 @@ npm run build       # Must succeed
 - [ ] Meeting highlights/clips extraction
 - [ ] Chrome extension for direct browser capture
 - [ ] Slack/Discord integration
+
+### Data Recovery
+- [ ] **Orphaned Recording Recovery**: Auto-detect and recover recordings with unmerged chunks
+  - **Context**: If app crashes or laptop shuts down during recording, chunks remain unmerged
+  - **User Story**: User discovered recording from today wasn't in database - chunks were in session folder
+  - **Solution**: UI to scan for orphaned session folders and offer one-click recovery
+  - **Manual Workaround**: Use ffmpeg concat to merge chunks, then INSERT into database
+  - **Priority**: Medium (edge case but important for data preservation)
+  - **Identified**: 2025-10-29 during Phase 5.5 testing
 
 ---
 

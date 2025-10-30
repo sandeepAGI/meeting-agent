@@ -5,7 +5,7 @@
  */
 
 import { useState, useCallback, useEffect } from 'react'
-import type { MeetingSummary, SummaryStatusDisplay, SpeakerMapping, ActionItem } from '../../types/meetingSummary'
+import type { MeetingSummary, SummaryStatusDisplay, SpeakerMapping, ActionItem, DetailedNotes, EmailRecipient, EmailSectionToggles } from '../../types/meetingSummary'
 
 interface MeetingIntelligenceState {
   summaryId: string | null
@@ -24,6 +24,12 @@ interface MeetingIntelligenceActions {
     speakers?: SpeakerMapping[]
     actionItems?: ActionItem[]
     keyDecisions?: string[]
+    recipients?: EmailRecipient[]
+    subjectLine?: string
+    // Phase 5.5: Email customization
+    detailedNotes?: DetailedNotes | null
+    customIntroduction?: string
+    enabledSections?: EmailSectionToggles
   }) => Promise<void>
   cancel: (summaryId: string) => Promise<void>
   regenerate: (summaryId: string) => Promise<void>

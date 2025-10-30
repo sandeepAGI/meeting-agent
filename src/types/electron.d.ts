@@ -94,6 +94,7 @@ export interface ElectronAPI {
   // Database queries
   database: {
     getRecordingsWithTranscripts: (limit?: number) => Promise<{ success: boolean; recordings?: any[]; error?: string }>
+    getUntranscribedRecordings: (limit?: number) => Promise<{ success: boolean; recordings?: any[]; error?: string }>
     // Phase 2.3-4: Meeting-Recording Association
     getMeetingById: (meetingId: string) => Promise<{ success: boolean; meeting?: any; error?: string }>
     getMeetingsInDateRange: (startDate: string, endDate: string) => Promise<{ success: boolean; meetings?: any[]; error?: string }>
