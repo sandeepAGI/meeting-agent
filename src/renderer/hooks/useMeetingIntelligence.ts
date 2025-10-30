@@ -68,6 +68,7 @@ export function useMeetingIntelligence() {
         if (summaryResult.success) {
           setState(prev => ({
             ...prev,
+            summaryId: summaryId, // CRITICAL: Preserve summaryId for edit operations
             summary: summaryResult.summary || null
           }))
         }
@@ -169,9 +170,11 @@ export function useMeetingIntelligence() {
 
     updateSummary: useCallback(async (summaryId: string, updates) => {
       try {
+        console.log('[useMeetingIntelligence] updateSummary called with:', { summaryId, updates })
         setState(prev => ({ ...prev, isLoading: true, error: null }))
 
         const result = await window.electronAPI.meetingIntelligence.updateSummary(summaryId, updates)
+        console.log('[useMeetingIntelligence] updateSummary result:', result)
 
         if (!result.success) {
           throw new Error(result.error || 'Failed to update summary')
@@ -183,6 +186,7 @@ export function useMeetingIntelligence() {
           summary: result.summary || prev.summary,
           isLoading: false
         }))
+        console.log('[useMeetingIntelligence] updateSummary completed successfully')
       } catch (error) {
         setState(prev => ({
           ...prev,

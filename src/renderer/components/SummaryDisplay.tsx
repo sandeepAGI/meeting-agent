@@ -120,6 +120,7 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
 
   // Summary text save/cancel
   const handleSave = () => {
+    console.log('[SummaryDisplay] Saving summary text')
     onUpdate({ summary: editedSummary })
     setIsEditing(false)
   }
@@ -206,6 +207,7 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
 
   // Phase 5.5: Detailed notes save/cancel handlers
   const handleSaveDetailedNotes = () => {
+    console.log('[SummaryDisplay] Saving detailed notes:', editedDetailedNotes)
     onUpdate({ detailedNotes: editedDetailedNotes })
     setIsEditingDiscussionTopics(false)
     setIsEditingQuotes(false)
@@ -988,7 +990,7 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
             {!isEditingQuotes && (
               <button
                 onClick={() => setIsEditingQuotes(true)}
-                className="btn-edit"
+                className="btn btn-small btn-edit"
               >
                 ✏️ Edit
               </button>
@@ -1068,7 +1070,7 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
             {!isEditingQuestions && (
               <button
                 onClick={() => setIsEditingQuestions(true)}
-                className="btn-edit"
+                className="btn btn-small btn-edit"
               >
                 ✏️ Edit
               </button>
@@ -1136,7 +1138,7 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
             {!isEditingParkingLot && (
               <button
                 onClick={() => setIsEditingParkingLot(true)}
-                className="btn-edit"
+                className="btn btn-small btn-edit"
               >
                 ✏️ Edit
               </button>
@@ -1236,16 +1238,7 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
               {!isEditingIntroduction && (
                 <button
                   onClick={() => setIsEditingIntroduction(true)}
-                  className="btn-edit"
-                  style={{
-                    padding: '6px 12px',
-                    background: '#60B5E5',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '13px'
-                  }}
+                  className="btn btn-small btn-edit"
                 >
                   ✏️ Edit
                 </button>
