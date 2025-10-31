@@ -264,7 +264,29 @@ export class MeetingIntelligenceService {
       // Extract and parse JSON
       const textContent = ClaudeBatchService.extractTextFromResult(result)
       const cleanedText = this.stripMarkdownCodeBlocks(textContent)
-      const pass1Data: Pass1Result = JSON.parse(cleanedText)
+
+      // Parse JSON with error recovery
+      let pass1Data: Pass1Result
+      try {
+        pass1Data = JSON.parse(cleanedText)
+      } catch (parseError: any) {
+        console.error('[Pass 1] JSON parse failed:', parseError.message)
+        console.error('[Pass 1] Raw JSON (first 500 chars):', cleanedText.substring(0, 500))
+        console.error('[Pass 1] Raw JSON (around error position):',
+          cleanedText.substring(Math.max(0, 17955 - 100), 17955 + 100))
+
+        // Save the malformed response for debugging
+        this.db.updateSummaryStatus(
+          summaryId,
+          'error',
+          `LLM returned malformed JSON: ${parseError.message}. Check logs for raw response.`
+        )
+        throw new Error(
+          `Pass 1 JSON parsing failed: ${parseError.message}. ` +
+          `This usually happens when the transcript contains unescaped quotes or special characters. ` +
+          `Raw response saved to logs for debugging.`
+        )
+      }
 
       // Save to database
       this.db.updateSummaryPass1(summaryId, batchId, pass1Data)
@@ -365,7 +387,35 @@ export class MeetingIntelligenceService {
       // Extract and parse JSON
       const textContent = ClaudeBatchService.extractTextFromResult(result)
       const cleanedText = this.stripMarkdownCodeBlocks(textContent)
-      const pass2Data: Pass2Result = JSON.parse(cleanedText)
+
+      // Parse JSON with error recovery
+      let pass2Data: Pass2Result
+      try {
+        pass2Data = JSON.parse(cleanedText)
+      } catch (parseError: any) {
+        console.error('[Pass 2] JSON parse failed:', parseError.message)
+        console.error('[Pass 2] Raw JSON (first 500 chars):', cleanedText.substring(0, 500))
+
+        // Extract position from error message if available
+        const positionMatch = parseError.message.match(/position (\d+)/)
+        const errorPosition = positionMatch ? parseInt(positionMatch[1]) : 0
+        if (errorPosition > 0) {
+          console.error('[Pass 2] Raw JSON (around error position):',
+            cleanedText.substring(Math.max(0, errorPosition - 100), errorPosition + 100))
+        }
+
+        // Save the malformed response for debugging
+        this.db.updateSummaryStatus(
+          summaryId,
+          'error',
+          `LLM returned malformed JSON: ${parseError.message}. Check logs for raw response.`
+        )
+        throw new Error(
+          `Pass 2 JSON parsing failed: ${parseError.message}. ` +
+          `This usually happens when the transcript contains unescaped quotes or special characters. ` +
+          `Raw response saved to logs for debugging.`
+        )
+      }
 
       // Save to database
       this.db.updateSummaryPass2(summaryId, batchId, pass2Data)
