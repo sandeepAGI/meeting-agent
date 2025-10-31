@@ -723,6 +723,17 @@ ipcMain.handle('graph-send-email', async (_event, options: {
       }
     }
 
+    // Bug #10 fix: Enforce AI disclaimer (server-side validation)
+    // This prevents bypass if client is modified or uses Graph API directly
+    const disclaimerText = 'AI-Generated Summary Disclaimer'
+    if (!options.bodyHtml.includes(disclaimerText)) {
+      console.warn('[Security] Email missing AI disclaimer, rejecting send')
+      return {
+        success: false,
+        error: 'Email must include AI-generated disclaimer for legal compliance. Please regenerate the email.'
+      }
+    }
+
     // Get fresh access token
     const accessToken = await m365AuthService.getAccessToken()
 
