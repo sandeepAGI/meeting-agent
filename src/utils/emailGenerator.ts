@@ -38,6 +38,19 @@ const AI_DISCLAIMER = `⚠️ AI-Generated Summary Disclaimer
 This summary was automatically generated using AI and may contain errors or omissions. Please review carefully and verify critical information against the original recording or transcript.`
 
 /**
+ * Escape HTML special characters to prevent XSS attacks
+ * Bug #11 fix: Sanitize all user-provided content before inserting into HTML
+ */
+function escapeHtml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
+/**
  * Generate HTML email body with Aileron branding
  */
 export function generateEmailHTML(content: EmailContent): string {
@@ -68,7 +81,7 @@ export function generateEmailHTML(content: EmailContent): string {
     html += `
       <div style="margin-bottom: 30px; background: #EBF4FF; padding: 20px; border-radius: 6px; border-left: 4px solid #60B5E5;">
         <h2 style="color: #2D2042; font-size: 18px; margin-top: 0; margin-bottom: 12px;">👋 Introduction</h2>
-        <p style="line-height: 1.6; color: #555; margin: 0;">${content.customIntroduction.replace(/\n/g, '<br>')}</p>
+        <p style="line-height: 1.6; color: #555; margin: 0;">${escapeHtml(content.customIntroduction).replace(/\n/g, '<br>')}</p>
       </div>
     `
   }
@@ -78,7 +91,7 @@ export function generateEmailHTML(content: EmailContent): string {
     html += `
       <div style="margin-bottom: 30px;">
         <h2 style="color: #2D2042; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #60B5E5; padding-bottom: 10px;">📄 Summary</h2>
-        <p style="line-height: 1.6; color: #555;">${content.summary.replace(/\n/g, '<br>')}</p>
+        <p style="line-height: 1.6; color: #555;">${escapeHtml(content.summary).replace(/\n/g, '<br>')}</p>
       </div>
     `
   }
@@ -108,8 +121,8 @@ export function generateEmailHTML(content: EmailContent): string {
 
       html += `
         <div style="background: #f8f8f8; padding: 15px; border-radius: 6px; border-left: 4px solid #60B5E5;">
-          <strong style="color: #2D2042;">${speaker.name}</strong>${organization ? `, ${organization}` : ''}
-          ${speaker.email ? `<br><span style="color: #777; font-size: 14px;">${speaker.email}</span>` : ''}
+          <strong style="color: #2D2042;">${escapeHtml(speaker.name)}</strong>${organization ? `, ${escapeHtml(organization)}` : ''}
+          ${speaker.email ? `<br><span style="color: #777; font-size: 14px;">${escapeHtml(speaker.email)}</span>` : ''}
         </div>
       `
     })
@@ -132,10 +145,10 @@ export function generateEmailHTML(content: EmailContent): string {
         <div style="background: #f8f8f8; padding: 15px; border-radius: 6px; border-left: 4px solid ${priorityColor};">
           <div style="margin-bottom: 8px;">
             <span style="background: ${priorityColor}; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; text-transform: uppercase;">${item.priority}</span>
-            ${item.assignee ? `<span style="color: #555; margin-left: 10px;">👤 ${item.assignee}</span>` : ''}
+            ${item.assignee ? `<span style="color: #555; margin-left: 10px;">👤 ${escapeHtml(item.assignee)}</span>` : ''}
             ${item.dueDate ? `<span style="color: #555; margin-left: 10px;">📅 ${new Date(item.dueDate).toLocaleDateString()}</span>` : ''}
           </div>
-          <p style="margin: 0; color: #333;">${item.description}</p>
+          <p style="margin: 0; color: #333;">${escapeHtml(item.description)}</p>
         </div>
       `
     })
@@ -155,7 +168,7 @@ export function generateEmailHTML(content: EmailContent): string {
     content.keyDecisions.forEach(decision => {
       html += `
         <li style="background: #f8f8f8; padding: 12px 15px; margin-bottom: 10px; border-radius: 6px; border-left: 4px solid #60B5E5;">
-          ${decision}
+          ${escapeHtml(decision)}
         </li>
       `
     })
@@ -174,13 +187,13 @@ export function generateEmailHTML(content: EmailContent): string {
     content.detailedNotes.discussion_by_topic.forEach((topic, index) => {
       html += `
         <div style="background: #f8f8f8; padding: 20px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid #60B5E5;">
-          <h3 style="color: #2D2042; font-size: 18px; margin-top: 0; margin-bottom: 12px;">${topic.topic}</h3>
+          <h3 style="color: #2D2042; font-size: 18px; margin-top: 0; margin-bottom: 12px;">${escapeHtml(topic.topic)}</h3>
 
           ${topic.key_points.length > 0 ? `
             <div style="margin-bottom: 12px;">
               <strong style="color: #555;">Key Points:</strong>
               <ul style="margin: 8px 0; padding-left: 20px; color: #666;">
-                ${topic.key_points.map(point => `<li style="margin-bottom: 4px;">${point}</li>`).join('')}
+                ${topic.key_points.map(point => `<li style="margin-bottom: 4px;">${escapeHtml(point)}</li>`).join('')}
               </ul>
             </div>
           ` : ''}
@@ -189,7 +202,7 @@ export function generateEmailHTML(content: EmailContent): string {
             <div style="margin-bottom: 12px;">
               <strong style="color: #555;">Decisions:</strong>
               <ul style="margin: 8px 0; padding-left: 20px; color: #666;">
-                ${topic.decisions.map(decision => `<li style="margin-bottom: 4px;">${decision}</li>`).join('')}
+                ${topic.decisions.map(decision => `<li style="margin-bottom: 4px;">${escapeHtml(decision)}</li>`).join('')}
               </ul>
             </div>
           ` : ''}
@@ -200,8 +213,8 @@ export function generateEmailHTML(content: EmailContent): string {
               <ul style="margin: 8px 0; padding-left: 20px; color: #666;">
                 ${topic.action_items.map(item => `
                   <li style="margin-bottom: 4px;">
-                    ${item.description}
-                    ${item.assignee ? ` (${item.assignee})` : ''}
+                    ${escapeHtml(item.description)}
+                    ${item.assignee ? ` (${escapeHtml(item.assignee)})` : ''}
                     ${item.priority ? ` - <span style="color: ${item.priority === 'high' ? '#e74c3c' : item.priority === 'medium' ? '#f39c12' : '#95a5a6'};">${item.priority.toUpperCase()}</span>` : ''}
                   </li>
                 `).join('')}
@@ -225,8 +238,8 @@ export function generateEmailHTML(content: EmailContent): string {
     content.detailedNotes.notable_quotes.forEach(quote => {
       html += `
         <div style="background: #f8f8f8; padding: 15px; border-radius: 6px; margin-bottom: 12px; border-left: 4px solid #60B5E5;">
-          <p style="margin: 0 0 8px 0; color: #333; font-style: italic;">"${quote.quote}"</p>
-          <p style="margin: 0; color: #777; font-size: 14px;">— ${quote.speaker}</p>
+          <p style="margin: 0 0 8px 0; color: #333; font-style: italic;">"${escapeHtml(quote.quote)}"</p>
+          <p style="margin: 0; color: #777; font-size: 14px;">— ${escapeHtml(quote.speaker)}</p>
         </div>
       `
     })
@@ -245,7 +258,7 @@ export function generateEmailHTML(content: EmailContent): string {
     content.detailedNotes.open_questions.forEach(question => {
       html += `
         <li style="background: #f8f8f8; padding: 12px 15px; margin-bottom: 10px; border-radius: 6px; border-left: 4px solid #f39c12;">
-          ${question}
+          ${escapeHtml(question)}
         </li>
       `
     })
@@ -265,7 +278,7 @@ export function generateEmailHTML(content: EmailContent): string {
     content.detailedNotes.parking_lot.forEach(item => {
       html += `
         <li style="background: #f8f8f8; padding: 12px 15px; margin-bottom: 10px; border-radius: 6px; border-left: 4px solid #95a5a6;">
-          ${item}
+          ${escapeHtml(item)}
         </li>
       `
     })
