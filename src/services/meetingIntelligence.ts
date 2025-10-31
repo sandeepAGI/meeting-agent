@@ -237,6 +237,37 @@ export class MeetingIntelligenceService {
   }
 
   /**
+   * Attempt to repair common JSON syntax issues
+   * Returns fixed JSON string or null if repair failed
+   */
+  private attemptJsonRepair(brokenJson: string): string | null {
+    try {
+      // Try 1: Remove trailing commas (common issue)
+      let fixed = brokenJson.replace(/,(\s*[}\]])/g, '$1')
+
+      // Try parsing
+      JSON.parse(fixed)
+      console.log('[JSON Repair] Successfully fixed trailing commas')
+      return fixed
+    } catch (e1) {
+      // Try 2: Fix common escape issues
+      try {
+        // Replace common unescaped characters
+        let fixed = brokenJson
+          .replace(/([^\\])\\n/g, '$1\\\\n')  // Fix single backslash before n
+          .replace(/([^\\])\\t/g, '$1\\\\t')  // Fix single backslash before t
+
+        JSON.parse(fixed)
+        console.log('[JSON Repair] Successfully fixed escape sequences')
+        return fixed
+      } catch (e2) {
+        // Repair failed
+        return null
+      }
+    }
+  }
+
+  /**
    * Poll Pass 1 in background (async, non-blocking)
    */
   private async pollPass1InBackground(
@@ -272,20 +303,36 @@ export class MeetingIntelligenceService {
       } catch (parseError: any) {
         console.error('[Pass 1] JSON parse failed:', parseError.message)
         console.error('[Pass 1] Raw JSON (first 500 chars):', cleanedText.substring(0, 500))
-        console.error('[Pass 1] Raw JSON (around error position):',
-          cleanedText.substring(Math.max(0, 17955 - 100), 17955 + 100))
 
-        // Save the malformed response for debugging
-        this.db.updateSummaryStatus(
-          summaryId,
-          'error',
-          `LLM returned malformed JSON: ${parseError.message}. Check logs for raw response.`
-        )
-        throw new Error(
-          `Pass 1 JSON parsing failed: ${parseError.message}. ` +
-          `This usually happens when the transcript contains unescaped quotes or special characters. ` +
-          `Raw response saved to logs for debugging.`
-        )
+        // Extract position from error message if available
+        const positionMatch = parseError.message.match(/position (\d+)/)
+        const errorPosition = positionMatch ? parseInt(positionMatch[1]) : 0
+        if (errorPosition > 0) {
+          console.error('[Pass 1] Raw JSON (around error position):',
+            cleanedText.substring(Math.max(0, errorPosition - 100), errorPosition + 100))
+        }
+
+        // Attempt automatic repair
+        console.log('[Pass 1] Attempting automatic JSON repair...')
+        const repairedJson = this.attemptJsonRepair(cleanedText)
+
+        if (repairedJson) {
+          console.log('[Pass 1] ✅ JSON repair successful! Continuing with repaired data.')
+          pass1Data = JSON.parse(repairedJson)
+        } else {
+          // Save the malformed response for debugging
+          this.db.updateSummaryStatus(
+            summaryId,
+            'error',
+            `LLM returned malformed JSON: ${parseError.message}. Automatic repair failed. Check logs.`
+          )
+          throw new Error(
+            `Pass 1 JSON parsing failed: ${parseError.message}. ` +
+            `Automatic repair attempted but failed. ` +
+            `This usually happens when the transcript contains unescaped quotes or special characters. ` +
+            `Raw response saved to logs for debugging.`
+          )
+        }
       }
 
       // Save to database
@@ -404,17 +451,27 @@ export class MeetingIntelligenceService {
             cleanedText.substring(Math.max(0, errorPosition - 100), errorPosition + 100))
         }
 
-        // Save the malformed response for debugging
-        this.db.updateSummaryStatus(
-          summaryId,
-          'error',
-          `LLM returned malformed JSON: ${parseError.message}. Check logs for raw response.`
-        )
-        throw new Error(
-          `Pass 2 JSON parsing failed: ${parseError.message}. ` +
-          `This usually happens when the transcript contains unescaped quotes or special characters. ` +
-          `Raw response saved to logs for debugging.`
-        )
+        // Attempt automatic repair
+        console.log('[Pass 2] Attempting automatic JSON repair...')
+        const repairedJson = this.attemptJsonRepair(cleanedText)
+
+        if (repairedJson) {
+          console.log('[Pass 2] ✅ JSON repair successful! Continuing with repaired data.')
+          pass2Data = JSON.parse(repairedJson)
+        } else {
+          // Save the malformed response for debugging
+          this.db.updateSummaryStatus(
+            summaryId,
+            'error',
+            `LLM returned malformed JSON: ${parseError.message}. Automatic repair failed. Check logs.`
+          )
+          throw new Error(
+            `Pass 2 JSON parsing failed: ${parseError.message}. ` +
+            `Automatic repair attempted but failed. ` +
+            `This usually happens when the transcript contains unescaped quotes or special characters. ` +
+            `Raw response saved to logs for debugging.`
+          )
+        }
       }
 
       // Save to database
