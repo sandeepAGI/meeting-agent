@@ -68,10 +68,17 @@ const SECTION_INFO = [
 export function EmailSectionToggles({ initialSections, onChange }: EmailSectionTogglesProps) {
   const [sections, setSections] = useState<EmailSectionTogglesType>(initialSections)
 
-  // Propagate changes to parent
+  // Bug #8 fix: Sync local state when prop changes (after database update)
+  useEffect(() => {
+    setSections(initialSections)
+  }, [initialSections])
+
+  // Bug #7 fix: Remove onChange from dependencies to prevent infinite loop
+  // Only propagate when sections change due to user interaction, not prop updates
   useEffect(() => {
     onChange(sections)
-  }, [sections, onChange])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sections])
 
   const handleToggle = (key: keyof EmailSectionTogglesType) => {
     setSections(prev => ({
