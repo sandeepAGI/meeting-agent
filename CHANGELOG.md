@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.2.3] - 2025-10-31
+
+### Fixed - Critical UX Blockers (Bugs #4 & #5 from Phase 5.5)
+
+**Bug #5 (CRITICAL)**: Save buttons now functional across all editable sections 💾
+- Replaced global `isUpdating` state with local `isSaving` state per section
+- All 8 save buttons now enable correctly when editing:
+  - Summary text, Speakers, Action Items, Key Decisions
+  - Notable Quotes, Open Questions, Parking Lot, Custom Introduction
+- Added visual feedback: "💾 Saving..." during save operation
+- Error handling: editing mode stays open on save failure (prevents data loss)
+- **Impact**: Unblocks ALL editing features - users can now save changes
+- Lines affected: 76-81 (state), 159-288 (handlers), 850-1385 (UI buttons)
+
+**Bug #4 (CRITICAL)**: Discussion Topics UI now visible and fully functional 📋
+- Added complete UI section with edit/display modes (~195 lines)
+- Edit mode features:
+  - Add/edit/delete topics with nested key points and decisions
+  - Dynamic forms for all topic fields
+  - Delete buttons for individual items and entire topics
+- Display mode features:
+  - Formatted topic view with hierarchical structure
+  - Shows topic name, key points, decisions, and related action items
+  - Clean read-only presentation
+- Consistent styling with other sections (section-header, editor-container)
+- **Impact**: Makes Discussion Topics feature accessible - data was in database but invisible
+- Location: Lines 1058-1252 (between Key Decisions and Notable Quotes)
+
+### Testing
+- ✅ Level 1: `npm run type-check` passes
+- ✅ Level 1: `npm run build` succeeds
+- ⏸️ Level 3: Manual UAT required (edit/save testing for all 8 sections + discussion topics)
+
+### Status
+- **7 of 13 bugs fixed** (54% complete)
+- **2 CRITICAL bugs remaining**: All UX blockers resolved
+- **6 MEDIUM bugs pending**: Error handling, validation, UI polish
+
 ## [0.6.2.2] - 2025-10-30
 
 ### Fixed - Critical Bug Fixes (5 of 13 bugs from Phase 5.5 code review)

@@ -72,6 +72,14 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
   const [isEditingQuestions, setIsEditingQuestions] = useState(false)
   const [isEditingParkingLot, setIsEditingParkingLot] = useState(false)
 
+  // Bug #5 fix: Local saving states for each section
+  const [isSavingSummary, setIsSavingSummary] = useState(false)
+  const [isSavingSpeakers, setIsSavingSpeakers] = useState(false)
+  const [isSavingActionItems, setIsSavingActionItems] = useState(false)
+  const [isSavingKeyDecisions, setIsSavingKeyDecisions] = useState(false)
+  const [isSavingDetailedNotes, setIsSavingDetailedNotes] = useState(false)
+  const [isSavingIntroduction, setIsSavingIntroduction] = useState(false)
+
   // Bug #1 fix: Sync editedDetailedNotes when summary prop updates (after database save)
   useEffect(() => {
     const notesJson = summary.pass2_refined_detailed_notes_json || summary.pass1_detailed_notes_json
@@ -148,10 +156,18 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
   }
 
   // Summary text save/cancel
-  const handleSave = () => {
+  const handleSave = async () => {
     console.log('[SummaryDisplay] Saving summary text')
-    onUpdate({ summary: editedSummary })
-    setIsEditing(false)
+    setIsSavingSummary(true)
+    try {
+      await onUpdate({ summary: editedSummary })
+      setIsEditing(false)
+    } catch (error) {
+      console.error('[SummaryDisplay] Failed to save summary:', error)
+      // Keep editing mode open on error
+    } finally {
+      setIsSavingSummary(false)
+    }
   }
 
   const handleCancel = () => {
@@ -160,9 +176,16 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
   }
 
   // Phase 4b: Action items save/cancel
-  const handleSaveActionItems = () => {
-    onUpdate({ actionItems: editedActionItems })
-    setIsEditingActionItems(false)
+  const handleSaveActionItems = async () => {
+    setIsSavingActionItems(true)
+    try {
+      await onUpdate({ actionItems: editedActionItems })
+      setIsEditingActionItems(false)
+    } catch (error) {
+      console.error('[SummaryDisplay] Failed to save action items:', error)
+    } finally {
+      setIsSavingActionItems(false)
+    }
   }
 
   const handleCancelActionItems = () => {
@@ -171,9 +194,16 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
   }
 
   // Phase 4b: Key decisions save/cancel
-  const handleSaveKeyDecisions = () => {
-    onUpdate({ keyDecisions: editedKeyDecisions })
-    setIsEditingKeyDecisions(false)
+  const handleSaveKeyDecisions = async () => {
+    setIsSavingKeyDecisions(true)
+    try {
+      await onUpdate({ keyDecisions: editedKeyDecisions })
+      setIsEditingKeyDecisions(false)
+    } catch (error) {
+      console.error('[SummaryDisplay] Failed to save key decisions:', error)
+    } finally {
+      setIsSavingKeyDecisions(false)
+    }
   }
 
   const handleCancelKeyDecisions = () => {
@@ -182,9 +212,16 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
   }
 
   // Phase 4b: Speaker mappings save/cancel
-  const handleSaveSpeakers = () => {
-    onUpdate({ speakers: editedSpeakers })
-    setIsEditingSpeakers(false)
+  const handleSaveSpeakers = async () => {
+    setIsSavingSpeakers(true)
+    try {
+      await onUpdate({ speakers: editedSpeakers })
+      setIsEditingSpeakers(false)
+    } catch (error) {
+      console.error('[SummaryDisplay] Failed to save speakers:', error)
+    } finally {
+      setIsSavingSpeakers(false)
+    }
   }
 
   const handleCancelSpeakers = () => {
@@ -235,13 +272,20 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
   }
 
   // Phase 5.5: Detailed notes save/cancel handlers
-  const handleSaveDetailedNotes = () => {
+  const handleSaveDetailedNotes = async () => {
     console.log('[SummaryDisplay] Saving detailed notes:', editedDetailedNotes)
-    onUpdate({ detailedNotes: editedDetailedNotes })
-    setIsEditingDiscussionTopics(false)
-    setIsEditingQuotes(false)
-    setIsEditingQuestions(false)
-    setIsEditingParkingLot(false)
+    setIsSavingDetailedNotes(true)
+    try {
+      await onUpdate({ detailedNotes: editedDetailedNotes })
+      setIsEditingDiscussionTopics(false)
+      setIsEditingQuotes(false)
+      setIsEditingQuestions(false)
+      setIsEditingParkingLot(false)
+    } catch (error) {
+      console.error('[SummaryDisplay] Failed to save detailed notes:', error)
+    } finally {
+      setIsSavingDetailedNotes(false)
+    }
   }
 
   const handleCancelDetailedNotes = () => {
@@ -744,14 +788,14 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
             <div className="editor-actions">
               <button
                 onClick={handleSaveSpeakers}
-                disabled={isUpdating}
+                disabled={isSavingSpeakers}
                 className="btn btn-primary"
               >
-                💾 Save
+                {isSavingSpeakers ? '💾 Saving...' : '💾 Save'}
               </button>
               <button
                 onClick={handleCancelSpeakers}
-                disabled={isUpdating}
+                disabled={isSavingSpeakers}
                 className="btn btn-secondary"
               >
                 Cancel
@@ -805,14 +849,14 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
             <div className="editor-actions">
               <button
                 onClick={handleSave}
-                disabled={isUpdating}
+                disabled={isSavingSummary}
                 className="btn btn-primary"
               >
-                💾 Save
+                {isSavingSummary ? '💾 Saving...' : '💾 Save'}
               </button>
               <button
                 onClick={handleCancel}
-                disabled={isUpdating}
+                disabled={isSavingSummary}
                 className="btn btn-secondary"
               >
                 Cancel
@@ -898,14 +942,14 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
               <div className="editor-actions">
                 <button
                   onClick={handleSaveActionItems}
-                  disabled={isUpdating}
+                  disabled={isSavingActionItems}
                   className="btn btn-primary"
                 >
-                  💾 Save
+                  {isSavingActionItems ? '💾 Saving...' : '💾 Save'}
                 </button>
                 <button
                   onClick={handleCancelActionItems}
-                  disabled={isUpdating}
+                  disabled={isSavingActionItems}
                   className="btn btn-secondary"
                 >
                   Cancel
@@ -985,14 +1029,14 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
               <div className="editor-actions">
                 <button
                   onClick={handleSaveKeyDecisions}
-                  disabled={isUpdating}
+                  disabled={isSavingKeyDecisions}
                   className="btn btn-primary"
                 >
-                  💾 Save
+                  {isSavingKeyDecisions ? '💾 Saving...' : '💾 Save'}
                 </button>
                 <button
                   onClick={handleCancelKeyDecisions}
-                  disabled={isUpdating}
+                  disabled={isSavingKeyDecisions}
                   className="btn btn-secondary"
                 >
                   Cancel
@@ -1007,6 +1051,202 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
                 </li>
               ))}
             </ul>
+          )}
+        </div>
+      )}
+
+      {/* Phase 5.5: Discussion by Topic */}
+      {editedDetailedNotes && editedDetailedNotes.discussion_by_topic &&
+        editedDetailedNotes.discussion_by_topic.length > 0 && (
+        <div className="summary-section">
+          <div className="section-header">
+            <h4>📋 Discussion by Topic ({editedDetailedNotes.discussion_by_topic.length})</h4>
+            {!isEditingDiscussionTopics && (
+              <button
+                onClick={() => setIsEditingDiscussionTopics(true)}
+                className="btn btn-small btn-edit"
+              >
+                ✏️ Edit
+              </button>
+            )}
+          </div>
+
+          {isEditingDiscussionTopics ? (
+            <div className="editor-container">
+              <div className="discussion-topics-list editing">
+                {editedDetailedNotes.discussion_by_topic.map((topic, index) => (
+                  <div key={index} className="discussion-topic editing">
+                    <input
+                      type="text"
+                      value={topic.topic}
+                      onChange={(e) => handleUpdateDiscussionTopic(index, 'topic', e.target.value)}
+                      placeholder="Topic name"
+                      className="form-input"
+                      style={{ marginBottom: '12px', fontWeight: 'bold' }}
+                    />
+
+                    {/* Key Points */}
+                    <div style={{ marginBottom: '12px' }}>
+                      <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '6px' }}>
+                        Key Points:
+                      </label>
+                      {topic.key_points.map((point, pointIndex) => (
+                        <div key={pointIndex} style={{ display: 'flex', gap: '8px', marginBottom: '6px' }}>
+                          <input
+                            type="text"
+                            value={point}
+                            onChange={(e) => {
+                              const updated = [...topic.key_points]
+                              updated[pointIndex] = e.target.value
+                              handleUpdateDiscussionTopic(index, 'key_points', updated)
+                            }}
+                            placeholder="Key point"
+                            className="form-input"
+                          />
+                          <button
+                            onClick={() => {
+                              const updated = topic.key_points.filter((_, i) => i !== pointIndex)
+                              handleUpdateDiscussionTopic(index, 'key_points', updated)
+                            }}
+                            className="btn btn-danger btn-small"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        onClick={() => {
+                          const updated = [...topic.key_points, '']
+                          handleUpdateDiscussionTopic(index, 'key_points', updated)
+                        }}
+                        className="btn btn-small btn-secondary"
+                        style={{ marginTop: '6px' }}
+                      >
+                        ➕ Add Key Point
+                      </button>
+                    </div>
+
+                    {/* Decisions */}
+                    <div style={{ marginBottom: '12px' }}>
+                      <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '6px' }}>
+                        Decisions:
+                      </label>
+                      {topic.decisions.map((decision, decIndex) => (
+                        <div key={decIndex} style={{ display: 'flex', gap: '8px', marginBottom: '6px' }}>
+                          <input
+                            type="text"
+                            value={decision}
+                            onChange={(e) => {
+                              const updated = [...topic.decisions]
+                              updated[decIndex] = e.target.value
+                              handleUpdateDiscussionTopic(index, 'decisions', updated)
+                            }}
+                            placeholder="Decision"
+                            className="form-input"
+                          />
+                          <button
+                            onClick={() => {
+                              const updated = topic.decisions.filter((_, i) => i !== decIndex)
+                              handleUpdateDiscussionTopic(index, 'decisions', updated)
+                            }}
+                            className="btn btn-danger btn-small"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        onClick={() => {
+                          const updated = [...topic.decisions, '']
+                          handleUpdateDiscussionTopic(index, 'decisions', updated)
+                        }}
+                        className="btn btn-small btn-secondary"
+                        style={{ marginTop: '6px' }}
+                      >
+                        ➕ Add Decision
+                      </button>
+                    </div>
+
+                    {/* Delete Topic Button */}
+                    <button
+                      onClick={() => handleDeleteDiscussionTopic(index)}
+                      className="btn btn-danger btn-small"
+                      style={{ marginTop: '12px' }}
+                    >
+                      🗑️ Delete Topic
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={handleAddDiscussionTopic}
+                className="btn btn-small btn-secondary"
+              >
+                ➕ Add Topic
+              </button>
+
+              <div className="editor-actions">
+                <button
+                  onClick={handleSaveDetailedNotes}
+                  disabled={isSavingDetailedNotes}
+                  className="btn btn-primary"
+                >
+                  {isSavingDetailedNotes ? '💾 Saving...' : '💾 Save'}
+                </button>
+                <button
+                  onClick={handleCancelDetailedNotes}
+                  disabled={isSavingDetailedNotes}
+                  className="btn btn-secondary"
+                >
+                  ❌ Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="discussion-topics-list">
+              {editedDetailedNotes.discussion_by_topic.map((topic, index) => (
+                <div key={index} className="discussion-topic">
+                  <h5 style={{ marginBottom: '8px', color: '#2D2042' }}>{topic.topic}</h5>
+
+                  {topic.key_points.length > 0 && (
+                    <div style={{ marginBottom: '12px' }}>
+                      <strong>Key Points:</strong>
+                      <ul style={{ marginTop: '6px', marginLeft: '20px' }}>
+                        {topic.key_points.map((point, i) => (
+                          <li key={i}>{point}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {topic.decisions.length > 0 && (
+                    <div style={{ marginBottom: '12px' }}>
+                      <strong>Decisions:</strong>
+                      <ul style={{ marginTop: '6px', marginLeft: '20px' }}>
+                        {topic.decisions.map((decision, i) => (
+                          <li key={i}>{decision}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {topic.action_items && topic.action_items.length > 0 && (
+                    <div style={{ marginBottom: '12px' }}>
+                      <strong>Related Action Items:</strong>
+                      <ul style={{ marginTop: '6px', marginLeft: '20px' }}>
+                        {topic.action_items.map((item, i) => (
+                          <li key={i}>
+                            {item.description}
+                            {item.assignee && <span style={{ color: '#777' }}> ({item.assignee})</span>}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
         </div>
       )}
@@ -1065,14 +1305,14 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
               <div className="editor-actions">
                 <button
                   onClick={handleSaveDetailedNotes}
-                  disabled={isUpdating}
+                  disabled={isSavingDetailedNotes}
                   className="btn btn-primary"
                 >
-                  💾 Save
+                  {isSavingDetailedNotes ? '💾 Saving...' : '💾 Save'}
                 </button>
                 <button
                   onClick={handleCancelDetailedNotes}
-                  disabled={isUpdating}
+                  disabled={isSavingDetailedNotes}
                   className="btn btn-secondary"
                 >
                   ❌ Cancel
@@ -1136,14 +1376,14 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
               <div className="editor-actions">
                 <button
                   onClick={handleSaveDetailedNotes}
-                  disabled={isUpdating}
+                  disabled={isSavingDetailedNotes}
                   className="btn btn-primary"
                 >
-                  💾 Save
+                  {isSavingDetailedNotes ? '💾 Saving...' : '💾 Save'}
                 </button>
                 <button
                   onClick={handleCancelDetailedNotes}
-                  disabled={isUpdating}
+                  disabled={isSavingDetailedNotes}
                   className="btn btn-secondary"
                 >
                   ❌ Cancel
@@ -1204,14 +1444,14 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
               <div className="editor-actions">
                 <button
                   onClick={handleSaveDetailedNotes}
-                  disabled={isUpdating}
+                  disabled={isSavingDetailedNotes}
                   className="btn btn-primary"
                 >
-                  💾 Save
+                  {isSavingDetailedNotes ? '💾 Saving...' : '💾 Save'}
                 </button>
                 <button
                   onClick={handleCancelDetailedNotes}
-                  disabled={isUpdating}
+                  disabled={isSavingDetailedNotes}
                   className="btn btn-secondary"
                 >
                   ❌ Cancel
@@ -1304,23 +1544,32 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
                   </span>
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <button
-                      onClick={() => {
-                        onUpdate({ customIntroduction })
-                        setIsEditingIntroduction(false)
+                      onClick={async () => {
+                        setIsSavingIntroduction(true)
+                        try {
+                          await onUpdate({ customIntroduction })
+                          setIsEditingIntroduction(false)
+                        } catch (error) {
+                          console.error('[SummaryDisplay] Failed to save introduction:', error)
+                        } finally {
+                          setIsSavingIntroduction(false)
+                        }
                       }}
+                      disabled={isSavingIntroduction}
                       className="btn btn-primary"
                       style={{
                         padding: '6px 16px',
                         fontSize: '14px'
                       }}
                     >
-                      💾 Save
+                      {isSavingIntroduction ? '💾 Saving...' : '💾 Save'}
                     </button>
                     <button
                       onClick={() => {
                         setCustomIntroduction(summary.custom_introduction || '')
                         setIsEditingIntroduction(false)
                       }}
+                      disabled={isSavingIntroduction}
                       className="btn btn-secondary"
                       style={{
                         padding: '6px 16px',
