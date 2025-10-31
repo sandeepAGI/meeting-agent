@@ -7,6 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.2.2] - 2025-10-30
+
+### Fixed - Critical Bug Fixes (5 of 13 bugs from Phase 5.5 code review)
+
+**Security Fixes** 🔐
+- **Bug #11 (CRITICAL - XSS)**: Added HTML escaping to all user inputs in email generation
+  - Prevents script/HTML injection via custom introduction, summary, quotes, etc.
+  - All user content now properly escaped before HTML insertion
+  - Commit: `16d8ee7`
+
+- **Bug #10 (HIGH - Compliance)**: Enforced AI disclaimer server-side
+  - Backend validation ensures all emails contain required disclaimer
+  - Cannot be bypassed via modified client or direct API calls
+  - Returns error if disclaimer missing
+  - Commit: `16783c4`
+
+**Performance Fixes** ⚡
+- **Bug #7 (CRITICAL - Infinite Loop)**: Fixed infinite render loop in EmailSectionToggles
+  - Removed `onChange` from useEffect dependencies
+  - Prevents 100+ re-renders per toggle click
+  - Eliminates UI freezing and excessive database writes
+  - Commit: `a5e03f3`
+
+**Data Persistence Fixes** 💾
+- **Bug #8 (HIGH)**: Added prop sync to EmailSectionToggles component
+  - Local state now updates when `initialSections` prop changes
+  - Section preferences persist correctly after database save
+  - Commit: `a5e03f3`
+
+- **Bugs #1, #2, #3 (HIGH - Data Loss)**: Fixed state persistence in SummaryDisplay
+  - Bug #1: DetailedNotes (quotes/questions/parking lot) now persist after save
+  - Bug #2: Section toggles now persist after save
+  - Bug #3: Custom introduction now persists after save
+  - Added useEffect hooks to sync state when summary prop updates
+  - Commit: `4e708b5`
+
+### Known Issues
+- **Bug #5**: Save buttons remain disabled (requires local state refactor) - TO BE FIXED
+- **Bug #4**: Discussion Topics UI missing (handlers exist, no rendering) - TO BE FIXED
+- 6 additional bugs documented in `docs/testing/phase-5.5-comprehensive-code-review.md`
+
+### Testing
+- ✅ Level 1: All fixes pass `npm run type-check` and `npm run build`
+- ✅ Level 2: Logic review completed for all changes
+- ⏸️ Level 3: Manual UAT required for end-to-end verification
+
+### Documentation
+- Added `docs/testing/phase-5.5-bug-report.md` (1,040 lines) - Initial 6 bugs
+- Added `docs/testing/phase-5.5-comprehensive-code-review.md` (739 lines) - Full analysis of 13 bugs
+
 ## [0.6.2] - 2025-10-30
 
 ### Added - Phase 5.5: Enhanced Email Customization ✅
