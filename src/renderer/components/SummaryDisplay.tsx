@@ -6,7 +6,7 @@
  * Phase 2.3-3: LLM-Based Meeting Intelligence
  */
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import type { MeetingSummary, SpeakerMapping, ActionItem, DetailedNotes, EmailRecipient, EmailSectionToggles } from '../../types/meetingSummary'
 import { RecipientSelector } from './RecipientSelector'
 import { EmailPreview } from './EmailPreview'
@@ -72,6 +72,22 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
   const [isEditingQuestions, setIsEditingQuestions] = useState(false)
   const [isEditingParkingLot, setIsEditingParkingLot] = useState(false)
 
+  // Bug #1 fix: Sync editedDetailedNotes when summary prop updates (after database save)
+  useEffect(() => {
+    const notesJson = summary.pass2_refined_detailed_notes_json || summary.pass1_detailed_notes_json
+    if (notesJson) {
+      try {
+        const parsed = JSON.parse(notesJson)
+        setEditedDetailedNotes(parsed)
+      } catch (e) {
+        console.error('[SummaryDisplay] Failed to parse detailed notes:', e)
+        setEditedDetailedNotes(null)
+      }
+    } else {
+      setEditedDetailedNotes(null)
+    }
+  }, [summary.pass2_refined_detailed_notes_json, summary.pass1_detailed_notes_json])
+
   // Phase 4b: Email distribution
   const initialRecipients: EmailRecipient[] = summary.final_recipients_json
     ? JSON.parse(summary.final_recipients_json)
@@ -104,6 +120,19 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
   const [enabledSections, setEnabledSections] = useState<EmailSectionToggles>(initialEnabledSections)
   const [customIntroduction, setCustomIntroduction] = useState<string>(summary.custom_introduction || '')
   const [isEditingIntroduction, setIsEditingIntroduction] = useState(false)
+
+  // Bug #2 fix: Sync enabledSections when summary prop updates (after database save)
+  useEffect(() => {
+    const sections = summary.enabled_sections_json
+      ? JSON.parse(summary.enabled_sections_json)
+      : defaultSections
+    setEnabledSections(sections)
+  }, [summary.enabled_sections_json, defaultSections])
+
+  // Bug #3 fix: Sync customIntroduction when summary prop updates (after database save)
+  useEffect(() => {
+    setCustomIntroduction(summary.custom_introduction || '')
+  }, [summary.custom_introduction])
 
   // Handle back navigation - safe to call since this component only renders when summary is complete
   const handleBack = () => {
