@@ -126,6 +126,22 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Phase 5: Email Distribution
     markSummarySent: (summaryId: string, recipients: { name: string; email: string }[]) =>
       ipcRenderer.invoke('db-mark-summary-sent', summaryId, recipients)
+  },
+
+  // Phase 6: Settings
+  settings: {
+    getSettings: () => ipcRenderer.invoke('settings-get'),
+    updateSettings: (updates: any) => ipcRenderer.invoke('settings-update', updates),
+    updateCategory: (category: string, updates: any) =>
+      ipcRenderer.invoke('settings-update-category', category, updates),
+    resetToDefaults: () => ipcRenderer.invoke('settings-reset'),
+    getApiKeyStatus: () => ipcRenderer.invoke('settings-get-api-key-status'),
+    getApiKey: (service: 'anthropic' | 'huggingface') =>
+      ipcRenderer.invoke('settings-get-api-key', service),
+    setApiKey: (service: 'anthropic' | 'huggingface', key: string) =>
+      ipcRenderer.invoke('settings-set-api-key', service, key),
+    validateApiKey: (service: 'anthropic' | 'huggingface', key: string) =>
+      ipcRenderer.invoke('settings-validate-api-key', service, key)
   }
 })
 

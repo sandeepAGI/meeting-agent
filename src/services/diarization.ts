@@ -20,8 +20,24 @@ export class DiarizationService {
     this.pythonPath = path.join(process.cwd(), 'venv', 'bin', 'python3')
     this.scriptPath = path.join(process.cwd(), 'scripts', 'diarize_audio.py')
 
-    // Get Hugging Face token from environment
+    // Get Hugging Face token from environment (fallback)
     this.hfToken = process.env.HUGGINGFACE_TOKEN
+  }
+
+  /**
+   * Set the HuggingFace token dynamically (Phase 6: Settings integration)
+   * This allows updating the token from settings without recreating the service.
+   */
+  setToken(token: string | undefined): void {
+    this.hfToken = token
+    console.log('[Diarization] Token updated from settings')
+  }
+
+  /**
+   * Get whether a token is currently configured.
+   */
+  hasToken(): boolean {
+    return !!this.hfToken
   }
 
   /**

@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - Phase 6: Configuration & Settings (In Progress)
+
+**Settings UI Infrastructure** - Configure the application via GUI instead of editing .env files.
+
+**Batch 1: API Keys Integration** (Implemented - Awaiting Testing)
+
+- Services now load API keys from settings instead of only from `.env`
+- `src/services/diarization.ts`: Added `setToken()` method for dynamic token updates
+- `src/services/transcription.ts`: Added `setThreads()` method for dynamic thread config
+- `src/main/index.ts`: Added `initializeServicesFromSettings()` function
+- Fallback to environment variables if settings not configured
+
+**Settings UI** (Implemented Previously)
+
+- ⚙️ Settings button in app header opens tabbed settings panel
+- 🔑 **API Keys Tab**: Manage Anthropic, HuggingFace, and Azure credentials securely
+- 🎤 **Transcription Tab**: Whisper model selection, CPU threads, language
+- 📝 **Summary Tab**: Verbosity level, custom AI disclaimer, email limits
+- 💾 **Storage Tab**: Audio retention, storage quota, cleanup periods
+- 🎨 **Interface Tab**: Theme, font size, default view preferences
+- 🔊 **Audio Tab**: Microphone toggle, announcement text customization
+
+**Technical Implementation:**
+
+- `src/services/settings.ts` - Settings service with keychain integration
+- `src/types/settings.ts` - TypeScript types and constants
+- `src/renderer/hooks/useSettings.ts` - React hook for settings
+- `src/renderer/components/SettingsPanel.tsx` - Tabbed settings UI
+- 8 new IPC handlers for settings operations
+
+**Security:**
+
+- API keys stored in macOS Keychain (via keytar)
+- Key format validation before saving
+- Migration from .env to secure storage on first launch
+
+**Pending (Batches 2-6):**
+
+- Wire up: CPU Threads, Language, Verbosity, Custom Disclaimer
+- Wire up: Include Microphone, Announcement Text
+- Wire up: Default View, Font Size, Show Announcement
+- Wire up: Keep Audio Files (delete after transcription)
+- See `docs/planning/phase6-implementation-status.md` for full tracking
+
 ## [0.6.2.4] - 2025-12-04
 
 ### Fixed - Email Section Toggle Bug

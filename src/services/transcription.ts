@@ -66,11 +66,27 @@ export class TranscriptionService {
   }
 
   /**
-   * Transcribe audio file using whisper-cli
-   * @param audioPath Path to audio file (WAV format, 16kHz mono)
-   * @param options Transcription options
-   * @param onProgress Optional progress callback
+   * Phase 6: Set the default thread count from settings.
+   * Value of 0 means auto-detect (use CPU count - 3).
    */
+  setThreads(threads: number): void {
+    if (threads === 0) {
+      // 0 = auto-detect
+      this.defaultThreads = Math.max(1, require('os').cpus().length - 3)
+      console.log(`[Transcription] Threads set to auto-detect: ${this.defaultThreads}`)
+    } else {
+      this.defaultThreads = Math.max(1, threads)
+      console.log(`[Transcription] Threads set to: ${this.defaultThreads}`)
+    }
+  }
+
+  /**
+   * Get current default thread count.
+   */
+  getThreads(): number {
+    return this.defaultThreads
+  }
+
   /**
    * Convert audio to proper mono 16kHz WAV using ffmpeg
    * Fixes WAV header issues and ensures mono channel

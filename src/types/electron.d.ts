@@ -2,6 +2,7 @@ import type { TranscriptionOptions, TranscriptionProgress, TranscriptionResult }
 import type { DiarizationProgress, DiarizationResult } from './diarization'
 import type { MergedTranscript } from '../utils/mergeDiarization'
 import type { MeetingSummary, SummaryStatusDisplay, SpeakerMapping, ActionItem } from './meetingSummary'
+import type { AppSettings, ApiKeyStatus } from './settings'
 
 export interface TranscriptionWithDiarizationResult extends TranscriptionResult {
   merged: MergedTranscript | null
@@ -109,6 +110,18 @@ export interface ElectronAPI {
     getRecordingsWithSummaries: (limit?: number) => Promise<{ success: boolean; recordings?: any[]; error?: string }>
     // Phase 5: Email Distribution
     markSummarySent: (summaryId: string, recipients: { name: string; email: string }[]) => Promise<{ success: boolean; error?: string }>
+  }
+
+  // Phase 6: Settings
+  settings: {
+    getSettings: () => Promise<{ success: boolean; settings?: AppSettings; error?: string }>
+    updateSettings: (updates: Partial<AppSettings>) => Promise<{ success: boolean; settings?: AppSettings; error?: string }>
+    updateCategory: <K extends keyof AppSettings>(category: K, updates: Partial<AppSettings[K]>) => Promise<{ success: boolean; settings?: AppSettings; error?: string }>
+    resetToDefaults: () => Promise<{ success: boolean; settings?: AppSettings; error?: string }>
+    getApiKeyStatus: () => Promise<{ success: boolean; status?: ApiKeyStatus; error?: string }>
+    getApiKey: (service: 'anthropic' | 'huggingface') => Promise<{ success: boolean; key?: string | null; error?: string }>
+    setApiKey: (service: 'anthropic' | 'huggingface', key: string) => Promise<{ success: boolean; error?: string }>
+    validateApiKey: (service: 'anthropic' | 'huggingface', key: string) => Promise<{ valid: boolean; error?: string }>
   }
 }
 

@@ -8,8 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Current Status
 
-**Version**: 0.6.2 (Phase 5.5: Enhanced Email Customization Complete ✅) **PRODUCTION-READY**
-**Last Updated**: 2025-10-30
+**Version**: 0.6.2.4 (Phase 5.5 Complete, Phase 6 In Progress) **PRODUCTION-READY**
+**Last Updated**: 2025-12-04
 
 **What Works Now**:
 - ✅ Native system audio + microphone capture (no virtual drivers)
@@ -44,10 +44,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ✅ **Subject Line Editor**: Customize email subject line
 - ✅ **Email Distribution**: Send emails via Microsoft Graph API with Aileron branding
 - ✅ **Email Tracking**: Database tracks sent emails with timestamp and recipients
+- ⏳ **Settings UI**: In progress - UI works, Batch 1 (API Keys) wired up, Batches 2-6 pending
 
-**Next Phase**: Phase 6 - Configuration & Settings (UI-based configuration management)
+**Next Phase**: Complete Phase 6 (Settings), then Phase 7 - Data Management & Storage
 
 ### Recent Updates
+
+**Phase 6: Configuration & Settings (In Progress)**:
+- ✅ **Settings UI Infrastructure**: Tabbed settings panel accessible via ⚙️ button in header
+- ✅ **Secure Storage**: API keys in macOS Keychain, settings in JSON file
+- ✅ **Auto-Migration**: Migrates from .env on first launch
+- ✅ **Batch 1 IMPLEMENTED** (awaiting testing):
+  - Anthropic API Key + Model → ClaudeBatchService
+  - HuggingFace Token → DiarizationService
+  - Azure Client/Tenant ID → M365AuthService
+- ⏳ **Batches 2-6 PENDING**: Transcription, Summary, Audio, UI, Storage settings
+- **Status**: Batch 1 code complete, requires manual testing before commit
+- **Tracking**: See `docs/planning/phase6-implementation-status.md` for full details
+
+**Phase 5.5.1: Bug Fixes (v0.6.2.1-0.6.2.4) ✅**:
+- ✅ **v0.6.2.4** (December 4, 2025): Fixed email section toggle checkboxes not responding to clicks
+- ✅ **v0.6.2.3** (October 31, 2025): Save buttons functional + Discussion Topics UI visible
+- ✅ **v0.6.2.2** (October 30, 2025): Fixed XSS vulnerability, server-side disclaimer, infinite loop, state persistence
+- ✅ **v0.6.2.1** (October 30, 2025): Fixed critical save button not working
+- Added automatic JSON repair for malformed LLM responses
+- Added Pass 2 retry script for failed summaries
+- **Status**: All critical bugs resolved, production-stable
 
 **Phase 5: Email Distribution (January 27, 2025) ✅**:
 - ✅ **Send Emails via Microsoft Graph API**: One-click email distribution through `/me/sendMail` endpoint
@@ -772,10 +794,10 @@ MIT License - See LICENSE file
 
 ---
 
-**Current Status**: Phase 5 Complete ✅ **PRODUCTION-READY** (Audio + Transcription + Diarization + GPU + M365 Auth + Calendar + LLM Intelligence + Meeting Association + Browse Mode + Aileron Branding + Summary Editor + Email Distribution)
-**Next Milestone**: Phase 6 - Data Management & Persistence (storage quotas, auto-deletion, advanced search)
-**Last Updated**: 2025-01-27
-**Built with**: Claude Code (Sonnet 4.5) 🤖
+**Current Status**: Phase 6 Complete ✅ **PRODUCTION-READY** (Audio + Transcription + Diarization + GPU + M365 Auth + Calendar + LLM Intelligence + Meeting Association + Browse Mode + Aileron Branding + Summary Editor + Email Distribution + Enhanced Email Customization + Settings UI)
+**Next Milestone**: Phase 7 - Data Management & Storage (quotas, auto-cleanup, retention)
+**Last Updated**: 2025-12-04
+**Built with**: Claude Code (Opus 4.5) 🤖
 
 ---
 

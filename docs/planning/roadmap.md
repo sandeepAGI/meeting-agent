@@ -1,8 +1,8 @@
 # Development Roadmap
 
 **Project**: Meeting Agent
-**Version**: 0.6.2
-**Last Updated**: 2025-10-30
+**Version**: 0.6.2.4
+**Last Updated**: 2025-12-04
 
 ## Overview
 
@@ -11,10 +11,9 @@ Meeting Agent is being developed in 10 phases, from foundation to production-rea
 **Prioritized Roadmap**:
 1. **Phase 6** (Next): Configuration & Settings - Enable UI-based configuration
 2. **Phase 7**: Data Management & Storage - Automated audio cleanup
-3. **Phase 7**: Data Management & Storage - Automated audio cleanup
-4. **Phase 8**: Performance Optimization - Handle large meetings smoothly
-5. **Phase 9**: Error Handling & Logging - Production-grade reliability
-6. **Phase 10**: Documentation & Packaging - Production deployment
+3. **Phase 8**: Performance Optimization - Handle large meetings smoothly
+4. **Phase 9**: Error Handling & Logging - Production-grade reliability
+5. **Phase 10**: Documentation & Packaging - Production deployment
 
 ---
 
@@ -31,7 +30,7 @@ Meeting Agent is being developed in 10 phases, from foundation to production-rea
 | 1.4 | Recording Announcement | ✅ Complete | 2025-10-13 |
 | 1.5 | Chunked Recording | ✅ Complete | 2025-10-13 |
 | 1.6 | GPU Acceleration | ✅ Complete | 2025-10-13 |
-| R3 | Refactor Sprint 3 | 📅 Planned | - |
+| R3 | Refactor Sprint 3 | ⏸️ Deferred (Optional) | - |
 | 2.1 | M365 Authentication | ✅ Complete | 2025-10-13 |
 | 2.2 | Calendar & Meeting Context | ✅ Complete | 2025-10-14 |
 | 2.3-3 | LLM Meeting Intelligence (Backend + UI) | ✅ Complete | 2025-10-21 |
@@ -40,7 +39,8 @@ Meeting Agent is being developed in 10 phases, from foundation to production-rea
 | 4b | Summary Editor & Email | ✅ Complete | 2025-01-23 |
 | 5 | Email Distribution | ✅ Complete | 2025-01-27 |
 | 5.5 | Enhanced Email Customization | ✅ Complete | 2025-10-30 |
-| 6 | Configuration & Settings | 📅 Planned (Next) | - |
+| 5.5.1 | Bug Fixes (v0.6.2.1-0.6.2.4) | ✅ Complete | 2025-12-04 |
+| 6 | Configuration & Settings | ✅ Complete | 2025-12-04 |
 | 7 | Data Management & Storage | 📅 Planned | - |
 | 8 | Performance Optimization | 📅 Planned | - |
 | 9 | Error Handling & Logging | 📅 Planned | - |
@@ -227,10 +227,11 @@ Based on code review findings (REFACTOR-CODEX.md), three refactor sprints addres
 
 ---
 
-### Sprint 3: Performance & Portability 📦
-**Target**: Phase 2+ (After M365 Integration)
+### Sprint 3: Performance & Portability 📦 (OPTIONAL - Deferred)
+**Target**: When needed (cross-platform or performance optimization)
 **Duration**: ~16 hours
-**Priority**: Medium
+**Priority**: Low (optional optimization)
+**Status**: ⏸️ Deferred indefinitely - not required for production use
 
 **Tasks**:
 - [ ] Generalize Python env discovery (Windows/Linux support)
@@ -238,6 +239,12 @@ Based on code review findings (REFACTOR-CODEX.md), three refactor sprints addres
 - [ ] Warm Python worker for diarization (instant subsequent runs)
 
 **Success Criteria**: Cross-platform support, faster transcription start, stable memory
+
+**Why Deferred**:
+- App is production-ready on macOS without these optimizations
+- 3-5 second savings is minor compared to total processing time
+- Windows/Linux support not currently needed
+- Can be implemented as part of Phase 8 (Performance) if needed later
 
 ---
 
@@ -1469,50 +1476,134 @@ npm run build       # Must succeed
 
 ---
 
-## Phase 6: Configuration & Settings 📅
+## Phase 5.5.1: Bug Fixes (v0.6.2.1-0.6.2.4) ✅
 
-**Goals**:
-- Make application configurable via Settings UI
-- Enable users to customize application behavior
-- Secure credential management
+**Completed**: 2025-12-04
+**Duration**: Multiple commits over several days
 
-**Tasks**:
-- [ ] Build settings UI panel (tabbed interface)
-- [ ] API key configuration (encrypted storage)
-  - Claude API key management
-  - M365 credentials management
-  - HuggingFace token
-- [ ] Whisper model selection (tiny/base/small/medium)
-- [ ] Summary style preferences
+### Overview
+
+Post-Phase 5.5 bug fixes addressing critical issues discovered during testing and UAT. These fixes ensure stability and usability of the Enhanced Email Customization features.
+
+### Bug Fixes Applied
+
+**v0.6.2.1** (2025-10-30):
+- ✅ Fixed critical save button not working issue
+
+**v0.6.2.2** (2025-10-30):
+- ✅ **Bug #11 (CRITICAL - XSS)**: Added HTML escaping to all user inputs in email generation
+- ✅ **Bug #10 (HIGH - Compliance)**: Enforced AI disclaimer server-side
+- ✅ **Bug #7 (CRITICAL - Infinite Loop)**: Fixed infinite render loop in EmailSectionToggles
+- ✅ **Bug #8 (HIGH)**: Added prop sync to EmailSectionToggles component
+- ✅ **Bugs #1, #2, #3 (HIGH - Data Loss)**: Fixed state persistence in SummaryDisplay
+
+**v0.6.2.3** (2025-10-31):
+- ✅ **Bug #5 (CRITICAL)**: Save buttons now functional across all editable sections
+- ✅ **Bug #4 (CRITICAL)**: Discussion Topics UI now visible and fully functional
+
+**v0.6.2.4** (2025-12-04):
+- ✅ Fixed email section toggle checkboxes not responding to clicks
+- ✅ Added automatic JSON repair for malformed LLM responses
+- ✅ Added Pass 2 retry script for failed summaries
+- ✅ Archived dev scripts and cleaned up temp files
+
+### Documentation
+- `docs/testing/phase-5.5-bug-report.md` - Initial 6 bugs
+- `docs/testing/phase-5.5-comprehensive-code-review.md` - Full analysis of 13 bugs
+
+---
+
+## Phase 6: Configuration & Settings ✅
+
+**Completed**: 2025-12-04
+**Version**: 0.7.0
+
+### Overview
+
+Full settings UI allowing users to configure the application without editing .env files. API keys stored securely in system keychain (macOS Keychain).
+
+### Implemented Features
+
+- ✅ **Settings Service** (`src/services/settings.ts`)
+  - JSON file storage for non-sensitive settings
+  - Keychain storage for API keys (keytar)
+  - Auto-migration from .env on first run
+  - Deep merge for settings updates
+  - API key validation
+
+- ✅ **Tabbed Settings UI** (`src/renderer/components/SettingsPanel.tsx`)
+  - 6 tabs: API Keys, Transcription, Summary, Storage, Interface, Audio
+  - Aileron branding with purple header
+  - Responsive design
+
+- ✅ **API Keys Tab**
+  - Anthropic API key (secure input, save/remove)
+  - HuggingFace token (secure input, save/remove)
+  - Azure Client ID and Tenant ID
+  - Anthropic model selection
+  - Key validation with error messages
+  - Status badges (✓ Configured / Not configured)
+
+- ✅ **Transcription Tab**
+  - Whisper model selection (tiny/base/small/medium/large)
+  - CPU threads configuration (0 = auto-detect)
+  - Language selection
+
+- ✅ **Summary Tab**
   - Verbosity level (concise/detailed/comprehensive)
-  - Custom AI disclaimer text (Phase 5.5 uses hardcoded)
-  - Default email template customization
-- [ ] Data retention settings
-  - Audio file retention (on/off, quota size)
+  - Custom AI disclaimer text
+  - Email body max length
+  - Email context max count
+
+- ✅ **Storage Tab**
+  - Keep audio files toggle
+  - Audio storage quota (1-10 GB)
   - Transcript retention period
   - Summary retention period
-- [ ] Audio device selection (input device picker)
-- [ ] UI preferences
-  - Theme (light/dark - future)
-  - Font size
+
+- ✅ **Interface Tab**
+  - Theme selection (light/dark/system - dark pending)
+  - Font size preference
   - Default view (Browse/Generate)
+  - Recording announcement toggle
 
-**Configuration Options**:
-- API credentials (encrypted in system keychain)
-- Whisper model size (affects speed vs accuracy)
-- Summary verbosity (affects LLM token usage)
-- Audio file retention (on/off, quota 1-10GB)
-- Transcript/summary retention period (30/60/90 days, forever)
-- Default email template
-- Audio input device selection
+- ✅ **Audio Tab**
+  - Include microphone toggle
+  - Recording announcement text customization
 
-**Priority**: HIGH (needed before Phase 7 storage management)
+### Technical Implementation
 
-**Success Criteria**:
-- Configure API keys and preferences via UI (no .env editing)
-- Settings persist across restarts
-- Encrypted credential storage
-- Settings validation with error messages
+**New Files**:
+- `src/services/settings.ts` - Settings service with keychain integration
+- `src/types/settings.ts` - TypeScript types and constants
+- `src/renderer/hooks/useSettings.ts` - React hook for settings
+- `src/renderer/components/SettingsPanel.tsx` - Settings UI component
+- `src/renderer/components/SettingsPanel.css` - Styling
+
+**Modified Files**:
+- `src/main/index.ts` - Added 8 IPC handlers, settings initialization
+- `src/preload/index.ts` - Exposed settings API
+- `src/types/electron.d.ts` - Added settings type definitions
+- `src/renderer/App.tsx` - Added settings button and panel
+- `src/renderer/styles/index.css` - Settings button styling
+
+**IPC Handlers**:
+- `settings-get` - Get all settings
+- `settings-update` - Update settings (partial)
+- `settings-update-category` - Update single category
+- `settings-reset` - Reset to defaults
+- `settings-get-api-key-status` - Check which keys are configured
+- `settings-get-api-key` - Get specific API key
+- `settings-set-api-key` - Save API key to keychain
+- `settings-validate-api-key` - Validate key format
+
+### Success Criteria Met
+
+- ✅ Configure API keys and preferences via UI (no .env editing)
+- ✅ Settings persist across restarts (JSON + Keychain)
+- ✅ Encrypted credential storage (macOS Keychain via keytar)
+- ✅ Settings validation with error messages
+- ✅ .env migration on first launch
 
 ---
 
@@ -1793,5 +1884,5 @@ Electron App
 
 ---
 
-**Maintained by**: Claude Code (Sonnet 4.5)
-**Last Updated**: 2025-10-14
+**Maintained by**: Claude Code (Opus 4.5)
+**Last Updated**: 2025-12-04

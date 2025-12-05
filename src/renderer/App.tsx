@@ -17,11 +17,13 @@ import { MeetingSelector } from './components/MeetingSelector'
 import { SummaryProcessing } from './components/SummaryProcessing'
 import { SummaryDisplay } from './components/SummaryDisplay'
 import { TranscriptViewer } from './components/TranscriptViewer'
+import { SettingsPanel } from './components/SettingsPanel'
 import aileronLogo from './assets/branding/aileron-logo.png'
 
 function App() {
   console.log('[App] Component rendering...')
   const [error, setError] = useState<string | null>(null)
+  const [showSettings, setShowSettings] = useState(false)
   const [viewingTranscript, setViewingTranscript] = useState<{
     recordingId: string
     recordingDate: string
@@ -127,7 +129,17 @@ function App() {
             <p>AI-powered meeting transcription and summarization</p>
           </div>
         </div>
+        <button
+          className="settings-button"
+          onClick={() => setShowSettings(true)}
+          title="Settings"
+        >
+          ⚙️
+        </button>
       </header>
+
+      {/* Settings Panel */}
+      {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
 
       <main className="app-main">
         <div className="audio-controls">

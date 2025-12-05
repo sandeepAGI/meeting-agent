@@ -14,24 +14,18 @@ import { EmailContextService } from '../services/emailContext'
 import { MeetingIntelligenceService } from '../services/meetingIntelligence'
 import { mergeDiarizationWithTranscript } from '../utils/mergeDiarization'
 import type { TranscriptionOptions } from '../types/transcription'
+import { settingsService } from '../services/settings'
+import type { AppSettings } from '../types/settings'
 
-// Load environment variables from .env file
+// Load environment variables from .env file (fallback for non-settings configs)
 dotenv.config()
-console.log('[ENV] HUGGINGFACE_TOKEN configured:', !!process.env.HUGGINGFACE_TOKEN)
-console.log('[ENV] AZURE_CLIENT_ID configured:', !!process.env.AZURE_CLIENT_ID)
-console.log('[ENV] ANTHROPIC_API_KEY configured:', !!process.env.ANTHROPIC_API_KEY)
+console.log('[ENV] Environment loaded (settings will override API keys)')
 
-// Initialize diarization service
+// Initialize diarization service (token set later from settings)
 const diarizationService = new DiarizationService()
 
-// Initialize M365 Auth service
+// Initialize M365 Auth service (initialized later from settings)
 let m365AuthService: M365AuthService | null = null
-if (process.env.AZURE_CLIENT_ID) {
-  m365AuthService = new M365AuthService(
-    process.env.AZURE_CLIENT_ID,
-    process.env.AZURE_TENANT_ID || 'common'
-  )
-}
 
 // Initialize Database service (Phase 2.3-3)
 const dbService = new DatabaseService()
@@ -42,19 +36,77 @@ const graphApiService = new GraphApiService()
 graphApiService.setDatabaseService(dbService)
 
 // Initialize Meeting Intelligence services (Phase 2.3-3)
+// These are initialized later from settings in app.whenReady()
 let claudeService: ClaudeBatchService | null = null
 let emailService: EmailContextService | null = null
 let intelligenceService: MeetingIntelligenceService | null = null
 
-if (process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_API_KEY !== 'sk-ant-xxx') {
-  claudeService = new ClaudeBatchService(
-    process.env.ANTHROPIC_API_KEY,
-    process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514'
-  )
-  console.log('[MeetingIntelligence] Claude Batch API initialized')
-}
-
 let mainWindow: BrowserWindow | null = null
+
+/**
+ * Phase 6: Initialize services from settings instead of process.env
+ *
+ * This function reads API keys and configuration from the settings service
+ * and initializes all dependent services. Called in app.whenReady() after
+ * settingsService.initialize().
+ */
+async function initializeServicesFromSettings(): Promise<void> {
+  console.log('[Settings] Initializing services from settings...')
+
+  // 1. HuggingFace Token for Diarization
+  try {
+    const hfToken = await settingsService.getApiKey('huggingface')
+    if (hfToken) {
+      diarizationService.setToken(hfToken)
+      console.log('[Settings] HuggingFace token loaded from settings')
+    } else if (process.env.HUGGINGFACE_TOKEN) {
+      // Fallback to env var if settings not configured
+      diarizationService.setToken(process.env.HUGGINGFACE_TOKEN)
+      console.log('[Settings] HuggingFace token loaded from environment (fallback)')
+    } else {
+      console.log('[Settings] HuggingFace token not configured')
+    }
+  } catch (error) {
+    console.error('[Settings] Failed to load HuggingFace token:', error)
+  }
+
+  // 2. Azure Client/Tenant ID for M365 Auth
+  try {
+    const azureSettings = settingsService.getCategory('azure')
+    const clientId = azureSettings.clientId || process.env.AZURE_CLIENT_ID
+    const tenantId = azureSettings.tenantId || process.env.AZURE_TENANT_ID || 'common'
+
+    if (clientId) {
+      m365AuthService = new M365AuthService(clientId, tenantId)
+      console.log('[Settings] M365AuthService initialized from settings')
+    } else {
+      console.log('[Settings] Azure credentials not configured - M365 features disabled')
+    }
+  } catch (error) {
+    console.error('[Settings] Failed to initialize M365AuthService:', error)
+  }
+
+  // 3. Anthropic API Key + Model for Claude Batch
+  try {
+    const anthropicKey = await settingsService.getApiKey('anthropic')
+    const anthropicSettings = settingsService.getCategory('anthropic')
+    const model = anthropicSettings.model || 'claude-sonnet-4-20250514'
+
+    // Try settings first, then fall back to env var
+    const apiKey = anthropicKey || process.env.ANTHROPIC_API_KEY
+
+    if (apiKey && apiKey !== 'sk-ant-xxx') {
+      claudeService = new ClaudeBatchService(apiKey, model)
+      console.log(`[Settings] ClaudeBatchService initialized (model: ${model})`)
+    } else {
+      console.log('[Settings] Anthropic API key not configured - Meeting Intelligence disabled')
+    }
+  } catch (error) {
+    console.error('[Settings] Failed to initialize ClaudeBatchService:', error)
+  }
+
+  console.log('[Settings] Service initialization complete')
+}
 
 // Initialize audio loopback before app is ready
 initializeAudioLoopback()
@@ -1134,6 +1186,120 @@ ipcMain.handle('db-mark-summary-sent', async (_event, summaryId: string, recipie
   }
 })
 
+// ============================================
+// Phase 6: Settings IPC Handlers
+// ============================================
+
+ipcMain.handle('settings-get', async () => {
+  try {
+    const settings = settingsService.getSettings()
+    return { success: true, settings }
+  } catch (error) {
+    console.error('[Settings] Get settings failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get settings'
+    }
+  }
+})
+
+ipcMain.handle('settings-update', async (_event, updates: Partial<AppSettings>) => {
+  try {
+    await settingsService.updateSettings(updates)
+    const settings = settingsService.getSettings()
+    return { success: true, settings }
+  } catch (error) {
+    console.error('[Settings] Update settings failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update settings'
+    }
+  }
+})
+
+ipcMain.handle('settings-update-category', async (_event, category: keyof AppSettings, updates: any) => {
+  try {
+    await settingsService.updateCategory(category, updates)
+    const settings = settingsService.getSettings()
+    return { success: true, settings }
+  } catch (error) {
+    console.error('[Settings] Update category failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update settings category'
+    }
+  }
+})
+
+ipcMain.handle('settings-reset', async () => {
+  try {
+    await settingsService.resetToDefaults()
+    const settings = settingsService.getSettings()
+    return { success: true, settings }
+  } catch (error) {
+    console.error('[Settings] Reset settings failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to reset settings'
+    }
+  }
+})
+
+ipcMain.handle('settings-get-api-key-status', async () => {
+  try {
+    const status = await settingsService.getApiKeyStatus()
+    return { success: true, status }
+  } catch (error) {
+    console.error('[Settings] Get API key status failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get API key status'
+    }
+  }
+})
+
+ipcMain.handle('settings-get-api-key', async (_event, service: 'anthropic' | 'huggingface') => {
+  try {
+    const key = await settingsService.getApiKey(service)
+    return { success: true, key }
+  } catch (error) {
+    console.error('[Settings] Get API key failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get API key'
+    }
+  }
+})
+
+ipcMain.handle('settings-set-api-key', async (_event, service: 'anthropic' | 'huggingface', key: string) => {
+  try {
+    // Validate the key format first
+    const validation = settingsService.validateApiKey(service, key)
+    if (!validation.valid) {
+      return { success: false, error: validation.error }
+    }
+
+    await settingsService.setApiKey(service, key)
+    return { success: true }
+  } catch (error) {
+    console.error('[Settings] Set API key failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to save API key'
+    }
+  }
+})
+
+ipcMain.handle('settings-validate-api-key', async (_event, service: 'anthropic' | 'huggingface', key: string) => {
+  try {
+    const result = settingsService.validateApiKey(service, key)
+    return result
+  } catch (error) {
+    console.error('[Settings] Validate API key failed:', error)
+    return { valid: false, error: 'Validation failed' }
+  }
+})
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -1159,9 +1325,21 @@ function createWindow() {
 }
 
 app.whenReady().then(async () => {
-  // Initialize Whisper model
+  // Initialize Settings service (Phase 6)
   try {
-    await transcriptionService.initialize('base')
+    await settingsService.initialize()
+    console.log('[Settings] Initialized successfully')
+  } catch (error) {
+    console.error('[Settings] Failed to initialize:', error)
+  }
+
+  // Phase 6: Initialize services from settings (not from process.env)
+  await initializeServicesFromSettings()
+
+  // Initialize Whisper model (use model from settings if available)
+  try {
+    const transcriptionSettings = settingsService.getCategory('transcription')
+    await transcriptionService.initialize(transcriptionSettings.model || 'base')
   } catch (error) {
     console.error('Failed to initialize Whisper:', error)
   }
