@@ -5,7 +5,7 @@
  * Phase 5.5: Enhanced Email Customization
  */
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import type { EmailSectionToggles as EmailSectionTogglesType } from '../../types/meetingSummary'
 
 interface EmailSectionTogglesProps {
@@ -66,25 +66,18 @@ const SECTION_INFO = [
 ]
 
 export function EmailSectionToggles({ initialSections, onChange }: EmailSectionTogglesProps) {
+  // Track sections state locally - initialized from props but managed locally
+  // We do NOT sync from props after initial mount to prevent infinite loops
   const [sections, setSections] = useState<EmailSectionTogglesType>(initialSections)
 
-  // Bug #8 fix: Sync local state when prop changes (after database update)
-  useEffect(() => {
-    setSections(initialSections)
-  }, [initialSections])
-
-  // Bug #7 fix: Remove onChange from dependencies to prevent infinite loop
-  // Only propagate when sections change due to user interaction, not prop updates
-  useEffect(() => {
-    onChange(sections)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sections])
-
+  // Handle toggle - call onChange immediately on user interaction
   const handleToggle = (key: keyof EmailSectionTogglesType) => {
-    setSections(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }))
+    const newSections = {
+      ...sections,
+      [key]: !sections[key]
+    }
+    setSections(newSections)
+    onChange(newSections)
   }
 
   const handleSelectAll = () => {
@@ -99,6 +92,7 @@ export function EmailSectionToggles({ initialSections, onChange }: EmailSectionT
       parkingLot: true
     }
     setSections(allEnabled)
+    onChange(allEnabled)
   }
 
   const handleDeselectAll = () => {
@@ -113,6 +107,7 @@ export function EmailSectionToggles({ initialSections, onChange }: EmailSectionT
       parkingLot: false
     }
     setSections(allDisabled)
+    onChange(allDisabled)
   }
 
   const enabledCount = Object.values(sections).filter(Boolean).length

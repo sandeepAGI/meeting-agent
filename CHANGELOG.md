@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.2.4] - 2025-12-04
+
+### Fixed - Email Section Toggle Bug
+
+**Bug**: Email section checkboxes (Select All/Deselect All and individual toggles) were not working - clicking had no visible effect.
+
+**Root Cause**: Two interconnected bugs causing an infinite loop:
+
+1. **Circular useEffect dependencies in `EmailSectionToggles.tsx`**
+   - Two useEffects were creating a cycle: one syncing FROM props, one syncing TO parent
+   - When user clicked checkbox: sections changed → onChange called → database update → prop changed → state reset → onChange called again...
+
+2. **`defaultSections` recreated on every render in `SummaryDisplay.tsx`**
+   - `defaultSections` object was defined inside the component
+   - This caused the useEffect dependency to trigger on every render
+
+**Fix Applied**:
+- `EmailSectionToggles.tsx`: Removed circular useEffects; now calls `onChange` directly in event handlers instead of via useEffect
+- `SummaryDisplay.tsx`: Moved `defaultSections` to module-level constant `DEFAULT_EMAIL_SECTIONS` outside the component
+
+### Testing
+- ✅ Level 1: `npm run type-check` passes
+- ✅ Level 1: `npm run build` succeeds
+- ✅ Level 3: Manual testing verified - checkboxes now toggle correctly
+
 ## [0.6.2.3] - 2025-10-31
 
 ### Fixed - Critical UX Blockers (Bugs #4 & #5 from Phase 5.5)

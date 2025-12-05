@@ -12,6 +12,19 @@ import { RecipientSelector } from './RecipientSelector'
 import { EmailPreview } from './EmailPreview'
 import { EmailSectionToggles as EmailSectionTogglesComponent } from './EmailSectionToggles'
 
+// Define default sections OUTSIDE the component to prevent recreation on every render
+// This fixes the infinite loop bug where useEffect would run on every render
+const DEFAULT_EMAIL_SECTIONS: EmailSectionToggles = {
+  summary: true,
+  participants: true,
+  actionItems: true,
+  decisions: true,
+  discussionTopics: true,
+  quotes: true,
+  questions: true,
+  parkingLot: true
+}
+
 interface SummaryDisplayProps {
   summary: MeetingSummary
   onUpdate: (updates: {
@@ -112,30 +125,20 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
   const [sendSuccess, setSendSuccess] = useState(false)
 
   // Phase 5.5: Email customization
-  const defaultSections: EmailSectionToggles = {
-    summary: true,
-    participants: true,
-    actionItems: true,
-    decisions: true,
-    discussionTopics: true,
-    quotes: true,
-    questions: true,
-    parkingLot: true
-  }
+  // Use the module-level constant DEFAULT_EMAIL_SECTIONS to avoid recreation on every render
   const initialEnabledSections: EmailSectionToggles = summary.enabled_sections_json
     ? JSON.parse(summary.enabled_sections_json)
-    : defaultSections
+    : DEFAULT_EMAIL_SECTIONS
   const [enabledSections, setEnabledSections] = useState<EmailSectionToggles>(initialEnabledSections)
   const [customIntroduction, setCustomIntroduction] = useState<string>(summary.custom_introduction || '')
   const [isEditingIntroduction, setIsEditingIntroduction] = useState(false)
 
-  // Bug #2 fix: Sync enabledSections when summary prop updates (after database save)
-  useEffect(() => {
-    const sections = summary.enabled_sections_json
-      ? JSON.parse(summary.enabled_sections_json)
-      : defaultSections
-    setEnabledSections(sections)
-  }, [summary.enabled_sections_json, defaultSections])
+  // Note: We NO LONGER sync enabledSections from props because the EmailSectionToggles
+  // component now manages its own state and calls onChange only on user interaction.
+  // This prevents the infinite loop that was caused by:
+  // 1. User toggles → onChange called → database update → summary prop changes
+  // 2. useEffect sees prop change → setEnabledSections → EmailSectionToggles re-renders with new initialSections
+  // 3. EmailSectionToggles' useEffect syncs → calls onChange → back to step 1
 
   // Bug #3 fix: Sync customIntroduction when summary prop updates (after database save)
   useEffect(() => {
