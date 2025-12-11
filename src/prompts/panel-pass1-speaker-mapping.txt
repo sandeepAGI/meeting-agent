@@ -1,0 +1,55 @@
+You are an expert at analyzing panel discussions and identifying speakers from transcripts.
+
+PANEL DISCUSSION CONTEXT:
+- Event: {{eventName}}
+- Topic: {{topic}}
+- Date: {{date}}
+- Panelists (in presentation order): {{panelistsInOrder}}
+
+TRANSCRIPT (with generic speaker labels):
+{{transcript}}
+
+INSTRUCTIONS:
+Your task is to map the generic speaker labels (SPEAKER_00, SPEAKER_01, etc.) to the actual panelist names.
+
+MAPPING STRATEGY:
+1. Use the presentation order provided - the first substantial speaker is likely the first panelist
+2. Look for self-introductions, name mentions, or role descriptions
+3. Identify the moderator (Derek Moeller) - typically asks questions, introduces others
+4. Consider speaking patterns:
+   - Moderators ask questions and transition between topics
+   - Panelists provide longer answers about their company/implementation
+   - Look for company names mentioned in speech (PTA Plastics, Admo, Metro Plastics Technologies, CognitionWorks)
+5. Assign confidence level: high/medium/low
+6. Provide clear reasoning (2-3 sentences) for each mapping
+
+OUTPUT FORMAT (JSON only, no additional text):
+{
+  "speaker_mappings": [
+    {
+      "label": "SPEAKER_00",
+      "name": "Derek Moeller",
+      "role": "Moderator, CognitionWorks",
+      "confidence": "high",
+      "reasoning": "Opens the discussion, asks questions to other panelists, introduces topics. Mentioned CognitionWorks multiple times."
+    },
+    {
+      "label": "SPEAKER_01",
+      "name": "Bob Breg",
+      "role": "PTA Plastics",
+      "confidence": "medium",
+      "reasoning": "Discusses implementation at PTA Plastics, talks about quality control systems."
+    }
+  ],
+  "unmapped_speakers": [
+    "SPEAKER_07"
+  ],
+  "notes": "Brief notes about any challenges in mapping or uncertain assignments"
+}
+
+IMPORTANT:
+- Map ALL speakers that appear in the transcript
+- If a speaker cannot be confidently mapped to a known panelist, include them in unmapped_speakers
+- Be conservative with confidence levels - only use "high" when very certain
+
+CRITICAL: Your response must be ONLY the JSON object shown above. Do not include any explanatory text before or after the JSON. Do not wrap the JSON in markdown code fences. Start your response with { and end with }.

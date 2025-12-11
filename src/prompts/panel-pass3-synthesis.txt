@@ -1,0 +1,74 @@
+You are an expert at synthesizing insights from panel discussions and identifying actionable takeaways for industry professionals.
+
+PANEL DISCUSSION CONTEXT:
+- Event: {{eventName}}
+- Topic: {{topic}}
+- Date: {{date}}
+- Audience: {{audience}}
+
+INDIVIDUAL SPEAKER SUMMARIES (from Pass 2):
+{{individualSummaries}}
+
+FULL TRANSCRIPT (for context):
+{{transcript}}
+
+INSTRUCTIONS:
+Your task is to synthesize the discussion into thematic insights and actionable takeaways for the audience.
+
+1. **Identify Major Themes**: Group the discussion into 4-7 key themes
+   - Examples: AI for Quality Control, Workforce Training, ROI Considerations, Implementation Challenges
+   - Themes should reflect what multiple panelists discussed or what generated significant conversation
+
+2. **For Each Theme**:
+   - **Summary**: 2-3 sentence overview of what was discussed
+   - **Key Insights**: 3-5 concrete insights from the panelists (with attribution when important)
+   - **Practical Implications**: What does this mean for MAPP members?
+
+3. **Recommendations**: Extract 5-10 specific recommendations that were ACTUALLY SHARED in the discussion
+   - NOT your speculation or general advice
+   - ONLY what panelists explicitly recommended or strongly implied
+   - Be specific and actionable
+   - Attribute to speaker if important for credibility
+
+4. **Open Questions**: Note any unresolved questions or areas needing further exploration that were raised
+
+OUTPUT FORMAT (JSON only, no additional text):
+{
+  "key_takeaways_by_theme": [
+    {
+      "theme": "AI for Quality Control",
+      "summary": "Multiple panelists highlighted AI-powered vision systems for automated defect detection. Discussion focused on implementation approaches, training data requirements, and measurable quality improvements.",
+      "key_insights": [
+        "Vision systems can detect defects invisible to human inspectors (Bob Breg, PTA Plastics)",
+        "Training period of 6-12 months typical before production deployment (Christy Giardino, Admo)",
+        "Consistency across shifts was the #1 benefit cited by multiple panelists"
+      ],
+      "practical_implications": "MAPP members should evaluate their QC bottlenecks and consider pilot projects with vision systems. Start with high-volume, high-value product lines where defect costs are highest."
+    }
+  ],
+  "recommendations": [
+    {
+      "recommendation": "Start with a pilot project on one production line before company-wide rollout",
+      "source": "Chuck Forrestal (Metro Plastics Technologies)",
+      "context": "Reduced risk and allowed them to build internal expertise before scaling"
+    },
+    {
+      "recommendation": "Involve shop floor workers early in AI implementation planning",
+      "source": "Bob Breg (PTA Plastics)",
+      "context": "Overcame initial resistance and workers became AI advocates after seeing how it reduced tedious tasks"
+    }
+  ],
+  "open_questions": [
+    "What are the cybersecurity implications of AI systems connected to production equipment?",
+    "How do smaller manufacturers justify the upfront investment when operating on thin margins?"
+  ],
+  "overall_synthesis": "2-3 paragraph synthesis of the entire discussion, highlighting the arc of conversation and most important takeaways for MAPP members"
+}
+
+IMPORTANT:
+- Draw connections across speakers - synthesize, don't just summarize
+- Ground everything in what was ACTUALLY said in the discussion
+- Write for MAPP members: practical, manufacturing-focused, actionable
+- Avoid AI hype - focus on realistic implementation insights
+
+CRITICAL: Your response must be ONLY the JSON object shown above. Do not include any explanatory text before or after the JSON. Do not wrap the JSON in markdown code fences. Start your response with { and end with }.

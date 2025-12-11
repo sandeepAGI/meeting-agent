@@ -360,6 +360,32 @@ ipcMain.handle('diarize-audio', async (event, audioFilePath: string) => {
 // IPC Handler for transcription + diarization (combined)
 ipcMain.handle('transcribe-and-diarize', async (event, audioFilePath: string, options?: TranscriptionOptions) => {
   try {
+    // Step 0: Ensure Whisper is initialized (auto-initialize if needed)
+    const status = transcriptionService.getStatus()
+    if (!status.isInitialized) {
+      console.log('[Transcribe] Whisper not initialized, attempting to initialize...')
+      event.sender.send('transcription-progress', {
+        stage: 'loading',
+        progress: 0,
+        message: 'Initializing Whisper service...'
+      })
+
+      try {
+        const transcriptionSettings = settingsService.getCategory('transcription')
+        const modelName = transcriptionSettings.model || 'base'
+        console.log(`[Transcribe] Initializing with model: ${modelName}`)
+        await transcriptionService.initialize(modelName)
+        console.log('[Transcribe] Whisper initialized successfully')
+      } catch (initError) {
+        const errorMsg = initError instanceof Error ? initError.message : 'Failed to initialize Whisper'
+        console.error('[Transcribe] Initialization failed:', errorMsg)
+        return {
+          success: false,
+          error: `Failed to initialize Whisper service: ${errorMsg}. Please check that the model file exists in the models/ directory.`
+        }
+      }
+    }
+
     // Step 1: Transcribe
     event.sender.send('transcription-progress', {
       stage: 'loading',

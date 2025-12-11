@@ -8,8 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Current Status
 
-**Version**: 0.6.2.4 (Phase 5.5 Complete, Phase 6 In Progress) **PRODUCTION-READY**
-**Last Updated**: 2025-12-04
+**Version**: 0.6.2.5 (Phase 5.5 Complete, Phase 6 In Progress) **PRODUCTION-READY**
+**Last Updated**: 2025-12-09
 
 **What Works Now**:
 - ✅ Native system audio + microphone capture (no virtual drivers)
@@ -62,7 +62,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Status**: Batch 1 code complete, requires manual testing before commit
 - **Tracking**: See `docs/planning/phase6-implementation-status.md` for full details
 
-**Phase 5.5.1: Bug Fixes (v0.6.2.1-0.6.2.4) ✅**:
+**Phase 5.5.1: Bug Fixes (v0.6.2.1-0.6.2.5) ✅**:
+- ✅ **v0.6.2.5** (December 9, 2025): Fixed Whisper initialization failure & orphaned recordings
+  - Root Cause: Phase 6 regression - settings.json had `model: "small"` but only `ggml-base.bin` existed
+  - Fixed: Auto-initialization fallback in transcribe-and-diarize handler
+  - Recovered: 34 orphaned recordings (Dec 3-9) with correct duration & timestamp
+  - Added: Database import and metadata fix utility scripts
+  - **New Utility**: Panel Discussion Summary Generator for deep-dive analysis of panel events (3-pass workflow with speaker attribution and thematic synthesis)
 - ✅ **v0.6.2.4** (December 4, 2025): Fixed email section toggle checkboxes not responding to clicks
 - ✅ **v0.6.2.3** (October 31, 2025): Save buttons functional + Discussion Topics UI visible
 - ✅ **v0.6.2.2** (October 30, 2025): Fixed XSS vulnerability, server-side disclaimer, infinite loop, state persistence

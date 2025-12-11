@@ -11,6 +11,9 @@ out/
 *.dmg
 *.app
 
+# Generated summaries
+output/
+
 # Environment variables
 .env
 .env.local

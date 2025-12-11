@@ -51,6 +51,111 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Wire up: Keep Audio Files (delete after transcription)
 - See `docs/planning/phase6-implementation-status.md` for full tracking
 
+## [0.6.2.5] - 2025-12-09
+
+### Added - Utility Scripts
+
+**Panel Discussion Summary Generator** (`scripts/panel-discussion-summary.ts`)
+- 3-pass workflow for generating professional summaries of panel discussions
+- **Pass 1**: Map SPEAKER_XX labels to actual panelist names
+- **Pass 2**: Generate individual speaker summaries with key points and quotes
+- **Pass 3**: Synthesize key takeaways by theme and recommendations
+- Uses Claude Batch API for cost-effective processing (~$0.15 per panel)
+- Outputs formatted Markdown with sections for each speaker, themes, and recommendations
+- Includes customizable panel configuration (event name, topic, panelists, audience)
+- Ideal for conferences, webinars, and multi-speaker events
+
+**Database Utilities**:
+- `scripts/import-orphaned-recordings.ts`: Import recordings that exist as files but missing from database
+- `scripts/fix-recording-metadata.ts`: Recalculate duration and timestamps for imported recordings
+- `scripts/utils/parseJSON.ts`: JSON parser with automatic repair for malformed LLM responses
+
+**Prompt Templates for Panel Analysis**:
+- `src/prompts/panel-pass1-speaker-mapping.txt`: Speaker identification prompt
+- `src/prompts/panel-pass2-individual-summaries.txt`: Individual speaker summary prompt
+- `src/prompts/panel-pass3-synthesis.txt`: Synthesis and recommendations prompt
+
+**Use Case**: When you need deeper analysis than standard meeting summaries (e.g., public events, training sessions, industry panels), use `panel-discussion-summary.ts` for publication-ready output with speaker attribution and thematic organization.
+
+### Fixed - Whisper Initialization Failure & Orphaned Recordings
+
+**Bug**: "Whisper service not initialized" error when attempting to transcribe recordings. December recordings existed as files but were not visible in the UI.
+
+**Root Causes**:
+
+1. **Settings Model Mismatch** (Phase 6 regression)
+   - Phase 6 changed Whisper initialization to read model from `settings.json`
+   - Settings file had `"model": "small"` but only `ggml-base.bin` existed in models directory
+   - Initialization silently failed during app startup
+   - When user tried to transcribe, service threw "not initialized" error
+
+2. **No Auto-Retry Logic**
+   - Once initialization failed at startup, service remained uninitialized
+   - No fallback or on-demand initialization when transcription requested
+
+3. **Orphaned Recordings**
+   - Recordings created after Phase 6 deployment (Dec 3-9) saved as files but never added to database
+   - Transcription failed before reaching database save step (line 432-477 in `src/main/index.ts`)
+   - 34 recordings totaling 3.2GB existed on disk but were invisible to UI
+
+4. **Missing Metadata**
+   - Import script set `duration_seconds: 0` (placeholder value)
+   - Import script used current timestamp instead of extracting from folder name
+   - UI displayed "0 sec" for all imported recordings
+
+**Fixes Applied**:
+
+1. **settings.json Model Correction** (`/Users/.../Library/Application Support/meeting-agent/settings.json:9`)
+   - Changed `"model": "small"` → `"model": "base"` to match available model file
+   - Backup saved at `settings.json.backup`
+
+2. **Auto-Initialization Logic** (`src/main/index.ts:363-387`)
+   - Added initialization check at start of `transcribe-and-diarize` handler
+   - If Whisper not initialized, attempts on-demand initialization with settings model
+   - Returns clear error message if initialization fails: "Failed to initialize Whisper service: {reason}. Please check that the model file exists in the models/ directory."
+   - Prevents silent failures
+
+3. **Orphaned Recording Recovery** (new utility scripts)
+   - `scripts/import-orphaned-recordings.ts`: Scans recordings directory and imports files missing from database
+   - `scripts/fix-recording-metadata.ts`: Calculates actual duration (via ffprobe) and extracts timestamps from folder names
+   - Imported 34 recordings with correct metadata
+   - Both scripts now point to production database (`~/Library/Application Support/meeting-agent/meeting-agent.db`)
+
+**Files Modified**:
+- `src/main/index.ts` - Auto-initialization logic in `transcribe-and-diarize` handler
+- `/Users/.../settings.json` - Model name corrected
+
+**Files Added**:
+- `scripts/import-orphaned-recordings.ts` - Database import utility
+- `scripts/fix-recording-metadata.ts` - Metadata correction utility
+
+**Impact**:
+- ✅ Whisper now initializes correctly on app startup
+- ✅ Fallback initialization if startup fails (resilient)
+- ✅ All 34 orphaned recordings now visible in UI
+- ✅ Recordings display correct duration (e.g., 26.7 min instead of 0 sec)
+- ✅ Recordings display correct timestamp (from recording time, not import time)
+
+**Prevention**:
+- Added model validation to Settings UI (future work in Phase 6)
+- Consider adding `npm run check-models` script to verify model files exist before startup
+- Consider adding database repair to postinstall script
+
+### Testing
+- ✅ Level 1: `npm run type-check` passes
+- ✅ Level 1: `npm run build` succeeds
+- ✅ Level 2: Logic review - initialization retry, error handling, state cleanup verified
+- ✅ Level 3: Manual testing complete
+  - Whisper initializes successfully on app startup
+  - 34 recordings appear in "⏳ Untranscribed" tab with correct durations
+  - "Transcribe & Diarize" button works without "not initialized" error
+  - Import script correctly identifies and skips existing recordings
+
+**Known Limitations**:
+- Import and metadata fix scripts require manual execution via `npx tsx`
+- Users affected by this bug must run scripts manually to recover recordings
+- No automatic detection of orphaned recordings on app startup
+
 ## [0.6.2.4] - 2025-12-04
 
 ### Fixed - Email Section Toggle Bug
