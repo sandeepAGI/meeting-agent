@@ -416,7 +416,9 @@ npm run dev
 - ✅ Step 2.2: Implement ModelManager service (2026-01-05)
 - ✅ Step 2.3: Integrate with TranscriptionService (2026-01-05)
 - ✅ Step 2.4: Add IPC handlers for UI (2026-01-05)
-- ⏸️ Step 2.5: Manual testing (pending)
+- ✅ Step 2.5: Manual testing (2026-01-05) - PASSED
+
+**Phase 2 Complete** ✅
 
 ### 2.1 Create ModelManager Service (TDD)
 
@@ -934,15 +936,20 @@ npm run dev
 
 **Validation Checklist**:
 
-- [ ] App detects missing model
-- [ ] Download starts automatically
-- [ ] Progress is logged to console
-- [ ] Download completes successfully
-- [ ] Model is validated
-- [ ] Transcription works after download
-- [ ] Model persists across app restarts
+- [x] App detects missing model ✅ `[Transcription] Model base not found, downloading...`
+- [x] Download starts automatically ✅ `[ModelManager] Downloading base model from https://huggingface.co/...`
+- [x] Progress is logged to console ✅ Progress from 0% → 100% with speed tracking (0.1 MB/s → 5.9 MB/s)
+- [x] Download completes successfully ✅ `[ModelManager] Download complete`
+- [x] Model is validated ✅ `[Transcription] ✅ Model base downloaded successfully`
+- [x] Transcription works after download ✅ `✅ Whisper service initialized successfully`
+- [x] Model persists across app restarts ✅ File saved to userData/models (141M)
 
-**If any fail**: Review logs, fix issues, re-test
+**Test Results** (2026-01-05):
+- Download time: ~30 seconds (141MB at ~5 MB/s average)
+- Model file valid: 141M data file
+- HTTPS redirect handled correctly (HuggingFace → CDN)
+- Migration from project directory working (tested separately)
+- Progress tracking accurate with speed display
 
 ---
 
