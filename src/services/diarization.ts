@@ -6,6 +6,7 @@
  */
 
 import { spawn } from 'child_process'
+import { app } from 'electron'
 import * as path from 'path'
 import * as fs from 'fs'
 import type { DiarizationResult, DiarizationProgress } from '../types/diarization'
@@ -16,12 +17,28 @@ export class DiarizationService {
   private hfToken: string | undefined
 
   constructor() {
-    // Use virtual environment Python
-    this.pythonPath = path.join(process.cwd(), 'venv', 'bin', 'python3')
-    this.scriptPath = path.join(process.cwd(), 'scripts', 'diarize_audio.py')
+    // Determine if running in development or production
+    const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged
+
+    if (isDev) {
+      // Development: Use project scripts directory
+      this.scriptPath = path.join(process.cwd(), 'scripts', 'diarize_audio.py')
+    } else {
+      // Production: Use bundled script in app resources
+      // process.resourcesPath is available in packaged Electron apps
+      const resourcesPath = (process as any).resourcesPath || path.join(app.getPath('userData'), '../Resources')
+      this.scriptPath = path.join(resourcesPath, 'scripts', 'diarize_audio.py')
+    }
+
+    // Use system Python (user must have it installed)
+    // This works in both dev and production
+    this.pythonPath = 'python3'
 
     // Get Hugging Face token from environment (fallback)
     this.hfToken = process.env.HUGGINGFACE_TOKEN
+
+    console.log('[Diarization] Script path:', this.scriptPath)
+    console.log('[Diarization] Python path:', this.pythonPath)
   }
 
   /**
@@ -44,15 +61,9 @@ export class DiarizationService {
    * Check if diarization is available (Python script and token exist).
    */
   async isAvailable(): Promise<boolean> {
-    // Check if Python virtual environment exists
-    if (!fs.existsSync(this.pythonPath)) {
-      console.warn('Python virtual environment not found')
-      return false
-    }
-
     // Check if diarization script exists
     if (!fs.existsSync(this.scriptPath)) {
-      console.warn('Diarization script not found')
+      console.warn('Diarization script not found at:', this.scriptPath)
       return false
     }
 

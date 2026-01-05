@@ -3,6 +3,7 @@ import fs from 'fs'
 import { tmpdir } from 'os'
 import { randomBytes } from 'crypto'
 import { spawn } from 'child_process'
+import { app } from 'electron'
 import type {
   TranscriptionOptions,
   TranscriptionResult,
@@ -22,13 +23,26 @@ export class TranscriptionService {
   private isInitialized = false
 
   constructor(options: { model?: string; whisperPath?: string; threads?: number } = {}) {
-    // Default to base model in project directory
+    // Default to base model
     this.modelName = options.model || 'base'
-    this.modelPath = path.join(process.cwd(), 'models', `ggml-${this.modelName}.bin`)
+
+    // ALWAYS use userData for models (in both dev and production)
+    // This allows downloading models on first run
+    const modelsPath = path.join(app.getPath('userData'), 'models')
+    this.modelPath = path.join(modelsPath, `ggml-${this.modelName}.bin`)
+
+    // Ensure models directory exists
+    if (!fs.existsSync(modelsPath)) {
+      fs.mkdirSync(modelsPath, { recursive: true })
+      console.log('[Transcription] Created models directory:', modelsPath)
+    }
+
     // whisper-cli should be in PATH (installed via Homebrew) or custom path
     this.whisperCliPath = options.whisperPath || 'whisper-cli'
     // Default threads: use available CPUs minus 3 for OS/Electron, minimum 1
     this.defaultThreads = options.threads || Math.max(1, require('os').cpus().length - 3)
+
+    console.log('[Transcription] Model path:', this.modelPath)
   }
 
   /**
@@ -45,8 +59,12 @@ export class TranscriptionService {
       // Use provided model name or fall back to constructor value
       if (modelName) {
         this.modelName = modelName
-        this.modelPath = path.join(process.cwd(), 'models', `ggml-${modelName}.bin`)
+        const modelsPath = path.join(app.getPath('userData'), 'models')
+        this.modelPath = path.join(modelsPath, `ggml-${modelName}.bin`)
       }
+
+      // Migrate existing model from project directory if needed
+      await this.migrateExistingModel()
 
       // Check if model file exists
       if (!fs.existsSync(this.modelPath)) {
@@ -62,6 +80,25 @@ export class TranscriptionService {
     } catch (error) {
       console.error('Failed to initialize Whisper service:', error)
       throw error
+    }
+  }
+
+  /**
+   * Migrate existing model from project directory to userData
+   * Called on first run after upgrade
+   */
+  private async migrateExistingModel(): Promise<void> {
+    const oldPath = path.join(process.cwd(), 'models', `ggml-${this.modelName}.bin`)
+
+    // If model exists in old location and not in new location
+    if (fs.existsSync(oldPath) && !fs.existsSync(this.modelPath)) {
+      console.log('[Transcription] Migrating model from project directory to userData...')
+      try {
+        fs.copyFileSync(oldPath, this.modelPath)
+        console.log('[Transcription] ✅ Migration complete:', this.modelPath)
+      } catch (error) {
+        console.warn('[Transcription] Migration failed, will use existing location:', error)
+      }
     }
   }
 

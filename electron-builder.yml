@@ -6,6 +6,16 @@ directories:
 files:
   - dist/**/*
   - package.json
+  - scripts/diarize_audio.py  # Bundle Python script
+  # Exclude data files (stored in userData)
+  - "!models/**/*"      # Models downloaded on first run
+  - "!venv/**/*"        # No Python venv
+  - "!data/**/*"        # No database files
+  - "!recordings/**/*"  # No audio files
+  - "!output/**/*"      # No generated files
+  - "!test-data/**/*"   # No test data
+asarUnpack:
+  - scripts/**/*  # Keep scripts accessible (not in asar archive)
 mac:
   target:
     - dmg
