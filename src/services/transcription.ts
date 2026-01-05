@@ -4,6 +4,7 @@ import { tmpdir } from 'os'
 import { randomBytes } from 'crypto'
 import { spawn } from 'child_process'
 import { app } from 'electron'
+import { ModelManager, type WhisperModel } from './modelManager'
 import type {
   TranscriptionOptions,
   TranscriptionResult,
@@ -17,25 +18,22 @@ import type {
  */
 export class TranscriptionService {
   private modelPath: string
-  private modelName: string
+  private modelName: WhisperModel
   private whisperCliPath: string
   private defaultThreads: number
   private isInitialized = false
+  private modelManager: ModelManager
 
   constructor(options: { model?: string; whisperPath?: string; threads?: number } = {}) {
+    // Initialize model manager
+    this.modelManager = new ModelManager()
+
     // Default to base model
-    this.modelName = options.model || 'base'
+    this.modelName = (options.model as WhisperModel) || 'base'
 
     // ALWAYS use userData for models (in both dev and production)
     // This allows downloading models on first run
-    const modelsPath = path.join(app.getPath('userData'), 'models')
-    this.modelPath = path.join(modelsPath, `ggml-${this.modelName}.bin`)
-
-    // Ensure models directory exists
-    if (!fs.existsSync(modelsPath)) {
-      fs.mkdirSync(modelsPath, { recursive: true })
-      console.log('[Transcription] Created models directory:', modelsPath)
-    }
+    this.modelPath = this.modelManager.getModelPath(this.modelName)
 
     // whisper-cli should be in PATH (installed via Homebrew) or custom path
     this.whisperCliPath = options.whisperPath || 'whisper-cli'
@@ -47,6 +45,7 @@ export class TranscriptionService {
 
   /**
    * Initialize Whisper model (must be called before transcription)
+   * Downloads model automatically if not available
    * @param modelName Optional model name to override constructor option
    */
   async initialize(modelName?: string): Promise<void> {
@@ -58,18 +57,35 @@ export class TranscriptionService {
     try {
       // Use provided model name or fall back to constructor value
       if (modelName) {
-        this.modelName = modelName
-        const modelsPath = path.join(app.getPath('userData'), 'models')
-        this.modelPath = path.join(modelsPath, `ggml-${modelName}.bin`)
+        this.modelName = modelName as WhisperModel
+        this.modelPath = this.modelManager.getModelPath(this.modelName)
       }
 
       // Migrate existing model from project directory if needed
       await this.migrateExistingModel()
 
-      // Check if model file exists
-      if (!fs.existsSync(this.modelPath)) {
+      // Check if model is available
+      const modelAvailable = await this.modelManager.isModelAvailable(this.modelName)
+
+      if (!modelAvailable) {
+        console.log(`[Transcription] Model ${this.modelName} not found, downloading...`)
+
+        // Download model with progress tracking
+        await this.modelManager.downloadModel(this.modelName, (progress) => {
+          const speedMB = (progress.speed / (1024 * 1024)).toFixed(1)
+          console.log(
+            `[Transcription] Download progress: ${progress.percentage}% (${speedMB} MB/s)`
+          )
+        })
+
+        console.log(`[Transcription] ✅ Model ${this.modelName} downloaded successfully`)
+      }
+
+      // Validate model
+      const isValid = await this.modelManager.validateModel(this.modelName)
+      if (!isValid) {
         throw new Error(
-          `Model file not found: ${this.modelPath}. Download from: https://huggingface.co/ggerganov/whisper.cpp/tree/main`
+          `Model ${this.modelName} validation failed. File may be corrupted. Delete and retry.`
         )
       }
 

@@ -411,6 +411,13 @@ npm run dev
 **Goal**: Implement smart model download with progress tracking
 **Approach**: TDD - Write tests for download manager first
 
+**Progress**:
+- ✅ Step 2.1: Create ModelManager tests (2026-01-05)
+- ✅ Step 2.2: Implement ModelManager service (2026-01-05)
+- ✅ Step 2.3: Integrate with TranscriptionService (2026-01-05)
+- ✅ Step 2.4: Add IPC handlers for UI (2026-01-05)
+- ⏸️ Step 2.5: Manual testing (pending)
+
 ### 2.1 Create ModelManager Service (TDD)
 
 **Test File**: `src/services/__tests__/modelManager.test.ts`
@@ -897,6 +904,18 @@ const electronAPI = {
   }
 }
 ```
+
+**✅ COMPLETED** (2026-01-05):
+- Added 5 IPC handlers to `src/main/index.ts`:
+  - `model-is-available` - Check if model is downloaded
+  - `model-download` - Download model with progress tracking
+  - `model-list-available` - List all downloaded models
+  - `model-get-info` - Get model metadata (size, URL)
+  - `model-delete` - Delete a model from disk
+- Exposed handlers in `src/preload/index.ts` under `electronAPI.modelManager`
+- Added progress callback with `onDownloadProgress` event listener
+- Type-check passes ✅
+- Build passes ✅
 
 ### 2.5 Phase 2 Manual Testing
 

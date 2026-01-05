@@ -6,6 +6,7 @@ import dotenv from 'dotenv'
 import { initializeAudioLoopback } from './audioSetup'
 import { transcriptionService } from '../services/transcription'
 import { DiarizationService } from '../services/diarization'
+import { ModelManager } from '../services/modelManager'
 import { M365AuthService } from '../services/m365Auth'
 import { GraphApiService } from '../services/graphApi'
 import { DatabaseService } from '../services/database'
@@ -23,6 +24,9 @@ console.log('[ENV] Environment loaded (settings will override API keys)')
 
 // Initialize diarization service (token set later from settings)
 const diarizationService = new DiarizationService()
+
+// Initialize model manager for on-demand model downloads
+const modelManager = new ModelManager()
 
 // Initialize M365 Auth service (initialized later from settings)
 let m365AuthService: M365AuthService | null = null
@@ -294,6 +298,89 @@ ipcMain.handle('merge-audio-chunks', async (_event, sessionId: string) => {
 
 ipcMain.handle('get-transcription-status', async () => {
   return transcriptionService.getStatus()
+})
+
+// ===== Model Management IPC Handlers =====
+
+// Check if model is available locally
+ipcMain.handle('model-is-available', async (_event, modelName: string) => {
+  try {
+    const available = await modelManager.isModelAvailable(modelName as any)
+    return { success: true, available }
+  } catch (error) {
+    console.error('[ModelManager] Check availability failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to check model availability'
+    }
+  }
+})
+
+// Download model with progress tracking
+ipcMain.handle('model-download', async (event, modelName: string) => {
+  try {
+    console.log(`[ModelManager] Starting download for model: ${modelName}`)
+
+    await modelManager.downloadModel(modelName as any, (progress) => {
+      // Send progress updates to renderer
+      event.sender.send('model-download-progress', {
+        modelName,
+        ...progress
+      })
+    })
+
+    console.log(`[ModelManager] Download complete: ${modelName}`)
+    return { success: true }
+  } catch (error) {
+    console.error('[ModelManager] Download failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to download model'
+    }
+  }
+})
+
+// List all available models
+ipcMain.handle('model-list-available', async () => {
+  try {
+    const models = await modelManager.listAvailableModels()
+    return { success: true, models }
+  } catch (error) {
+    console.error('[ModelManager] List available failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to list available models'
+    }
+  }
+})
+
+// Get model information
+ipcMain.handle('model-get-info', async (_event, modelName: string) => {
+  try {
+    const info = modelManager.getModelInfo(modelName as any)
+    return { success: true, info }
+  } catch (error) {
+    console.error('[ModelManager] Get info failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get model info'
+    }
+  }
+})
+
+// Delete a model
+ipcMain.handle('model-delete', async (_event, modelName: string) => {
+  try {
+    await modelManager.deleteModel(modelName as any)
+    console.log(`[ModelManager] Deleted model: ${modelName}`)
+    return { success: true }
+  } catch (error) {
+    console.error('[ModelManager] Delete failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to delete model'
+    }
+  }
 })
 
 // IPC Handler for playing announcement

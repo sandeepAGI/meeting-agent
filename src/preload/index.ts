@@ -142,6 +142,29 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.invoke('settings-set-api-key', service, key),
     validateApiKey: (service: 'anthropic' | 'huggingface', key: string) =>
       ipcRenderer.invoke('settings-validate-api-key', service, key)
+  },
+
+  // Model Management (Packaging Phase 2)
+  modelManager: {
+    isAvailable: (modelName: string) => ipcRenderer.invoke('model-is-available', modelName),
+    download: (modelName: string) => ipcRenderer.invoke('model-download', modelName),
+    listAvailable: () => ipcRenderer.invoke('model-list-available'),
+    getInfo: (modelName: string) => ipcRenderer.invoke('model-get-info', modelName),
+    deleteModel: (modelName: string) => ipcRenderer.invoke('model-delete', modelName),
+    onDownloadProgress: (callback: (progress: {
+      modelName: string
+      bytesDownloaded: number
+      totalBytes: number
+      percentage: number
+      speed: number
+    }) => void) => {
+      const handler = (_event: Electron.IpcRendererEvent, progress: any) => callback(progress)
+      ipcRenderer.on('model-download-progress', handler)
+      // Return unsubscribe function
+      return () => {
+        ipcRenderer.removeListener('model-download-progress', handler)
+      }
+    }
   }
 })
 
