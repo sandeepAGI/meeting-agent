@@ -38,7 +38,6 @@
     "@microsoft/microsoft-graph-client": "^3.0.7",
     "better-sqlite3": "^12.5.0",
     "dotenv": "^17.2.3",
-    "electron": "^38.2.1",
     "electron-audio-loopback": "^1.0.6",
     "extendable-media-recorder": "^9.2.31",
     "extendable-media-recorder-wav-encoder": "^7.0.132",
@@ -48,6 +47,7 @@
   },
   "devDependencies": {
     "@electron/rebuild": "^4.0.1",
+    "electron": "^38.2.1",
     "@eslint/js": "^9.37.0",
     "@jest/globals": "^30.2.0",
     "@microsoft/microsoft-graph-types": "^2.43.1",
