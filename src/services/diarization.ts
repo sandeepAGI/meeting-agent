@@ -30,9 +30,16 @@ export class DiarizationService {
       this.scriptPath = path.join(resourcesPath, 'scripts', 'diarize_audio.py')
     }
 
-    // Use system Python (user must have it installed)
-    // This works in both dev and production
-    this.pythonPath = 'python3'
+    // Use venv Python if available (per README setup instructions)
+    // Fall back to system Python if venv doesn't exist
+    const venvPythonPath = path.join(app.getPath('home'), 'meeting-agent-venv', 'bin', 'python3')
+    if (fs.existsSync(venvPythonPath)) {
+      this.pythonPath = venvPythonPath
+    } else {
+      this.pythonPath = 'python3'
+      console.warn('[Diarization] Virtual environment not found at ~/meeting-agent-venv')
+      console.warn('[Diarization] Using system Python - make sure packages are installed')
+    }
 
     // Get Hugging Face token from environment (fallback)
     this.hfToken = process.env.HUGGINGFACE_TOKEN

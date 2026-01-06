@@ -1,9 +1,9 @@
 # Phase 6 Completion Plan - Batches 2-6
 
-**Status**: In Progress (Batch 1 Complete)
+**Status**: Paused (Critical Bugs Discovered)
 **Started**: December 4, 2025
-**Estimated Remaining**: ~4 hours
-**Last Updated**: January 5, 2026
+**Estimated Remaining**: ~4 hours (Phase 6) + ~4 hours (Bug Fixes)
+**Last Updated**: January 6, 2026
 
 ---
 
@@ -18,6 +18,30 @@ Phase 6 Batch 1 (API Keys) is complete and working. This plan covers the remaini
 - ❌ Batches 2-6 settings saved but NOT used by application
 
 **Goal**: Make all settings functional so users' configuration choices are respected.
+
+---
+
+## ⚠️ Critical Bugs Discovered - Must Fix First
+
+**Date Discovered**: January 6, 2026
+
+Before continuing with Phase 6 completion, two critical bugs were discovered that need immediate attention:
+
+### Bug 1: Meeting Intelligence Error Recovery (HIGHEST PRIORITY)
+- **Issue**: When batch processing fails (e.g., Anthropic API 500 error), UI shows error but provides NO recovery options
+- **Impact**: User completely stuck, must restart app to recover
+- **Plan**: `docs/testing/tdd-plan-meeting-intelligence-error-recovery.md`
+- **Estimated**: ~2 hours
+- **Status**: ⏸️ Paused Phase 6 to address this
+
+### Bug 2: Recording Database Insertion
+- **Issue**: Recordings only saved to database during transcription; if user doesn't transcribe immediately, recording is on disk but not visible in Browse mode
+- **Impact**: ~9 untranscribed recordings are "invisible" in UI
+- **Plan**: `docs/testing/tdd-plan-recording-database-bug.md`
+- **Estimated**: ~2 hours
+- **Status**: Queued after Bug 1
+
+**Rationale**: Both bugs block user workflow and have complete TDD implementation plans. Fixing them before continuing Phase 6 ensures better user experience and prevents data loss/confusion.
 
 ---
 
