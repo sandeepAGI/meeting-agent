@@ -1,451 +1,213 @@
 # Meeting Agent
 
-AI-powered meeting transcription and summarization tool for macOS.
+AI-powered meeting transcription and summarization for macOS.
 
 ## Status
 
-**Current Version**: 0.6.1 - Phase 5: Email Distribution Complete ✅ (Production-Ready)
+**Version**: 0.6.2.5 (Feature) | 0.1.0 (Package)
+**Phase**: 6 - Settings & Configuration (Batch 1 Complete)
+**Production**: ✅ Ready - DMG installer available (119MB)
 
-This project is in active development. Phases 0-5 are complete and **fully tested** (audio capture, transcription, speaker diarization, M365 integration, LLM intelligence backend + UI, meeting-recording association, browse mode, Aileron branding, summary editor, email distribution). **Phase 5.5 (Enhanced Email Customization)** is next, followed by Settings UI, Storage Management, Performance, Error Handling, and Packaging. See [CHANGELOG.md](./CHANGELOG.md) for version history and [docs/planning/roadmap.md](./docs/planning/roadmap.md) for the full development plan.
+🚀 **Download pre-built DMG** or build from source
+📦 **All core features working** - Audio capture → Transcription → Diarization → AI Summaries → Email Distribution
+⚙️ **Current work**: Phase 6 completion - wire remaining settings (~4 hours)
 
-## Overview
+See [CHANGELOG.md](./CHANGELOG.md) for version history | [docs/planning/roadmap.md](./docs/planning/roadmap.md) for detailed roadmap
 
-Meeting Agent is a desktop application that:
+## What It Does
 
-- ✅ **Captures audio** from online meetings (Teams, Zoom, Google Meet, etc.)
-- ✅ **Transcribes audio locally** using OpenAI Whisper (free, runs on your machine)
-- ✅ **Identifies speakers** using pyannote.audio speaker diarization
-- ✅ **Integrates with Microsoft 365** for meeting context and calendar
-- ✅ **Generates AI summaries** with speaker identification and action items using Claude API
-- ✅ **Browse past recordings** with transcript and summary viewing
-- ✅ **Inline editing** to customize summaries, action items, decisions, and speakers
-- ✅ **Email distribution** via Microsoft 365 with branded HTML templates
-- ✅ **Provides export** to save summaries as markdown files with clipboard copy
-- ✅ **Aileron branding** with professional design system
-
-## What Works Now (v0.6.1 - Production Ready)
-
-### Audio Capture
-- Native system audio capture (no virtual drivers required!)
-- Microphone capture with graceful fallback
-- Real-time audio level monitoring
-- 16kHz mono WAV output (Whisper-compatible)
-- **Auto-save every 5 minutes** during recording
-- Prevents memory exhaustion for long meetings (60+ minutes)
-- **Stop Audio Capture** button to free system resources
-
-### Recording Announcement
-- **Automatic announcement** when recording starts
-- Informs participants: "This meeting, with your permission, is being recorded..."
-- **Legal compliance**: Ensures transparency and consent
-- **Captured in recording**: Announcement is part of the audio file
-
-### Transcription & Diarization
-- Local transcription using whisper.cpp (Metal GPU acceleration)
-- ~50x realtime speed (5min audio in ~5.7s)
-- Speaker identification using pyannote.audio
-- **Metal GPU acceleration**: 3-10x faster than CPU (automatic on Apple Silicon)
-- Speaker-labeled transcripts: `[SPEAKER_00]: text`
-- Progress monitoring with real-time updates
-- Memory efficient: <700MB peak during transcription + diarization
-
-### Microsoft 365 Integration (Phase 2.1-2.2)
-- **OAuth2 authentication** with MSAL Node
-- **Secure token storage** in system keychain
-- **Today's calendar meetings** with attendees, times, and join links
-- **Automatic token refresh** for seamless authentication
-- Visual indicators for active/upcoming meetings
-- **Always accessible** (no audio initialization required)
-
-### Meeting Intelligence (Phase 2.3-3 Complete)
-- **Recording Browser**: Visual selection from past recordings with transcript previews
-- **Two-pass LLM workflow** for high-quality summaries
-  - Pass 1: Speaker identification + initial summary
-  - Pass 2: Validation and refinement
-- **Real-time status display** during batch processing
-- **Summary Display**: Speaker mappings, action items, key decisions
-- **Export functionality**: Download as markdown + copy to clipboard
-- **Standalone recordings**: Works without calendar meetings
-- **Batch API integration** (50% cost savings)
-- **SQLite database** for meeting persistence
-- **Adaptive polling** (5min → 30sec intervals)
-- **Background processing** (non-blocking)
-- **Cost**: ~$0.09 per 60-min meeting (96% savings vs cloud alternatives)
-
-### Meeting-Recording Association (Phase 2.3-4 Complete)
-- **Two-tab interface**: Browse "Standalone Recordings" or "Calendar Meetings"
-- **Link recordings to meetings**: Choose meeting during summary generation (Option C)
-- **Date range filters**: Today, Last 7 Days, Last 30 Days, All
-- **Search functionality**: Filter meetings by title
-- **Auto-sync from M365**: Automatically fetches meetings for selected date range
-- **Recording status badges**: Visual indicators ("🎙️ Recorded" | "❌ No Recording")
-- **MeetingPicker dialog**: Select which meeting a recording belongs to
-- **Standalone option**: Recordings work without calendar association
-- **Back to Selection**: Easy navigation between summary and selection views
-- **Automatic UI updates**: Recording moves between tabs after linking
-
-### Browse Mode & Branding (Phase 4a Complete)
-- ✅ **Browse/Generate toggle**: Switch between viewing past recordings and generating new summaries
-- ✅ **Unified recording list**: Shows all recordings with status badges (✅ Summary | 📝 Transcript)
-- ✅ **TranscriptViewer**: Full viewer for past transcripts with speaker labels and metadata
-- ✅ **Smart navigation**: Click to view transcript or summary based on recording status
-- ✅ **Search recordings**: Filter by meeting title or transcript content
-- ✅ **Recording metadata**: Date, duration, speaker count displayed for each recording
-- ✅ **Generate from transcript**: Option to create summary from transcript viewer
-- ✅ **Aileron branding**: Professional design system with logo, colors, and Montserrat font
-- ✅ **Export**: Download summaries as markdown with clipboard copy
-
-### Summary Editor & Email (Phases 4b-5 Complete)
-- ✅ **Inline editing**: Edit summary text, action items, key decisions, and speaker mappings
-- ✅ **Recipient selector**: Choose email recipients from meeting attendees
-- ✅ **Custom recipients**: Add additional recipients with email validation
-- ✅ **Email preview**: Formatted Aileron-branded HTML template before sending
-- ✅ **Subject line editor**: Customize email subject line
-- ✅ **Send via M365**: Email distribution through Microsoft Graph API
-- ✅ **Email tracking**: Database tracks sent emails with timestamp and recipients
-- ✅ **Loading states**: Visual feedback during send operation
-- ✅ **Error handling**: User-friendly error messages for auth and permission issues
-- ✅ **Persistent edits**: All changes saved to database
-- ✅ **Complete email content**: Summary, participants, actions, decisions, discussion topics, quotes, questions, parking lot
-
-### Planned (Phase 5.5-10)
-- 🔜 **Phase 5.5**: Enhanced email customization (section toggles, edit all sections, custom intro, AI disclaimer)
-- 🔜 **Phase 6**: Configuration & Settings UI (API keys, preferences, quotas)
-- 🔜 **Phase 7**: Data management (storage quotas, auto-deletion, cleanup automation)
-- 🔜 **Phase 8**: Performance optimization (large meetings, memory efficiency)
-- 🔜 **Phase 9**: Error handling & logging (production-grade reliability)
-- 🔜 **Phase 10**: Documentation & packaging (macOS .dmg, auto-updates)
+- **Captures audio** from any meeting (Teams, Zoom, Meet, etc.) using native macOS audio loopback
+- **Transcribes locally** with OpenAI Whisper (Metal GPU, ~50x realtime, 100% free)
+- **Identifies speakers** using pyannote.audio speaker diarization (Metal GPU accelerated)
+- **Generates AI summaries** with Claude API (~$0.09/meeting, 96% cheaper than cloud alternatives)
+- **Integrates with M365** for calendar context and attendee information
+- **Sends email summaries** via Microsoft Graph API with Aileron-branded HTML templates
+- **Browse & edit** past recordings with inline editing before sending
 
 ## Key Features
 
-- 🎤 **Universal Meeting Support**: Works with any meeting platform
-- 💰 **Cost-Effective**: ~$0.09/meeting (100% local transcription + diarization, cloud summarization)
-- 🔒 **Privacy-First**: All transcription and diarization happen locally, you control all data
-- 🚀 **Metal GPU Acceleration**: Fast transcription AND diarization on Apple Silicon
-- 🗣️ **Speaker Identification**: AI-powered speaker mapping with meeting context
-- 📧 **M365 Integration**: Calendar context and attendee information
-- 🧠 **Two-Pass LLM Workflow**: Initial summary + validation for high accuracy
-- ✏️ **Edit Before Send** (Coming soon): Review and customize summaries
-- 💾 **Smart Storage** (Coming soon): Auto-delete audio after transcription
+- 💰 **Cost-Effective**: ~$0.09/meeting (100% local transcription + diarization)
+- 🔒 **Privacy-First**: All transcription and diarization run on your machine
+- 🚀 **Metal GPU**: Fast on Apple Silicon (5.7s for 5min audio)
+- ⚙️ **Settings UI**: Configure API keys, transcription, summaries, audio, and storage
+- 📧 **M365 Integration**: Calendar sync and email distribution
+- ✏️ **Edit Before Send**: Inline editing of summaries, speakers, action items
+
+## Installation
+
+### Option 1: Pre-built DMG (Recommended)
+
+**Requirements**: macOS 12.3+, Apple Silicon or Intel Mac
+
+1. **Download**: `Meeting Agent-0.1.0-arm64.dmg` (119MB)
+2. **Install**: Drag to Applications folder
+3. **Launch**: Open app and configure Settings:
+   - **Anthropic API Key**: Get from [console.anthropic.com](https://console.anthropic.com)
+   - **HuggingFace Token**: Get from [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)
+   - Accept pyannote license: [huggingface.co/pyannote/speaker-diarization-3.1](https://huggingface.co/pyannote/speaker-diarization-3.1)
+4. **Python Setup** (one-time, for speaker diarization):
+
+   ```bash
+   python3 -m venv ~/meeting-agent-venv
+   source ~/meeting-agent-venv/bin/activate
+   pip install pyannote.audio torch torchaudio python-dotenv
+   ```
+
+5. **Whisper Model**: App downloads automatically on first transcription (141MB)
+
+### Option 2: Build from Source
+
+**Prerequisites**: macOS 12.3+, Node.js 20+, Python 3.11+, Homebrew
+
+```bash
+# Install system dependencies
+brew install whisper-cpp ffmpeg
+
+# Clone and install
+git clone https://github.com/sandeepAGI/meeting-agent.git
+cd meeting-agent
+npm install
+
+# Set up Python environment
+python3 -m venv venv
+source venv/bin/activate
+pip install pyannote.audio torch torchaudio python-dotenv
+
+# Download Whisper model
+mkdir -p models
+curl -L https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin \
+  -o models/ggml-base.bin
+
+# Configure environment
+cp .env.example .env
+# Edit .env and add:
+#   HUGGINGFACE_TOKEN=hf_xxx
+#   ANTHROPIC_API_KEY=sk-ant-xxx
+#   AZURE_CLIENT_ID=your_client_id (optional, for M365)
+#   AZURE_TENANT_ID=your_tenant_id (optional, for M365)
+
+# Run
+npm run dev          # Development mode
+npm run build        # Production build
+npm run package:mac  # Create DMG
+```
+
+## Quick Start
+
+1. **Launch** the app and grant audio permissions
+2. **Sign in to M365** (optional) to see calendar meetings
+3. **Configure Settings**: Add API keys (Settings icon in top-right)
+4. **Start Recording**: Click "Initialize Audio" → "🎤 Start Recording"
+   - Automatic announcement informs participants
+5. **Stop Recording**: Click "⏹ Stop Recording" when done
+6. **Generate Summary**:
+   - Choose "📝 Transcribe + Diarize" for speaker labels
+   - Select meeting from calendar or create standalone recording
+   - Wait for AI summary generation (~30-60 min via Batch API)
+7. **Review & Send**: Edit summary, select recipients, preview email, send
 
 ## Tech Stack
 
-- **Runtime**: Node.js 20+, Electron 38, TypeScript 5
-- **UI**: React 19
-- **Transcription**: whisper.cpp (local, Metal GPU)
-- **Diarization**: pyannote.audio (local, Python)
-- **Summarization**: Anthropic Claude API (Batch API with 50% cost savings)
-- **Database**: SQLite (better-sqlite3)
-- **M365**: @azure/msal-node + @microsoft/microsoft-graph-client
-- **Audio**: electron-audio-loopback (no BlackHole required!)
-
-## Installation & Setup
-
-### Prerequisites
-
-- **macOS**: 12.3+ (for native audio loopback)
-- **Hardware**: Apple Silicon (M1/M2/M3) or Intel Mac with AVX2
-- **Node.js**: 20+
-- **Homebrew**: For installing tools
-
-### 1. Install System Dependencies
-
-```bash
-# Install whisper.cpp for transcription
-brew install whisper-cpp
-
-# Install ffmpeg for audio preprocessing
-brew install ffmpeg
-
-# Verify installations
-which whisper-cli ffmpeg
-```
-
-### 2. Download Whisper Model
-
-```bash
-# Create models directory
-mkdir -p models
-
-# Download base model (~150MB)
-curl -L https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin \
-  -o models/ggml-base.bin
-```
-
-### 3. Set Up Python Environment
-
-```bash
-# Create virtual environment
-python3 -m venv venv
-
-# Activate venv
-source venv/bin/activate
-
-# Install pyannote.audio and dependencies
-pip install pyannote.audio torch torchaudio python-dotenv
-```
-
-### 4. Configure Environment
-
-```bash
-# Copy environment template
-cp .env.example .env
-
-# Edit .env and add your tokens
-# Get HF token from: https://huggingface.co/settings/tokens
-# Accept model license: https://huggingface.co/pyannote/speaker-diarization-3.1
-# Get Anthropic key from: https://console.anthropic.com/
-nano .env
-```
-
-Add to `.env`:
-```bash
-HUGGINGFACE_TOKEN=hf_xxx
-ANTHROPIC_API_KEY=sk-ant-xxx
-ANTHROPIC_MODEL=claude-sonnet-4-20250514
-
-# Azure AD (for M365 integration)
-AZURE_CLIENT_ID=your_client_id
-AZURE_TENANT_ID=your_tenant_id
-```
-
-### 5. Install Node Dependencies
-
-```bash
-npm install
-```
-
-### 6. Run the App
-
-```bash
-# Development mode (hot-reload)
-npm run dev
-
-# Production build
-npm run build
-npm start
-```
-
-## Usage
-
-1. **Initialize Audio**: Click "Initialize Audio Capture" and grant permissions
-2. **Start Recording**: Click "🎤 Start Recording" when meeting begins
-   - Announcement plays automatically to inform participants
-   - Status shows "📢 Playing announcement..." then "🔴 Recording..."
-3. **Stop Recording**: Click "⏹ Stop Recording" when meeting ends
-4. **Transcribe**: Choose between:
-   - "⚡ Transcribe Only" (~30s for 30s audio, no speaker labels)
-   - "📝 Transcribe + Diarize" (~90s for 30s audio, with speaker labels)
-5. **View Transcript**: See full transcript with speaker labels
-
-## Documentation
-
-- **[CHANGELOG.md](./CHANGELOG.md)** - Version history with completion dates
-- **[docs/planning/roadmap.md](./docs/planning/roadmap.md)** - Full development plan (10 phases)
-- **[docs/developer/architecture.md](./docs/developer/architecture.md)** - System architecture
-- **[docs/technical/](./docs/technical/)** - Implementation details for each phase:
-  - [audio-capture.md](./docs/technical/audio-capture.md) - Phase 1.1
-  - [transcription.md](./docs/technical/transcription.md) - Phase 1.2
-  - [diarization.md](./docs/technical/diarization.md) - Phase 1.3
-- **[CLAUDE.md](./CLAUDE.md)** - AI assistant development guide
-
-## Cost Estimate
-
-### Current (Phase 2.3-3 Backend)
-- **Transcription**: $0.00 (local Whisper)
-- **Diarization**: $0.00 (local pyannote.audio)
-- **Summarization (Two-Pass)**: ~$0.09 per 60-min meeting (Claude Batch API)
-  - Pass 1: $0.045 (speaker ID + initial summary)
-  - Pass 2: $0.048 (validation + refinement)
-- **Microsoft Graph API**: $0.00 (included with M365 subscription)
-- **Total per meeting**: **$0.09** 💰
-- **Estimated Monthly** (20 meetings): **~$1.86**
-
-### Comparison
-- **Cloud-only alternative**: Azure Speech + GPT-4 = ~$2.50/meeting = $50/month
-- **Meeting Agent**: ~$0.09/meeting = $1.86/month
-- **Savings**: 96% 💰
-
-## Privacy & Ethics
-
-- ✅ **Automatic announcement** informs participants when recording starts (Phase 1.4)
-- 🔒 All transcription and diarization happen locally on your machine
-- 👤 User reviews and approves summaries before distribution (Phase 4)
-- 🗑️ Configurable data retention and auto-deletion (Phase 7)
-- 🚫 No telemetry or usage tracking
-
-## Development
-
-### Commands
-
-```bash
-# Development mode (hot-reload)
-npm run dev
-
-# Build for production
-npm run build
-
-# Type checking
-npm run type-check
-
-# Linting
-npm run lint
-
-# Format code
-npm run format
-```
-
-### Project Structure
-
-```
-meeting-agent/
-├── src/
-│   ├── main/            # Electron main process
-│   ├── preload/         # IPC bridge
-│   ├── renderer/        # React UI
-│   ├── services/        # Business logic (audio, transcription, diarization)
-│   ├── utils/           # Helper functions
-│   └── types/           # TypeScript types
-├── scripts/             # Python scripts (diarization)
-├── models/              # Whisper models
-├── venv/                # Python virtual environment
-├── docs/                # Documentation
-└── CLAUDE.md            # Development plan
-```
+**Runtime**: Electron 38 + React 19 + TypeScript 5
+**Audio**: electron-audio-loopback (native macOS capture)
+**Transcription**: whisper.cpp (local, Metal GPU)
+**Diarization**: pyannote.audio (local, Metal GPU)
+**AI**: Anthropic Claude Batch API (50% cost savings)
+**Database**: SQLite (better-sqlite3)
+**M365**: @azure/msal-node + Microsoft Graph API
 
 ## Performance
 
-### Benchmarks (M3 Pro, 11 cores, 18GB RAM)
+**M3 Pro (Apple Silicon)**:
 
-| Operation | Time | Ratio | Memory |
-|-----------|------|-------|--------|
-| Audio Capture | Real-time | 1:1 | ~100MB |
-| Transcription (base model, Metal GPU) | 5.7s for 5min | ~50x | ~200MB |
-| Diarization (CPU) | 16s for 30s | 0.53x | ~500MB |
-| Diarization (Metal GPU) | 2.8s for 30s | **5.8x faster** | ~500MB |
-| **Total (Transcribe + Diarize, GPU)** | **~12s for 5min** | **~25x** | **~700MB peak** |
+- Audio capture: Real-time (constant ~100MB memory)
+- Transcription: 5.7s for 5min audio (~50x realtime, Metal GPU)
+- Diarization: 2.8s for 30s audio (~10x realtime, Metal GPU)
+- Total: ~12s for 5min meeting
+- Cost: ~$0.09 per 60-min meeting
 
-**Note**: Both transcription and diarization use Metal GPU (automatic on Apple Silicon). Graceful fallback to CPU if GPU unavailable.
+## Documentation
 
-**Speedup**: Metal GPU provides **5.8x speedup** for diarization compared to CPU (measured on M3 Pro).
+**For Users**:
 
-## Known Limitations
+- [CHANGELOG.md](./CHANGELOG.md) - Version history
+- [docs/planning/roadmap.md](./docs/planning/roadmap.md) - Development roadmap
 
-1. **macOS Only**: Currently requires macOS 12.3+ for native audio loopback
-2. **Batch Processing Latency**: Summaries take 30-60 minutes to generate (due to 50% cost savings)
-3. **Manual Testing Pending**: End-to-end workflow needs user testing and validation
-4. **English-Focused**: Multi-language support planned for future enhancement
+**For Developers**:
+
+- [CLAUDE.md](./CLAUDE.md) - AI assistant guide (project instructions)
+- [docs/developer/architecture.md](./docs/developer/architecture.md) - System architecture
+- [docs/technical/](./docs/technical/) - Implementation details by phase
+
+**Development Commands**:
+
+```bash
+npm run dev          # Hot-reload development
+npm run build        # Production build
+npm run type-check   # TypeScript validation
+npm run lint         # ESLint
+npm run package:mac  # Create DMG installer
+```
 
 ## Roadmap
 
-### ✅ Phase 0: Foundation Setup (2025-10-07)
-- Electron, React, TypeScript project setup
+### ✅ Completed (Production Ready)
 
-### ✅ Phase 1.1: Audio Capture (2025-10-09)
-- Native system audio + microphone capture
-- Real-time audio level monitoring
+- **Phases 0-1.6**: Audio capture, transcription, diarization, GPU acceleration
+- **Phases 2.1-2.4**: M365 auth, calendar, LLM intelligence, meeting association
+- **Phases 4a-5.5**: Browse mode, branding, summary editor, email distribution
+- **Phase 6 (Batch 1)**: Settings UI with API key management
+- **Packaging (Phases 0-4)**: Production DMG installer ready
 
-### ✅ Phase 1.2: Transcription (2025-10-13)
-- Local Whisper transcription with Metal GPU
+### ⏳ In Progress
 
-### ✅ Phase 1.3: Speaker Diarization (2025-10-13)
-- Speaker identification using pyannote.audio
+- **Phase 6 (Batches 2-6)**: Wire remaining settings (~4 hours)
 
-### ✅ Phase 1.4: Recording Announcement (2025-10-13)
-- Automatic announcement for transparency and consent
-- Legal compliance with recording laws
+### 📅 Next
 
-### ✅ Phase 1.5: Chunked Recording (2025-10-13)
-- Auto-save every 5 minutes
-- Prevents data loss for long meetings
-- Memory stays constant regardless of duration
+- **Phase 7**: Data management (retention, quotas, auto-cleanup)
+- **Phase 8**: Performance optimization (streaming, large meetings)
+- **Phase 9**: Error handling & logging (production-grade)
+- **Phase 10**: Distribution (auto-updates, code signing)
 
-### ✅ Phase 1.6: GPU Acceleration (2025-10-13)
-- Metal GPU acceleration for diarization
-- Automatic device detection (Metal/CUDA/CPU)
-- 3-10x speedup on Apple Silicon
-
-### ✅ Phase 2.1: M365 Authentication (2025-10-14)
-- OAuth2 authentication with MSAL Node
-- Secure token storage in system keychain
-- Automatic token refresh
-
-### ✅ Phase 2.2: Calendar Integration (2025-10-14)
-- Today's calendar meetings display
-- Meeting attendees and metadata
-- Join links and location info
-
-### ✅ Phase 2.3-3: Meeting Intelligence (2025-10-21)
-- Two-pass LLM workflow for summaries
-- Batch API integration (50% cost savings)
-- SQLite database persistence
-- Background async processing
-- **UI components complete** (recording browser, summary display, export)
-
-### ✅ Phase 2.3-4: Meeting-Recording Association (Complete - 2025-10-21)
-- Meeting selection during summary generation (Option C)
-- Week view with date range filters
-- Search meetings by title and attendees
-- Link recordings to calendar meetings
-- "Back to Selection" navigation
-
-### ✅ Phase 4a: Browse Mode & Branding (Complete - 2025-10-21)
-- Browse/Generate mode toggle
-- TranscriptViewer component
-- Aileron design system integration
-- Recording status badges
-- Smart navigation
-
-### 📅 Phase 4b: Summary Editor & Email (Next - ~20 hours)
-- Inline editing of summaries
-- Action items and key decisions editor
-- Recipient selector
-- Email preview with Aileron branding
-
-### 📅 Phase 5-10
-- Email distribution, data management, settings, error handling, performance optimization, documentation
-
-See [docs/planning/roadmap.md](./docs/planning/roadmap.md) for full details.
+See [docs/planning/roadmap.md](./docs/planning/roadmap.md) for detailed breakdown.
 
 ## Troubleshooting
 
 ### "No audio device found"
-- Check System Settings → Privacy & Security → Screen Recording
-- Grant permission to the app
 
-### "Whisper model not found"
-- Download model: `curl -L https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin -o models/ggml-base.bin`
+- Grant Screen Recording permission: System Settings → Privacy & Security → Screen Recording
 
 ### "HUGGINGFACE_TOKEN not configured"
-- Get token: https://huggingface.co/settings/tokens
-- Accept license: https://huggingface.co/pyannote/speaker-diarization-3.1
-- Add to `.env`: `HUGGINGFACE_TOKEN=hf_xxx`
 
-### "Transcription is slow"
-- Using base model (150MB) - fastest quality balance
-- Metal GPU acceleration automatic on Apple Silicon
-- Ensure other CPU-intensive apps are closed
+- Add token in Settings panel or `.env` file
+- Get token: [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)
+- Accept license: [huggingface.co/pyannote/speaker-diarization-3.1](https://huggingface.co/pyannote/speaker-diarization-3.1)
 
-### "Python script failed"
-- Activate venv: `source venv/bin/activate`
-- Reinstall: `pip install pyannote.audio torch torchaudio`
+### "Whisper model not found"
+
+- DMG version: Download via Settings panel (automatic on first transcription)
+- Source build: `curl -L https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin -o models/ggml-base.bin`
+
+### "Python script failed" or diarization errors
+
+- Activate venv: `source ~/meeting-agent-venv/bin/activate` (DMG) or `source venv/bin/activate` (source)
+- Reinstall: `pip install pyannote.audio torch torchaudio python-dotenv`
+
+### M365 authentication issues
+
+- Ensure Azure app registration has correct permissions
+- Clear cached tokens: Delete `~/Library/Application Support/meeting-agent/` and restart app
 
 ## Contributing
 
-This is currently a personal project being developed with Claude Code. Contribution guidelines will be added once core functionality is stable.
-
-If you find bugs or have suggestions, please open an issue on GitHub.
+This is a personal project developed with Claude Code. Bug reports and suggestions welcome via [GitHub Issues](https://github.com/sandeepAGI/meeting-agent/issues).
 
 ## License
 
-MIT License - See LICENSE file
+MIT License - See [LICENSE](./LICENSE)
 
 ---
 
-**Current Phase**: Phase 2.3-3 UI Components Complete ✅ (Audio + Transcription + Diarization + M365 + Calendar + LLM Intelligence Backend + UI)
-
-**Next Milestone**: Manual testing and Phase 2.3-3 completion review
-
-**Last Updated**: 2025-10-14
-
+**Last Updated**: 2026-01-05
 **Built with**: Claude Code (Sonnet 4.5) 🤖
