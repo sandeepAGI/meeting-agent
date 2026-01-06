@@ -16,7 +16,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:integration": "echo 'Integration test script will be configured'",
-    "test:e2e": "node scripts/electron-runner.js scripts/test-full-pipeline.ts",
+    "test:e2e": "node scripts/electron-runner.js scripts/archive/test-full-pipeline.ts",
     "rebuild:electron": "npm_config_build_from_source=true npx electron-rebuild -f",
     "rebuild:node": "npm_config_build_from_source=true npm rebuild",
     "lint": "eslint src --ext .ts,.tsx",

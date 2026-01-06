@@ -33,8 +33,12 @@ coverage/
 
 # Database
 *.db
+*.db-shm
+*.db-wal
 *.sqlite
 *.sqlite3
+*.sqlite-shm
+*.sqlite-wal
 
 # Logs
 logs/
@@ -61,6 +65,12 @@ Thumbs.db
 # Electron
 .webpack/
 .cache/
+
+# Python virtual environments
+venv/
+.venv/
+*.pyc
+__pycache__/
 
 # Temporary files
 tmp/
