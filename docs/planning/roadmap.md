@@ -1,8 +1,8 @@
 # Development Roadmap
 
 **Project**: Meeting Agent
-**Version**: 0.6.2.5
-**Last Updated**: 2026-01-05
+**Version**: 0.6.3.0
+**Last Updated**: 2026-01-07
 
 ---
 
@@ -11,7 +11,8 @@
 **Phase**: 6 (Configuration & Settings) - In Progress
 **Progress**: Batch 1 (API Keys) ✅ Complete | Batches 2-6 ⏳ Pending
 **Production Ready**: YES
-**What Works**: Audio capture + transcription + diarization + M365 integration + LLM summaries + email distribution + settings UI
+**What Works**: Audio capture + transcription + diarization + M365 integration + LLM summaries + email distribution + meeting metadata editing + settings UI
+**Latest**: Phase 4c complete - Meeting title/datetime editing, participant deletion with TDD approach
 
 ---
 
@@ -53,6 +54,7 @@
 | 2.3-4 | Meeting-Recording Link | ✅ | Oct 21, 2025 | Associate recordings with calendar meetings |
 | 4a | Browse Mode + Branding | ✅ | Oct 21, 2025 | View past transcripts, Aileron design |
 | 4b | Summary Editor | ✅ | Jan 23, 2026 | Inline editing, recipient selector |
+| 4c | Metadata Editing | ✅ | Jan 7, 2026 | Edit meeting title/datetime, delete participants |
 | 5 | Email Distribution | ✅ | Jan 27, 2026 | Send via Microsoft Graph API |
 | 5.5 | Email Customization | ✅ | Oct 30, 2025 | Section toggles, custom intro, disclaimer |
 | 6 (Batch 1) | Settings - API Keys | ✅ | Dec 4, 2025 | Settings UI + keychain integration |
@@ -158,6 +160,40 @@
 - Complete IPC layer for email features
 
 **Archive**: `docs/archive/phase4/` (when created)
+
+---
+
+### Phase 4c: Meeting Metadata Editing & Participant Deletion ✅
+
+**Completed**: January 7, 2026
+**Duration**: 1 day
+**Approach**: Test-Driven Development (TDD)
+**Deliverables**:
+- Meeting title editing with validation (empty check, 200 char limit)
+- Meeting date/time editing with validation (end > start)
+- Participant deletion with confirmation dialog
+- Database layer: 3 new methods (`updateMeetingSubject`, `updateMeetingDateTime`, `deleteMeetingAttendee`)
+- IPC layer: 3 new handlers with error propagation
+- UI components: `MeetingMetadataEditor` (new), `RecipientSelector` (enhanced)
+- Organizer protection: cannot delete meeting organizer
+- Complete test coverage: 95 tests (19 database + 14 IPC + 13 UI + 10 UI + 18 integration + 31 existing)
+
+**Features**:
+- ✅ Edit meeting title for calendar meetings and standalone recordings
+- ✅ Edit meeting start/end times with date picker
+- ✅ Delete attendees from meeting with confirmation dialog
+- ✅ Automatic removal of deleted attendees from recipient selection
+- ✅ Validation: empty title, end time before start time
+- ✅ Organizer badge display
+- ✅ Case-insensitive email matching
+- ✅ Real-time UI updates after deletion
+
+**Testing**: TDD-first approach with RED → GREEN → REFACTOR cycle
+- Database tests → Implementation → IPC tests → Implementation → UI tests → Implementation → Integration tests
+- 100% test coverage for new features
+- Manual testing checklist: 60+ test scenarios
+
+**Archive**: `docs/planning/meeting-metadata-editing-tdd-plan.md`, `docs/planning/meeting-metadata-editing-manual-testing.md`
 
 ---
 

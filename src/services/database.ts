@@ -272,6 +272,137 @@ export class DatabaseService {
     return stmt.all(`%${query}%`, limit) as any[]
   }
 
+  /**
+   * Update meeting subject
+   * TDD Plan: Meeting Metadata Editing & Participant Deletion
+   *
+   * @param meetingId - Meeting ID to update
+   * @param subject - New subject (will be trimmed and truncated to 200 chars)
+   * @returns true if update succeeded, false if meeting not found
+   * @throws Error if subject is empty or whitespace-only
+   */
+  updateMeetingSubject(meetingId: string, subject: string): boolean {
+    // Validate subject
+    const trimmedSubject = subject.trim()
+    if (trimmedSubject.length === 0) {
+      throw new Error('Subject cannot be empty')
+    }
+
+    // Truncate to 200 characters
+    const finalSubject = trimmedSubject.slice(0, 200)
+
+    // Check if meeting exists
+    const meeting = this.getMeeting(meetingId)
+    if (!meeting) {
+      return false
+    }
+
+    // Update subject and updated_at timestamp
+    const stmt = this.db.prepare(`
+      UPDATE meetings
+      SET subject = ?,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `)
+    const result = stmt.run(finalSubject, meetingId)
+    return result.changes > 0
+  }
+
+  /**
+   * Update meeting start and end times
+   * TDD Plan: Meeting Metadata Editing & Participant Deletion
+   *
+   * @param meetingId - Meeting ID to update
+   * @param startTime - New start time
+   * @param endTime - New end time
+   * @returns true if update succeeded, false if meeting not found
+   * @throws Error if end time is not after start time
+   */
+  updateMeetingDateTime(meetingId: string, startTime: Date, endTime: Date): boolean {
+    // Validate times
+    if (endTime.getTime() <= startTime.getTime()) {
+      throw new Error('End time must be after start time')
+    }
+
+    // Check if meeting exists
+    const meeting = this.getMeeting(meetingId)
+    if (!meeting) {
+      return false
+    }
+
+    // Convert to ISO strings for database storage
+    const startTimeISO = startTime.toISOString()
+    const endTimeISO = endTime.toISOString()
+
+    // Update times and updated_at timestamp
+    const stmt = this.db.prepare(`
+      UPDATE meetings
+      SET start_time = ?,
+          end_time = ?,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `)
+    const result = stmt.run(startTimeISO, endTimeISO, meetingId)
+    return result.changes > 0
+  }
+
+  /**
+   * Delete attendee from meeting's attendees_json
+   * TDD Plan: Meeting Metadata Editing & Participant Deletion
+   *
+   * @param meetingId - Meeting ID
+   * @param attendeeEmail - Email of attendee to delete
+   * @returns true if deletion succeeded, false if meeting/attendee not found
+   * @throws Error if attempting to delete organizer
+   */
+  deleteMeetingAttendee(meetingId: string, attendeeEmail: string): boolean {
+    // Get meeting
+    const meeting = this.getMeeting(meetingId)
+    if (!meeting) {
+      return false
+    }
+
+    // Check if trying to delete organizer
+    if (meeting.organizer_email &&
+        meeting.organizer_email.toLowerCase() === attendeeEmail.toLowerCase()) {
+      throw new Error('Cannot delete meeting organizer')
+    }
+
+    // Parse attendees JSON
+    if (!meeting.attendees_json) {
+      return false
+    }
+
+    let attendees: any[]
+    try {
+      attendees = JSON.parse(meeting.attendees_json)
+    } catch {
+      return false
+    }
+
+    // Find and remove attendee (case-insensitive email matching)
+    const emailLower = attendeeEmail.toLowerCase()
+    const originalLength = attendees.length
+    const updatedAttendees = attendees.filter(
+      (a: any) => a.email.toLowerCase() !== emailLower
+    )
+
+    // If no change, attendee wasn't found
+    if (updatedAttendees.length === originalLength) {
+      return false
+    }
+
+    // Update database
+    const stmt = this.db.prepare(`
+      UPDATE meetings
+      SET attendees_json = ?,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `)
+    const result = stmt.run(JSON.stringify(updatedAttendees), meetingId)
+    return result.changes > 0
+  }
+
   // ===========================================================================
   // Recordings
   // ===========================================================================

@@ -112,6 +112,11 @@ export interface ElectronAPI {
     markSummarySent: (summaryId: string, recipients: { name: string; email: string }[]) => Promise<{ success: boolean; error?: string }>
   }
 
+  // Meeting Metadata Editing
+  updateMeetingSubject: (meetingId: string, subject: string) => Promise<{ success: boolean; result?: any; error?: string }>
+  updateMeetingDateTime: (meetingId: string, startTime: string, endTime: string) => Promise<{ success: boolean; result?: any; error?: string }>
+  deleteMeetingAttendee: (meetingId: string, attendeeEmail: string) => Promise<{ success: boolean; error?: string }>
+
   // Phase 6: Settings
   settings: {
     getSettings: () => Promise<{ success: boolean; settings?: AppSettings; error?: string }>

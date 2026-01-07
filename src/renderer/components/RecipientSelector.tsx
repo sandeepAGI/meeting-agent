@@ -26,10 +26,17 @@ export function RecipientSelector({
   onRecipientsChange
 }: RecipientSelectorProps) {
   const [attendees, setAttendees] = useState<Attendee[]>([])
+  const [organizerEmail, setOrganizerEmail] = useState<string | null>(null)
   const [customEmail, setCustomEmail] = useState('')
   const [customName, setCustomName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Delete confirmation dialog state
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean
+    attendee: Attendee | null
+  }>({ isOpen: false, attendee: null })
 
   // Load meeting attendees
   useEffect(() => {
@@ -45,6 +52,9 @@ export function RecipientSelector({
         if (result.success && result.meeting) {
           const meeting = result.meeting
           let allAttendees: Attendee[] = []
+
+          // Track organizer email
+          setOrganizerEmail(meeting.organizer_email || null)
 
           // Add organizer first (always required)
           if (meeting.organizer_name && meeting.organizer_email) {
@@ -146,6 +156,83 @@ export function RecipientSelector({
     onRecipientsChange(selectedRecipients.filter(r => r.email !== email))
   }
 
+  const handleDeleteClick = (attendee: Attendee) => {
+    setDeleteConfirmation({
+      isOpen: true,
+      attendee
+    })
+  }
+
+  const handleDeleteCancel = () => {
+    setDeleteConfirmation({
+      isOpen: false,
+      attendee: null
+    })
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirmation.attendee || !meetingId) return
+
+    const deletedEmail = deleteConfirmation.attendee.email
+
+    try {
+      const result = await window.electronAPI.deleteMeetingAttendee(
+        meetingId,
+        deletedEmail
+      )
+
+      if (result.success) {
+        // Reload meeting data to refresh attendees list
+        const meetingResult = await window.electronAPI.database.getMeetingById(meetingId)
+        if (meetingResult.success && meetingResult.meeting) {
+          const meeting = meetingResult.meeting
+          let allAttendees: Attendee[] = []
+
+          // Add organizer first
+          if (meeting.organizer_name && meeting.organizer_email) {
+            allAttendees.push({
+              name: meeting.organizer_name,
+              email: meeting.organizer_email,
+              type: 'required'
+            })
+          }
+
+          // Parse and add other attendees
+          const attendeesJson = meeting.attendees_json
+          if (attendeesJson) {
+            const parsedAttendees = JSON.parse(attendeesJson) as Attendee[]
+            const filteredAttendees = parsedAttendees.filter(a =>
+              a.email !== meeting.organizer_email
+            )
+            allAttendees = [...allAttendees, ...filteredAttendees]
+          }
+
+          // Ensure deleted attendee is removed (in case database returned stale data)
+          allAttendees = allAttendees.filter(a => a.email !== deletedEmail)
+
+          setAttendees(allAttendees)
+        }
+
+        // Remove from selected recipients if present
+        onRecipientsChange(selectedRecipients.filter(r =>
+          r.email !== deletedEmail
+        ))
+
+        // Close dialog
+        setDeleteConfirmation({
+          isOpen: false,
+          attendee: null
+        })
+        setError(null)
+      } else {
+        setError(result.error || 'Failed to delete attendee')
+      }
+    } catch (err) {
+      console.error('Error deleting attendee:', err)
+      setError('Error deleting attendee')
+    }
+  }
+
   if (!meetingId) {
     return (
       <div className="recipient-selector">
@@ -225,20 +312,38 @@ export function RecipientSelector({
 
           <div className="attendees-list">
             {attendees.map((attendee, index) => (
-              <label key={index} className="attendee-checkbox">
-                <input
-                  type="checkbox"
-                  checked={isSelected(attendee.email)}
-                  onChange={() => toggleRecipient(attendee)}
-                />
-                <span className="attendee-info">
-                  <span className="attendee-name">{attendee.name}</span>
-                  <span className="attendee-email">({attendee.email})</span>
-                  {attendee.type === 'required' && (
-                    <span className="badge badge-required">Required</span>
-                  )}
-                </span>
-              </label>
+              <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <label className="attendee-checkbox" style={{ flex: 1 }}>
+                  <input
+                    type="checkbox"
+                    checked={isSelected(attendee.email)}
+                    onChange={() => toggleRecipient(attendee)}
+                  />
+                  <span className="attendee-info">
+                    <span className="attendee-name">{attendee.name}</span>
+                    <span className="attendee-email">({attendee.email})</span>
+                    {attendee.email === organizerEmail && (
+                      <span className="badge badge-organizer" style={{ marginLeft: '0.5rem' }}>Organizer</span>
+                    )}
+                    {attendee.type === 'required' && attendee.email !== organizerEmail && (
+                      <span className="badge badge-required">Required</span>
+                    )}
+                  </span>
+                </label>
+                <button
+                  onClick={() => handleDeleteClick(attendee)}
+                  className="btn-remove"
+                  disabled={attendee.email === organizerEmail}
+                  title={attendee.email === organizerEmail ? "Cannot delete organizer" : "Delete attendee"}
+                  aria-label="remove"
+                  style={{
+                    opacity: attendee.email === organizerEmail ? 0.3 : 1,
+                    cursor: attendee.email === organizerEmail ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
             ))}
           </div>
         </>
@@ -286,6 +391,56 @@ export function RecipientSelector({
                 </button>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {deleteConfirmation.isOpen && deleteConfirmation.attendee && (
+        <div className="modal-overlay" style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div className="modal-content" style={{
+            backgroundColor: 'white',
+            padding: '2rem',
+            borderRadius: '8px',
+            maxWidth: '500px',
+            width: '90%'
+          }}>
+            <h3 style={{ marginTop: 0 }}>Confirm Removal</h3>
+            <p>
+              Are you sure you want to remove {deleteConfirmation.attendee.name} ({deleteConfirmation.attendee.email}) from this meeting?
+            </p>
+            <p style={{ fontSize: '0.9rem', color: '#666' }}>
+              Note: This will not affect speaker mappings in existing transcripts.
+            </p>
+            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
+              <button
+                onClick={handleDeleteCancel}
+                className="btn btn-secondary"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                className="btn btn-danger"
+                style={{
+                  backgroundColor: '#d33',
+                  color: 'white'
+                }}
+              >
+                Confirm
+              </button>
+            </div>
           </div>
         </div>
       )}

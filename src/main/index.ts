@@ -1220,6 +1220,65 @@ ipcMain.handle('db-update-recording-meeting-id', async (_event, recordingId: str
   }
 })
 
+// Meeting Metadata Editing: Update meeting subject
+ipcMain.handle('update-meeting-subject', async (_event, meetingId: string, subject: string) => {
+  try {
+    console.log('[Database] Updating meeting subject:', meetingId, '->', subject)
+    const result = dbService.updateMeetingSubject(meetingId, subject)
+    if (!result) {
+      return { success: false, error: 'Meeting not found' }
+    }
+    const meeting = dbService.getMeeting(meetingId)
+    return { success: true, result: meeting }
+  } catch (error) {
+    console.error('[Database] Update meeting subject failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update meeting subject'
+    }
+  }
+})
+
+// Meeting Metadata Editing: Update meeting date/time
+ipcMain.handle('update-meeting-datetime', async (_event, meetingId: string, startTime: string, endTime: string) => {
+  try {
+    console.log('[Database] Updating meeting datetime:', meetingId, startTime, '->', endTime)
+    const startDate = new Date(startTime)
+    const endDate = new Date(endTime)
+
+    const result = dbService.updateMeetingDateTime(meetingId, startDate, endDate)
+    if (!result) {
+      return { success: false, error: 'Meeting not found' }
+    }
+    const meeting = dbService.getMeeting(meetingId)
+    return { success: true, result: meeting }
+  } catch (error) {
+    console.error('[Database] Update meeting datetime failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update meeting datetime'
+    }
+  }
+})
+
+// Meeting Metadata Editing: Delete meeting attendee
+ipcMain.handle('delete-meeting-attendee', async (_event, meetingId: string, attendeeEmail: string) => {
+  try {
+    console.log('[Database] Deleting meeting attendee:', meetingId, attendeeEmail)
+    const result = dbService.deleteMeetingAttendee(meetingId, attendeeEmail)
+    if (!result) {
+      return { success: false, error: 'Meeting or attendee not found' }
+    }
+    return { success: true }
+  } catch (error) {
+    console.error('[Database] Delete meeting attendee failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to delete attendee'
+    }
+  }
+})
+
 // Phase 4: Get transcript by recording ID
 ipcMain.handle('db-get-transcript-by-recording-id', async (_event, recordingId: string) => {
   try {
