@@ -706,7 +706,14 @@ export class DatabaseService {
 
   getSummary(summaryId: string): MeetingSummary | null {
     const stmt = this.db.prepare(`
-      SELECT s.*, m.subject as meeting_subject
+      SELECT
+        s.*,
+        m.subject as meeting_subject,
+        m.start_time as meeting_start_time,
+        m.end_time as meeting_end_time,
+        m.organizer_name as meeting_organizer_name,
+        m.organizer_email as meeting_organizer_email,
+        m.location as meeting_location
       FROM meeting_summaries s
       LEFT JOIN meetings m ON s.meeting_id = m.id
       WHERE s.id = ?

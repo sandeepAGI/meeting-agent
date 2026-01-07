@@ -11,6 +11,7 @@ import type { MeetingSummary, SpeakerMapping, ActionItem, DetailedNotes, EmailRe
 import { RecipientSelector } from './RecipientSelector'
 import { EmailPreview } from './EmailPreview'
 import { EmailSectionToggles as EmailSectionTogglesComponent } from './EmailSectionToggles'
+import { MeetingMetadataEditor } from './MeetingMetadataEditor'
 
 // Define default sections OUTSIDE the component to prevent recreation on every render
 // This fixes the infinite loop bug where useEffect would run on every render
@@ -454,7 +455,7 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
       // Import email generator to create HTML
       const { generateEmailHTML } = await import('../../utils/emailGenerator')
 
-      // Generate email HTML with Phase 5.5 customizations
+      // Generate email HTML with Phase 5.5 customizations and Phase 4c metadata
       const emailHtml = generateEmailHTML({
         summary: editedSummary,
         speakers: editedSpeakers,
@@ -462,7 +463,11 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
         keyDecisions: editedKeyDecisions,
         detailedNotes: editedDetailedNotes,
         customIntroduction: customIntroduction || undefined,
-        enabledSections: enabledSections
+        enabledSections: enabledSections,
+        meetingTitle: summary.meeting_subject,
+        meetingStartTime: summary.meeting_start_time,
+        meetingEndTime: summary.meeting_end_time,
+        meetingLocation: summary.meeting_location
       })
 
       // Send via Graph API
@@ -726,6 +731,27 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
         </div>
       </div>
 
+      {/* Meeting Metadata Editor - Phase 4c */}
+      {summary.meeting_id && summary.meeting_subject && summary.meeting_start_time && summary.meeting_end_time && (
+        <div className="summary-section">
+          <MeetingMetadataEditor
+            meeting={{
+              id: summary.meeting_id,
+              subject: summary.meeting_subject,
+              start_time: summary.meeting_start_time,
+              end_time: summary.meeting_end_time,
+              organizer_name: summary.meeting_organizer_name,
+              organizer_email: summary.meeting_organizer_email
+            }}
+            onUpdate={async (updatedMeeting) => {
+              // Refresh the summary data to reflect the changes
+              // The parent component should handle refetching the summary
+              console.log('[SummaryDisplay] Meeting metadata updated:', updatedMeeting)
+            }}
+          />
+        </div>
+      )}
+
       {/* Speaker Mappings */}
       <div className="summary-section">
         <div className="section-header">
@@ -746,7 +772,7 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
               {editedSpeakers.map((speaker, index) => (
                 <div key={index} className="speaker-card editing">
                   <div className="speaker-edit-form">
-                    <div className="form-row">
+                    <div className="form-row" style={{ alignItems: 'center' }}>
                       <label className="form-label">
                         <span className="speaker-label-readonly">{speaker.label}</span>
                       </label>
@@ -764,6 +790,19 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
                         placeholder="Email (optional)"
                         className="form-input"
                       />
+                      <button
+                        onClick={() => {
+                          if (window.confirm(`Remove ${speaker.name} (${speaker.label}) from speaker list?\n\nThis speaker will not appear in the email.`)) {
+                            const updatedSpeakers = editedSpeakers.filter((_, i) => i !== index)
+                            setEditedSpeakers(updatedSpeakers)
+                          }
+                        }}
+                        className="btn-remove"
+                        title="Delete this speaker"
+                        style={{ marginLeft: '0.5rem' }}
+                      >
+                        ✕
+                      </button>
                     </div>
                     <div className="form-row">
                       <label>Confidence:</label>
@@ -1644,6 +1683,10 @@ export function SummaryDisplay({ summary, onUpdate, onRegenerate, onBack, isUpda
           subjectLine={subjectLine}
           customIntroduction={customIntroduction}
           enabledSections={enabledSections}
+          meetingTitle={summary.meeting_subject}
+          meetingStartTime={summary.meeting_start_time}
+          meetingEndTime={summary.meeting_end_time}
+          meetingLocation={summary.meeting_location}
           onClose={() => setShowEmailPreview(false)}
           onSend={handleSendEmail}
           isSending={isSending}

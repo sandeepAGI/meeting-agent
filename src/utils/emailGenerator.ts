@@ -18,6 +18,12 @@ export interface EmailContent {
   detailedNotes: DetailedNotes | null
   customIntroduction?: string
   enabledSections?: EmailSectionToggles
+  // Phase 4c: Meeting metadata
+  meetingTitle?: string
+  meetingDate?: string // ISO date string
+  meetingStartTime?: string // ISO datetime string
+  meetingEndTime?: string // ISO datetime string
+  meetingLocation?: string
 }
 
 // Default section toggles (all enabled)
@@ -75,6 +81,63 @@ export function generateEmailHTML(content: EmailContent): string {
       <!-- Content -->
       <div style="background: white; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 8px 8px;">
   `
+
+  // Meeting Metadata (Phase 4c)
+  if (content.meetingTitle || content.meetingStartTime) {
+    html += `
+      <div style="margin-bottom: 30px; background: #F8F9FA; padding: 20px; border-radius: 6px; border-left: 4px solid #2D2042;">
+    `
+
+    if (content.meetingTitle) {
+      html += `
+        <h2 style="color: #2D2042; font-size: 22px; margin-top: 0; margin-bottom: 12px;">${escapeHtml(content.meetingTitle)}</h2>
+      `
+    }
+
+    if (content.meetingStartTime && content.meetingEndTime) {
+      const startDate = new Date(content.meetingStartTime)
+      const endDate = new Date(content.meetingEndTime)
+
+      // Format: "Monday, January 7, 2026"
+      const dateStr = startDate.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+
+      // Format: "2:00 PM - 3:30 PM"
+      const startTimeStr = startDate.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit'
+      })
+      const endTimeStr = endDate.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit'
+      })
+
+      html += `
+        <p style="margin: 0 0 8px 0; color: #555;">
+          <strong>📅 Date:</strong> ${dateStr}
+        </p>
+        <p style="margin: 0 0 8px 0; color: #555;">
+          <strong>🕐 Time:</strong> ${startTimeStr} - ${endTimeStr}
+        </p>
+      `
+    }
+
+    if (content.meetingLocation) {
+      html += `
+        <p style="margin: 0; color: #555;">
+          <strong>📍 Location:</strong> ${escapeHtml(content.meetingLocation)}
+        </p>
+      `
+    }
+
+    html += `
+      </div>
+    `
+  }
 
   // Custom Introduction (if provided)
   if (content.customIntroduction && content.customIntroduction.trim()) {
@@ -325,6 +388,46 @@ export function generatePlainTextEmail(content: EmailContent): string {
 
   let text = 'MEETING SUMMARY\n'
   text += '='.repeat(50) + '\n\n'
+
+  // Meeting Metadata (Phase 4c)
+  if (content.meetingTitle || content.meetingStartTime) {
+    if (content.meetingTitle) {
+      text += content.meetingTitle.toUpperCase() + '\n'
+      text += '='.repeat(content.meetingTitle.length) + '\n\n'
+    }
+
+    if (content.meetingStartTime && content.meetingEndTime) {
+      const startDate = new Date(content.meetingStartTime)
+      const endDate = new Date(content.meetingEndTime)
+
+      // Format: "Monday, January 7, 2026"
+      const dateStr = startDate.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+
+      // Format: "2:00 PM - 3:30 PM"
+      const startTimeStr = startDate.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit'
+      })
+      const endTimeStr = endDate.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit'
+      })
+
+      text += `📅 Date: ${dateStr}\n`
+      text += `🕐 Time: ${startTimeStr} - ${endTimeStr}\n`
+    }
+
+    if (content.meetingLocation) {
+      text += `📍 Location: ${content.meetingLocation}\n`
+    }
+
+    text += '\n'
+  }
 
   // Custom Introduction
   if (content.customIntroduction && content.customIntroduction.trim()) {

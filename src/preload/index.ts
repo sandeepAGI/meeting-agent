@@ -121,8 +121,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.invoke('update-meeting-subject', meetingId, subject),
     updateMeetingDateTime: (meetingId: string, startTime: string, endTime: string) =>
       ipcRenderer.invoke('update-meeting-datetime', meetingId, startTime, endTime),
-    deleteMeetingAttendee: (meetingId: string, attendeeEmail: string) =>
-      ipcRenderer.invoke('delete-meeting-attendee', meetingId, attendeeEmail),
     // Phase 4: Browse mode
     getTranscriptByRecordingId: (recordingId: string) =>
       ipcRenderer.invoke('db-get-transcript-by-recording-id', recordingId),

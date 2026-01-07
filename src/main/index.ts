@@ -1261,23 +1261,6 @@ ipcMain.handle('update-meeting-datetime', async (_event, meetingId: string, star
   }
 })
 
-// Meeting Metadata Editing: Delete meeting attendee
-ipcMain.handle('delete-meeting-attendee', async (_event, meetingId: string, attendeeEmail: string) => {
-  try {
-    console.log('[Database] Deleting meeting attendee:', meetingId, attendeeEmail)
-    const result = dbService.deleteMeetingAttendee(meetingId, attendeeEmail)
-    if (!result) {
-      return { success: false, error: 'Meeting or attendee not found' }
-    }
-    return { success: true }
-  } catch (error) {
-    console.error('[Database] Delete meeting attendee failed:', error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to delete attendee'
-    }
-  }
-})
 
 // Phase 4: Get transcript by recording ID
 ipcMain.handle('db-get-transcript-by-recording-id', async (_event, recordingId: string) => {

@@ -71,6 +71,13 @@ export interface MeetingSummary {
   transcript_id: string
   meeting_subject?: string // Optional: fetched via JOIN with meetings table
 
+  // Phase 4c: Meeting metadata (fetched via JOIN with meetings table)
+  meeting_start_time?: string
+  meeting_end_time?: string
+  meeting_organizer_name?: string
+  meeting_organizer_email?: string
+  meeting_location?: string
+
   // Pass 1
   pass1_batch_id: string | null
   pass1_status: string | null

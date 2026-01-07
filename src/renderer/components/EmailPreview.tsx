@@ -26,6 +26,11 @@ interface EmailPreviewProps {
   // Phase 5.5: Email customization
   customIntroduction?: string
   enabledSections?: EmailSectionToggles
+  // Phase 4c: Meeting metadata
+  meetingTitle?: string
+  meetingStartTime?: string
+  meetingEndTime?: string
+  meetingLocation?: string
 }
 
 export function EmailPreview({
@@ -42,7 +47,11 @@ export function EmailPreview({
   sendError = null,
   sendSuccess = false,
   customIntroduction,
-  enabledSections
+  enabledSections,
+  meetingTitle,
+  meetingStartTime,
+  meetingEndTime,
+  meetingLocation
 }: EmailPreviewProps) {
   // Generate email HTML using utility
   const emailHtml = generateEmailHTML({
@@ -52,7 +61,11 @@ export function EmailPreview({
     keyDecisions,
     detailedNotes,
     customIntroduction,
-    enabledSections
+    enabledSections,
+    meetingTitle,
+    meetingStartTime,
+    meetingEndTime,
+    meetingLocation
   })
 
   return (
