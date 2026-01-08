@@ -13,6 +13,7 @@
     "preview": "electron-vite preview",
     "start": "electron-vite preview",
     "test": "jest",
+    "posttest": "electron-rebuild -f -w better-sqlite3",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:integration": "echo 'Integration test script will be configured'",

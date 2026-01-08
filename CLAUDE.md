@@ -33,6 +33,11 @@ npm test             # Run tests
 npm run package:mac  # Create DMG installer
 ```
 
+**⚠️ IMPORTANT - Native Module Compatibility:**
+- Running `npm test` compiles better-sqlite3 for system Node.js, breaking `npm run dev` (which needs Electron's Node.js)
+- **After running tests, always rebuild for Electron:** `./node_modules/.bin/electron-rebuild -f -w better-sqlite3`
+- Or add to package.json scripts: `"posttest": "electron-rebuild -f -w better-sqlite3"` for automatic rebuild
+
 ---
 
 ## Critical Patterns
