@@ -97,12 +97,15 @@ export class JobScheduler {
 
   /**
    * Clean up old summaries based on retention policy.
-   * Implemented in Task 1.3
+   * Phase 7: Storage Management - Task 1.3
    * @private
    */
   private async cleanupSummaries(): Promise<void> {
-    // TODO: Implement in Task 1.3
-    console.log('[JobScheduler] Summary cleanup (not yet implemented)')
+    const settings = this.settingsService.getCategory('dataRetention')
+    const retentionDays = settings.summaryRetentionDays ?? 365
+
+    const result = this.dbService.cleanupOldSummaries(retentionDays)
+    console.log(`[JobScheduler] Summary cleanup: ${result.deletedCount} deleted (retention: ${retentionDays} days)`)
   }
 
   /**

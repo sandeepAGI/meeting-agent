@@ -1122,6 +1122,30 @@ export class DatabaseService {
   }
 
   /**
+   * Clean up old summaries based on retention policy
+   * Phase 7: Storage Management - Task 1.3
+   *
+   * @param retentionDays - Delete summaries older than this many days (0 = keep forever)
+   * @returns Object with deletedCount
+   */
+  cleanupOldSummaries(retentionDays: number): { deletedCount: number } {
+    // 0 = keep forever
+    if (retentionDays === 0) {
+      return { deletedCount: 0 }
+    }
+
+    // Delete summaries older than retention period
+    const result = this.db.prepare(`
+      DELETE FROM meeting_summaries
+      WHERE created_at < datetime('now', '-' || ? || ' days')
+    `).run(retentionDays)
+
+    const deletedCount = result.changes
+    console.log(`[Cleanup] Deleted ${deletedCount} summaries older than ${retentionDays} days`)
+    return { deletedCount }
+  }
+
+  /**
    * Close database connection
    */
   close(): void {
