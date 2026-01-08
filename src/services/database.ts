@@ -1146,6 +1146,56 @@ export class DatabaseService {
   }
 
   /**
+   * Get current audio storage usage
+   * Phase 7: Storage Management - Task 1.4
+   *
+   * @returns Object with totalBytes and totalGB
+   */
+  getAudioStorageUsage(): { totalBytes: number; totalGB: number } {
+    const result = this.db.prepare(`
+      SELECT COALESCE(SUM(file_size_bytes), 0) as total_bytes
+      FROM recordings
+      WHERE file_path != ''
+    `).get() as { total_bytes: number }
+
+    const totalBytes = result.total_bytes || 0
+    const totalGB = totalBytes / (1024 ** 3)
+
+    return { totalBytes, totalGB }
+  }
+
+  /**
+   * Get oldest recordings ordered by created_at
+   * Phase 7: Storage Management - Task 1.4
+   *
+   * @param limit - Maximum number of recordings to return
+   * @returns Array of recordings with id, file_path, and file_size_bytes
+   */
+  getOldestRecordings(limit: number): Array<{ id: string; file_path: string; file_size_bytes: number }> {
+    return this.db.prepare(`
+      SELECT id, file_path, file_size_bytes
+      FROM recordings
+      WHERE file_path != ''
+      ORDER BY created_at ASC
+      LIMIT ?
+    `).all(limit) as Array<{ id: string; file_path: string; file_size_bytes: number }>
+  }
+
+  /**
+   * Clear recording file path (set to empty string)
+   * Phase 7: Storage Management - Task 1.4
+   *
+   * Used when audio file is deleted to free up storage but keep database record.
+   * Uses empty string instead of NULL due to NOT NULL constraint in schema.
+   *
+   * @param recordingId - Recording ID to update
+   */
+  clearRecordingFilePath(recordingId: string): void {
+    this.db.prepare("UPDATE recordings SET file_path = '' WHERE id = ?")
+      .run(recordingId)
+  }
+
+  /**
    * Close database connection
    */
   close(): void {

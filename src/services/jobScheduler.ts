@@ -8,6 +8,7 @@
 
 import type { DatabaseService } from './database'
 import type { SettingsService } from './settings'
+import * as fs from 'fs'
 
 export class JobScheduler {
   private intervalId: NodeJS.Timeout | null = null
@@ -110,12 +111,62 @@ export class JobScheduler {
 
   /**
    * Enforce audio storage quota.
-   * Deletes oldest audio files when quota exceeded.
-   * Implemented in Task 1.4
+   * Phase 7: Storage Management - Task 1.4
+   *
+   * Deletes oldest audio files when quota is exceeded.
    * @private
    */
   private async enforceAudioQuota(): Promise<void> {
-    // TODO: Implement in Task 1.4
-    console.log('[JobScheduler] Audio quota enforcement (not yet implemented)')
+    const settings = this.settingsService.getCategory('dataRetention')
+    const quotaGB = settings.audioStorageQuotaGB ?? 0
+
+    if (quotaGB === 0) {
+      console.log('[JobScheduler] Audio quota enforcement skipped (quota = 0, unlimited)')
+      return // Unlimited
+    }
+
+    const usage = this.dbService.getAudioStorageUsage()
+    console.log(`[JobScheduler] Current audio storage: ${usage.totalGB.toFixed(2)} GB / ${quotaGB} GB`)
+
+    if (usage.totalGB <= quotaGB) {
+      console.log('[JobScheduler] Audio storage under quota, no action needed')
+      return // Under quota
+    }
+
+    // Delete oldest files until under quota
+    const quotaBytes = quotaGB * (1024 ** 3)
+    let currentBytes = usage.totalBytes
+    let deletedCount = 0
+    let deletedBytes = 0
+
+    const oldestRecordings = this.dbService.getOldestRecordings(1000) // Max 1000 at a time
+
+    for (const recording of oldestRecordings) {
+      if (currentBytes <= quotaBytes) {
+        break // Under quota now
+      }
+
+      try {
+        // Delete file from disk
+        if (fs.existsSync(recording.file_path)) {
+          fs.unlinkSync(recording.file_path)
+          console.log(`[JobScheduler] Deleted audio file: ${recording.file_path} (${(recording.file_size_bytes / (1024 ** 2)).toFixed(1)} MB)`)
+        } else {
+          console.log(`[JobScheduler] Audio file not found (already deleted?): ${recording.file_path}`)
+        }
+
+        // Update database - set file_path to NULL
+        this.dbService.clearRecordingFilePath(recording.id)
+
+        currentBytes -= recording.file_size_bytes
+        deletedBytes += recording.file_size_bytes
+        deletedCount++
+      } catch (error) {
+        console.error(`[JobScheduler] Failed to delete ${recording.file_path}:`, error)
+      }
+    }
+
+    const deletedMB = deletedBytes / (1024 ** 2)
+    console.log(`[JobScheduler] Audio quota enforcement complete: ${deletedCount} files deleted (${deletedMB.toFixed(1)} MB freed)`)
   }
 }
