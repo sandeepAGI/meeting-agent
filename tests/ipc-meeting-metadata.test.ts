@@ -1,11 +1,10 @@
 /**
  * IPC Handler Tests: Meeting Metadata Editing
- * TDD Plan: Meeting Metadata Editing & Participant Deletion
+ * TDD Plan: Meeting Metadata Editing
  *
  * Tests for IPC handlers:
  * - update-meeting-subject
  * - update-meeting-datetime
- * - delete-meeting-attendee
  *
  * Note: These are unit tests that test the handler logic directly
  * without spinning up a full Electron environment.
@@ -17,7 +16,6 @@ import { DatabaseService } from '../src/services/database'
 const mockDbService = {
   updateMeetingSubject: jest.fn(),
   updateMeetingDateTime: jest.fn(),
-  deleteMeetingAttendee: jest.fn(),
   getMeeting: jest.fn()
 }
 
@@ -55,21 +53,6 @@ const handlers = {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to update meeting datetime'
-      }
-    }
-  },
-
-  'delete-meeting-attendee': async (_event: any, meetingId: string, attendeeEmail: string) => {
-    try {
-      const result = mockDbService.deleteMeetingAttendee(meetingId, attendeeEmail)
-      if (!result) {
-        return { success: false, error: 'Meeting or attendee not found' }
-      }
-      return { success: true }
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to delete attendee'
       }
     }
   }
@@ -275,105 +258,6 @@ describe('IPC Handlers - Meeting Metadata Editing', () => {
       expect(result.success).toBe(true)
       expect(result.result.start_time).toBe('2026-01-07T23:00:00.000Z')
       expect(result.result.end_time).toBe('2026-01-08T01:00:00.000Z')
-    })
-  })
-
-  // ===========================================================================
-  // Test Suite 3: delete-meeting-attendee handler
-  // ===========================================================================
-
-  describe('delete-meeting-attendee', () => {
-    it('should call database service and return success', async () => {
-      // GIVEN: Database service returns true
-      mockDbService.deleteMeetingAttendee.mockReturnValue(true)
-
-      // WHEN: Handler is called
-      const result = await handlers['delete-meeting-attendee'](
-        null,
-        'meeting-4',
-        'bob@example.com'
-      )
-
-      // THEN: Should call database service
-      expect(mockDbService.deleteMeetingAttendee).toHaveBeenCalledWith(
-        'meeting-4',
-        'bob@example.com'
-      )
-
-      // AND: Return success
-      expect(result.success).toBe(true)
-      expect(result.error).toBeUndefined()
-    })
-
-    it('should return error when trying to delete organizer', async () => {
-      // GIVEN: Database service throws error
-      mockDbService.deleteMeetingAttendee.mockImplementation(() => {
-        throw new Error('Cannot delete meeting organizer')
-      })
-
-      // WHEN: Handler is called
-      const result = await handlers['delete-meeting-attendee'](
-        null,
-        'meeting-4',
-        'alice@example.com'
-      )
-
-      // THEN: Return error
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('Cannot delete meeting organizer')
-    })
-
-    it('should return error when meeting or attendee not found', async () => {
-      // GIVEN: Database service returns false
-      mockDbService.deleteMeetingAttendee.mockReturnValue(false)
-
-      // WHEN: Handler is called
-      const result = await handlers['delete-meeting-attendee'](
-        null,
-        'non-existent',
-        'bob@example.com'
-      )
-
-      // THEN: Return error
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('Meeting or attendee not found')
-    })
-
-    it('should handle email address case-insensitively', async () => {
-      // GIVEN: Database service handles case-insensitive matching
-      mockDbService.deleteMeetingAttendee.mockReturnValue(true)
-
-      // WHEN: Handler is called with uppercase email
-      const result = await handlers['delete-meeting-attendee'](
-        null,
-        'meeting-4',
-        'BOB@EXAMPLE.COM'
-      )
-
-      // THEN: Should call database service (which handles case-insensitive)
-      expect(mockDbService.deleteMeetingAttendee).toHaveBeenCalledWith(
-        'meeting-4',
-        'BOB@EXAMPLE.COM'
-      )
-      expect(result.success).toBe(true)
-    })
-
-    it('should handle database errors gracefully', async () => {
-      // GIVEN: Database service throws unexpected error
-      mockDbService.deleteMeetingAttendee.mockImplementation(() => {
-        throw new Error('Database locked')
-      })
-
-      // WHEN: Handler is called
-      const result = await handlers['delete-meeting-attendee'](
-        null,
-        'meeting-4',
-        'bob@example.com'
-      )
-
-      // THEN: Return error response
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('Database locked')
     })
   })
 })
