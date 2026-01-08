@@ -12,6 +12,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### [0.6.5.0] - 2026-01-08
 
 ##### Added
+- **Gmail Settings Integration** (Task 2.4): Email provider settings in Settings panel
+  - Added `email` category to AppSettings with provider selection and Google credentials path
+  - New Email tab in Settings UI with provider dropdown (M365 / Gmail)
+  - Conditional Google credentials path input (shown only for Gmail)
+  - Settings persistence for email provider configuration
+  - Default email provider set to M365
+  - Helpful UI hints and information messages
+  - Visual styling for settings info boxes
+  - 19 passing tests validating settings structure and behavior
 - **EmailProvider Abstraction** (Task 2.3): Unified email provider interface
   - Factory pattern for creating M365 or Gmail email providers
   - `EmailProvider` interface with `sendEmail()`, `isAuthenticated()`, and `getProviderType()` methods

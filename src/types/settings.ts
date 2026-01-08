@@ -53,6 +53,12 @@ export interface AppSettings {
     includeMicrophone: boolean
     announcementText: string
   }
+
+  // Email Settings
+  email: {
+    provider: 'm365' | 'gmail'
+    googleCredentialsPath: string | null
+  }
 }
 
 /**
@@ -67,7 +73,7 @@ export interface ApiKeyStatus {
 /**
  * Settings tab types for UI
  */
-export type SettingsTab = 'api' | 'transcription' | 'summary' | 'storage' | 'ui' | 'audio'
+export type SettingsTab = 'api' | 'transcription' | 'summary' | 'storage' | 'ui' | 'audio' | 'email'
 
 /**
  * Whisper model options with descriptions

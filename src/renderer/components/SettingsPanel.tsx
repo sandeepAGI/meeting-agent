@@ -113,7 +113,8 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
     { id: 'summary', label: 'Summary', icon: '📝' },
     { id: 'storage', label: 'Storage', icon: '💾' },
     { id: 'ui', label: 'Interface', icon: '🎨' },
-    { id: 'audio', label: 'Audio', icon: '🔊' }
+    { id: 'audio', label: 'Audio', icon: '🔊' },
+    { id: 'email', label: 'Email', icon: '📧' }
   ]
 
   // Handle click on overlay to close
@@ -748,6 +749,58 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                   This message is spoken when recording starts to inform participants.
                 </span>
               </div>
+            </div>
+          )}
+
+          {/* Email Settings Tab */}
+          {activeTab === 'email' && (
+            <div className="settings-section">
+              <h3>Email Settings</h3>
+
+              <div className="settings-field">
+                <label>Email Provider</label>
+                <select
+                  value={settings.email.provider}
+                  onChange={(e) =>
+                    actions.updateCategory('email', {
+                      provider: e.target.value as 'm365' | 'gmail'
+                    })
+                  }
+                >
+                  <option value="m365">Microsoft 365 (Graph API)</option>
+                  <option value="gmail">Gmail (Google API)</option>
+                </select>
+                <span className="settings-hint">
+                  Select which email service to use for sending meeting summaries
+                </span>
+              </div>
+
+              {settings.email.provider === 'gmail' && (
+                <div className="settings-field">
+                  <label>Google Credentials Path</label>
+                  <input
+                    type="text"
+                    value={settings.email.googleCredentialsPath || ''}
+                    onChange={(e) =>
+                      actions.updateCategory('email', {
+                        googleCredentialsPath: e.target.value || null
+                      })
+                    }
+                    placeholder="/path/to/credentials.json"
+                  />
+                  <span className="settings-hint">
+                    Absolute path to your Google OAuth2 credentials JSON file. Required for Gmail.
+                  </span>
+                </div>
+              )}
+
+              {settings.email.provider === 'm365' && (
+                <div className="settings-info">
+                  <p>
+                    Microsoft 365 email uses your Azure credentials configured in the API Keys tab.
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>

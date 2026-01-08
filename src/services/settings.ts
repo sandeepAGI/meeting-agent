@@ -78,6 +78,12 @@ export interface AppSettings {
     includeMicrophone: boolean
     announcementText: string
   }
+
+  // Email Settings
+  email: {
+    provider: 'm365' | 'gmail'
+    googleCredentialsPath: string | null
+  }
 }
 
 /**
@@ -118,6 +124,10 @@ export const DEFAULT_SETTINGS: AppSettings = {
     includeMicrophone: true,
     announcementText:
       'This meeting, with your permission, is being recorded to generate meeting notes. These recordings will be deleted after notes are generated.'
+  },
+  email: {
+    provider: 'm365',
+    googleCredentialsPath: null
   }
 }
 
