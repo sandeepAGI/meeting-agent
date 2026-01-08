@@ -62,6 +62,19 @@ export function useAudioCapture() {
     }
   }, [])
 
+  // Phase 6 Batch 4: Load includeMicrophone setting on mount
+  useEffect(() => {
+    window.electronAPI.settings.getSettings().then((result) => {
+      if (result.success && result.settings) {
+        const includeMic = result.settings.audio?.includeMicrophone ?? true
+        setCaptureMicrophone(includeMic)
+        console.log('[Audio] Microphone capture setting loaded:', includeMic)
+      }
+    }).catch((err) => {
+      console.error('[Audio] Failed to load microphone setting:', err)
+    })
+  }, [])
+
   // Update duration, lastSaveTime, and chunkIndex while recording
   useEffect(() => {
     if (isRecording) {

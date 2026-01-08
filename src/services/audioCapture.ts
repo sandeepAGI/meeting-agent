@@ -23,6 +23,7 @@ export class AudioCaptureService {
   private onAudioLevelCallback: ((level: AudioLevel) => void) | null = null
 
   private captureMicrophone = true // Default: capture microphone
+  private announcementText: string | null = null // Phase 6 Batch 4: Cached announcement text
 
   // Phase 1.5: Chunked recording
   private sessionId: string | null = null
@@ -64,6 +65,35 @@ export class AudioCaptureService {
    */
   setCaptureMicrophone(enabled: boolean): void {
     this.captureMicrophone = enabled
+  }
+
+  /**
+   * Phase 6 Batch 4: Get announcement text from settings (with caching)
+   */
+  private async getAnnouncementText(): Promise<string> {
+    // Return cached value if available
+    if (this.announcementText !== null) {
+      return this.announcementText
+    }
+
+    // Default announcement text
+    const defaultText =
+      "This meeting, with your permission, is being recorded to generate meeting notes. " +
+      "These recordings will be deleted after notes are generated."
+
+    try {
+      const result = await window.electronAPI.settings.getSettings()
+      if (result.success && result.settings) {
+        this.announcementText = result.settings.audio?.announcementText || defaultText
+      } else {
+        this.announcementText = defaultText
+      }
+    } catch (error) {
+      console.error('[AudioCapture] Failed to load announcement text from settings, using default')
+      this.announcementText = defaultText
+    }
+
+    return this.announcementText
   }
 
   /**
@@ -159,29 +189,24 @@ export class AudioCaptureService {
    * Non-blocking - fires and forgets the announcement.
    */
   playAnnouncementNonBlocking(): void {
-    const announcementText =
-      "This meeting, with your permission, is being recorded to generate meeting notes. " +
-      "These recordings will be deleted after notes are generated."
-
     console.log('[AudioCapture] Starting announcement playback...')
     // Fire and forget - don't await
-    window.electronAPI.playAnnouncement(announcementText)
-      .then(() => {
-        console.log('[AudioCapture] Announcement completed')
-      })
-      .catch((error) => {
-        console.error('[AudioCapture] Announcement failed:', error)
-      })
+    this.getAnnouncementText().then((announcementText) => {
+      return window.electronAPI.playAnnouncement(announcementText)
+    }).then(() => {
+      console.log('[AudioCapture] Announcement completed')
+    }).catch((error) => {
+      console.error('[AudioCapture] Announcement failed:', error)
+    })
   }
 
   /**
    * Play announcement and wait for completion.
    * Blocking version for when you need to wait.
+   * Phase 6 Batch 4: Uses announcement text from settings
    */
   async playAnnouncement(): Promise<void> {
-    const announcementText =
-      "This meeting, with your permission, is being recorded to generate meeting notes. " +
-      "These recordings will be deleted after notes are generated."
+    const announcementText = await this.getAnnouncementText()
 
     try {
       console.log('[AudioCapture] Playing announcement...')
