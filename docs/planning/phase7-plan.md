@@ -1,33 +1,31 @@
-# Phase 7: Data Management & Storage
+# Phase 7: Storage Management & Gmail Integration
 
 **Status**: 📋 Planning
 **Priority**: HIGH
-**Estimated Duration**: 3-4 hours
+**Estimated Duration**: 15-20 hours total
 **Start Date**: TBD
 
 ---
 
 ## Overview
 
-Phase 7 implements critical data retention policies and storage quota enforcement. Currently, the settings UI allows users to configure retention policies (e.g., delete transcripts after 30 days, limit audio storage to 5GB), but these settings are **not enforced** by the application.
+Phase 7 includes two major initiatives:
 
-**Critical Issue**: User has `transcriptRetentionDays: 30` configured but transcripts are never deleted. This could lead to unbounded database growth and privacy concerns.
+### Part 1: Storage Management (3-4 hours)
+Implement critical data retention policies and storage quota enforcement. Currently, settings allow users to configure retention policies (e.g., delete transcripts after 30 days, limit audio storage to 5GB), but these are **not enforced**.
 
----
+**Critical Issue**: User has `transcriptRetentionDays: 30` configured but transcripts are never deleted.
 
-## Goals
+### Part 2: Gmail Integration (12-16 hours)
+Add Gmail as an alternative email provider to Microsoft 365, allowing users with personal Gmail or Google Workspace accounts to send meeting summaries.
 
-1. **Enforce retention policies** for transcripts, summaries, and audio files
-2. **Enforce storage quotas** to prevent disk space exhaustion
-3. **Implement background job scheduler** for periodic cleanup tasks
-4. **Add storage usage dashboard** to settings UI for visibility
-5. **Maintain data integrity** during cleanup operations
+**See**: `docs/planning/gmail-integration.md` for comprehensive Gmail implementation details.
 
 ---
 
-## Deferred Settings from Phase 6
+## Part 1: Storage Management (TDD Approach)
 
-These settings exist in `settings.json` but are not currently enforced:
+### Deferred Settings from Phase 6
 
 | Setting | Type | Default | Purpose |
 |---------|------|---------|---------|
@@ -38,38 +36,61 @@ These settings exist in `settings.json` but are not currently enforced:
 
 ---
 
-## Implementation Plan
+### Task 1.1: Background Job Scheduler
 
-### Task 1: Background Job Scheduler
 **Estimated**: 1 hour | **Priority**: HIGH
 
-**Goal**: Create a simple job scheduler that runs retention cleanup tasks periodically.
+#### TDD Approach
 
-**Implementation**:
-- Create `src/services/jobScheduler.ts`
-- Use `setInterval()` to run cleanup every 24 hours
-- Start scheduler on app ready
-- Stop scheduler on app quit
-- Log all scheduled job executions
+**Phase 1 (RED - Write Failing Tests)**:
 
-**API**:
+Create `tests/job-scheduler.test.ts`:
+
 ```typescript
-class JobScheduler {
+describe('JobScheduler', () => {
+  it('should start with 24-hour interval', () => {
+    // Assert setInterval called with 24*60*60*1000
+  })
+
+  it('should run cleanup immediately on start', async () => {
+    // Assert runRetentionCleanup called on start()
+  })
+
+  it('should stop interval on stop()', () => {
+    // Assert clearInterval called
+  })
+
+  it('should call all cleanup methods', async () => {
+    // Spy on cleanupTranscripts, cleanupSummaries, enforceAudioQuota
+    // Assert all called
+  })
+})
+```
+
+Run: `npm test` → Tests fail (JobScheduler doesn't exist)
+
+**Phase 2 (GREEN - Implement to Pass Tests)**:
+
+Create `src/services/jobScheduler.ts`:
+
+```typescript
+export class JobScheduler {
   private intervalId: NodeJS.Timeout | null = null
 
   start(): void {
-    // Run cleanup every 24 hours
+    // Run immediately
+    this.runRetentionCleanup()
+
+    // Schedule every 24 hours
     this.intervalId = setInterval(() => {
       this.runRetentionCleanup()
     }, 24 * 60 * 60 * 1000)
-
-    // Run immediately on start
-    this.runRetentionCleanup()
   }
 
   stop(): void {
     if (this.intervalId) {
       clearInterval(this.intervalId)
+      this.intervalId = null
     }
   }
 
@@ -81,265 +102,691 @@ class JobScheduler {
     console.log('[JobScheduler] Retention cleanup complete')
   }
 
-  private async cleanupTranscripts(): Promise<void> { /* ... */ }
-  private async cleanupSummaries(): Promise<void> { /* ... */ }
-  private async enforceAudioQuota(): Promise<void> { /* ... */ }
+  private async cleanupTranscripts(): Promise<void> { /* Implemented in Task 1.2 */ }
+  private async cleanupSummaries(): Promise<void> { /* Implemented in Task 1.3 */ }
+  private async enforceAudioQuota(): Promise<void> { /* Implemented in Task 1.4 */ }
 }
 ```
 
-**Integration**:
-- In `src/main/index.ts`:
-  - Import `JobScheduler`
-  - Call `jobScheduler.start()` in `app.on('ready')`
-  - Call `jobScheduler.stop()` in `app.on('will-quit')`
+Integrate in `src/main/index.ts`:
 
-**Testing**:
-- Unit tests for scheduler logic (start, stop, interval)
-- Mock `setInterval()` to verify 24-hour interval
-- Verify cleanup runs on start
+```typescript
+import { JobScheduler } from './services/jobScheduler'
+
+const jobScheduler = new JobScheduler()
+
+app.on('ready', () => {
+  // ... existing initialization
+  jobScheduler.start()
+})
+
+app.on('will-quit', () => {
+  jobScheduler.stop()
+})
+```
+
+Run: `npm test` → Tests pass ✅
+
+**Phase 3 (REFACTOR - Optional)**:
+- Extract cleanup methods to separate service if needed
+- Add error handling for failed cleanup operations
 
 ---
 
-### Task 2: Transcript Retention Policy
+### Task 1.2: Transcript Retention Policy
+
 **Estimated**: 1 hour | **Priority**: CRITICAL
 
-**Goal**: Automatically delete transcripts (and associated data) older than `transcriptRetentionDays`.
+#### TDD Approach
 
-**Database Operations**:
-1. Get all transcripts older than retention threshold:
-   ```sql
-   SELECT t.id, t.recording_id
-   FROM transcripts t
-   WHERE t.created_at < datetime('now', '-' || ? || ' days')
-   ```
-2. For each transcript:
-   - Delete associated diarization data: `DELETE FROM diarizations WHERE transcript_id = ?`
-   - Delete transcript: `DELETE FROM transcripts WHERE id = ?`
-   - **Do NOT delete recording** (user may want to re-transcribe)
+**Phase 1 (RED - Write Failing Tests)**:
 
-**Implementation**:
-- Add method to `DatabaseService`: `cleanupOldTranscripts(retentionDays: number): { deletedCount: number }`
-- In `JobScheduler.cleanupTranscripts()`:
-  - Read `settings.dataRetention.transcriptRetentionDays`
-  - Call `dbService.cleanupOldTranscripts(retentionDays)`
-  - Log results: `[Cleanup] Deleted ${count} transcripts older than ${retentionDays} days`
+Create `tests/transcript-retention.test.ts`:
 
-**Edge Cases**:
-- If `retentionDays === 0`, skip cleanup (keep forever)
-- If `retentionDays === null/undefined`, use default (90 days)
-- Handle database errors gracefully (log, don't crash)
+```typescript
+describe('Transcript Retention', () => {
+  it('should delete transcripts older than retentionDays', async () => {
+    // Insert old transcript (created_at = 100 days ago)
+    // Set retentionDays = 30
+    // Run cleanup
+    // Assert transcript deleted
+  })
 
-**Testing**:
-- Create old transcript (set `created_at` to 100 days ago)
-- Run cleanup with `retentionDays: 30`
-- Verify transcript deleted
-- Verify associated diarization deleted
-- Verify recording NOT deleted
+  it('should delete associated diarization data', async () => {
+    // Insert old transcript with diarization
+    // Run cleanup
+    // Assert diarization deleted
+  })
+
+  it('should NOT delete recording', async () => {
+    // Insert old transcript with recording
+    // Run cleanup
+    // Assert recording still exists
+  })
+
+  it('should keep transcripts within retention period', async () => {
+    // Insert recent transcript (created_at = 10 days ago)
+    // Set retentionDays = 30
+    // Run cleanup
+    // Assert transcript NOT deleted
+  })
+
+  it('should handle retentionDays = 0 (keep forever)', async () => {
+    // Insert old transcript
+    // Set retentionDays = 0
+    // Run cleanup
+    // Assert transcript NOT deleted
+  })
+
+  it('should return deleted count', async () => {
+    // Insert 3 old transcripts
+    // Run cleanup
+    // Assert deletedCount = 3
+  })
+})
+```
+
+Run: `npm test` → Tests fail (method doesn't exist)
+
+**Phase 2 (GREEN - Implement to Pass Tests)**:
+
+Add to `src/services/database.ts`:
+
+```typescript
+cleanupOldTranscripts(retentionDays: number): { deletedCount: number } {
+  if (retentionDays === 0) {
+    return { deletedCount: 0 } // Keep forever
+  }
+
+  const db = this.getDatabase()
+
+  // Get transcripts to delete
+  const toDelete = db.prepare(`
+    SELECT t.id, t.recording_id
+    FROM transcripts t
+    WHERE t.created_at < datetime('now', '-' || ? || ' days')
+  `).all(retentionDays)
+
+  let deletedCount = 0
+
+  for (const transcript of toDelete) {
+    // Delete associated diarization
+    db.prepare('DELETE FROM diarizations WHERE transcript_id = ?').run(transcript.id)
+
+    // Delete transcript
+    db.prepare('DELETE FROM transcripts WHERE id = ?').run(transcript.id)
+
+    deletedCount++
+  }
+
+  console.log(`[Cleanup] Deleted ${deletedCount} transcripts older than ${retentionDays} days`)
+  return { deletedCount }
+}
+```
+
+Update `JobScheduler.cleanupTranscripts()`:
+
+```typescript
+private async cleanupTranscripts(): Promise<void> {
+  const settings = settingsService.getCategory('dataRetention')
+  const retentionDays = settings.transcriptRetentionDays ?? 90
+  const result = dbService.cleanupOldTranscripts(retentionDays)
+  console.log(`[JobScheduler] Transcript cleanup: ${result.deletedCount} deleted`)
+}
+```
+
+Run: `npm test` → Tests pass ✅
+
+**Phase 3 (REFACTOR)**:
+- Add transaction for atomic deletion
+- Add error handling for database errors
 
 ---
 
-### Task 3: Summary Retention Policy
+### Task 1.3: Summary Retention Policy
+
 **Estimated**: 30 min | **Priority**: HIGH
 
-**Goal**: Automatically delete summaries older than `summaryRetentionDays`.
+#### TDD Approach
 
-**Database Operations**:
-1. Get all summaries older than retention threshold:
-   ```sql
-   SELECT id FROM summaries
-   WHERE created_at < datetime('now', '-' || ? || ' days')
-   ```
-2. Delete summaries:
-   ```sql
-   DELETE FROM summaries WHERE id IN (...)
-   ```
+**Phase 1 (RED - Write Failing Tests)**:
 
-**Implementation**:
-- Add method to `DatabaseService`: `cleanupOldSummaries(retentionDays: number): { deletedCount: number }`
-- In `JobScheduler.cleanupSummaries()`:
-  - Read `settings.dataRetention.summaryRetentionDays`
-  - Call `dbService.cleanupOldSummaries(retentionDays)`
-  - Log results
+Create `tests/summary-retention.test.ts`:
 
-**Edge Cases**:
-- Same as transcript retention (0 = keep forever, null = default 365 days)
-- Handle database errors gracefully
+```typescript
+describe('Summary Retention', () => {
+  it('should delete summaries older than retentionDays', async () => {
+    // Insert old summary (created_at = 400 days ago)
+    // Set retentionDays = 365
+    // Run cleanup
+    // Assert summary deleted
+  })
 
-**Testing**:
-- Create old summary (set `created_at` to 400 days ago)
-- Run cleanup with `retentionDays: 365`
-- Verify summary deleted
+  it('should keep summaries within retention period', async () => {
+    // Insert recent summary (created_at = 100 days ago)
+    // Set retentionDays = 365
+    // Run cleanup
+    // Assert summary NOT deleted
+  })
+
+  it('should handle retentionDays = 0 (keep forever)', async () => {
+    // Insert old summary
+    // Set retentionDays = 0
+    // Run cleanup
+    // Assert summary NOT deleted
+  })
+
+  it('should return deleted count', async () => {
+    // Insert 5 old summaries
+    // Run cleanup
+    // Assert deletedCount = 5
+  })
+})
+```
+
+Run: `npm test` → Tests fail
+
+**Phase 2 (GREEN - Implement to Pass Tests)**:
+
+Add to `src/services/database.ts`:
+
+```typescript
+cleanupOldSummaries(retentionDays: number): { deletedCount: number } {
+  if (retentionDays === 0) {
+    return { deletedCount: 0 }
+  }
+
+  const db = this.getDatabase()
+
+  const result = db.prepare(`
+    DELETE FROM summaries
+    WHERE created_at < datetime('now', '-' || ? || ' days')
+  `).run(retentionDays)
+
+  const deletedCount = result.changes
+  console.log(`[Cleanup] Deleted ${deletedCount} summaries older than ${retentionDays} days`)
+  return { deletedCount }
+}
+```
+
+Update `JobScheduler.cleanupSummaries()`:
+
+```typescript
+private async cleanupSummaries(): Promise<void> {
+  const settings = settingsService.getCategory('dataRetention')
+  const retentionDays = settings.summaryRetentionDays ?? 365
+  const result = dbService.cleanupOldSummaries(retentionDays)
+  console.log(`[JobScheduler] Summary cleanup: ${result.deletedCount} deleted`)
+}
+```
+
+Run: `npm test` → Tests pass ✅
 
 ---
 
-### Task 4: Audio Storage Quota Enforcement
+### Task 1.4: Audio Storage Quota Enforcement
+
 **Estimated**: 1.5 hours | **Priority**: MEDIUM
 
-**Goal**: Enforce maximum audio storage (GB). When quota exceeded, delete oldest audio files.
+#### TDD Approach
 
-**Algorithm**:
-1. Calculate current audio storage usage:
-   ```sql
-   SELECT SUM(file_size_bytes) as total_bytes
-   FROM recordings
-   WHERE file_path IS NOT NULL
-   ```
-2. If `total_bytes > quotaGB * 1024^3`:
-   - Get oldest recordings:
-     ```sql
-     SELECT id, file_path, file_size_bytes
-     FROM recordings
-     ORDER BY created_at ASC
-     ```
-   - Delete oldest files until under quota:
-     - Delete file from disk: `fs.unlinkSync(file_path)`
-     - Update database: `UPDATE recordings SET file_path = NULL WHERE id = ?`
-     - Keep database record (transcript/summary may still exist)
+**Phase 1 (RED - Write Failing Tests)**:
 
-**Implementation**:
-- Add method to `DatabaseService`:
-  - `getAudioStorageUsage(): { totalBytes: number, totalGB: number }`
-  - `getOldestRecordings(limit: number): Recording[]`
-  - `clearRecordingFilePath(recordingId: string): void`
-- In `JobScheduler.enforceAudioQuota()`:
-  - Read `settings.dataRetention.audioStorageQuotaGB`
-  - If quota is 0, skip (unlimited)
-  - Calculate usage
-  - If over quota, delete oldest until under quota
+Create `tests/audio-quota-enforcement.test.ts`:
 
-**Edge Cases**:
-- Handle missing files gracefully (file already deleted manually)
-- Don't delete if `file_path` is NULL (already deleted)
-- Log each deletion: `[Quota] Deleted audio file: ${filePath} (${sizeGB} GB)`
-- Stop if quota unreachable (all files deleted but still over)
+```typescript
+describe('Audio Quota Enforcement', () => {
+  it('should calculate current audio storage usage', async () => {
+    // Insert 3 recordings (10MB, 20MB, 30MB)
+    // Assert getAudioStorageUsage() returns 60MB
+  })
 
-**Testing**:
-- Create 3 recordings with known sizes (10MB, 20MB, 30MB)
-- Set quota to 40MB
-- Run enforcement
-- Verify oldest 2 files deleted (keeping total under 40MB)
-- Verify database records updated (`file_path = NULL`)
-- Verify transcripts/summaries NOT deleted
+  it('should delete oldest files when over quota', async () => {
+    // Insert 3 recordings (10MB, 20MB, 30MB) with timestamps
+    // Set quota = 40MB
+    // Run enforcement
+    // Assert oldest 2 files deleted, newest kept
+  })
+
+  it('should update database (file_path = NULL)', async () => {
+    // Insert recordings
+    // Run enforcement
+    // Assert deleted recordings have file_path = NULL
+  })
+
+  it('should NOT delete transcripts/summaries', async () => {
+    // Insert recordings with transcripts and summaries
+    // Run enforcement (delete files)
+    // Assert transcripts and summaries still exist
+  })
+
+  it('should handle quota = 0 (unlimited)', async () => {
+    // Insert large files
+    // Set quota = 0
+    // Run enforcement
+    // Assert no files deleted
+  })
+
+  it('should handle missing files gracefully', async () => {
+    // Insert recording with non-existent file_path
+    // Run enforcement
+    // Assert no error thrown
+  })
+})
+```
+
+Run: `npm test` → Tests fail
+
+**Phase 2 (GREEN - Implement to Pass Tests)**:
+
+Add to `src/services/database.ts`:
+
+```typescript
+getAudioStorageUsage(): { totalBytes: number; totalGB: number } {
+  const db = this.getDatabase()
+  const result = db.prepare(`
+    SELECT SUM(file_size_bytes) as total_bytes
+    FROM recordings
+    WHERE file_path IS NOT NULL
+  `).get()
+
+  const totalBytes = result?.total_bytes || 0
+  const totalGB = totalBytes / (1024 ** 3)
+
+  return { totalBytes, totalGB }
+}
+
+getOldestRecordings(limit: number): Array<{ id: string; file_path: string; file_size_bytes: number }> {
+  const db = this.getDatabase()
+  return db.prepare(`
+    SELECT id, file_path, file_size_bytes
+    FROM recordings
+    WHERE file_path IS NOT NULL
+    ORDER BY created_at ASC
+    LIMIT ?
+  `).all(limit)
+}
+
+clearRecordingFilePath(recordingId: string): void {
+  const db = this.getDatabase()
+  db.prepare('UPDATE recordings SET file_path = NULL WHERE id = ?').run(recordingId)
+}
+```
+
+Update `JobScheduler.enforceAudioQuota()`:
+
+```typescript
+private async enforceAudioQuota(): Promise<void> {
+  const settings = settingsService.getCategory('dataRetention')
+  const quotaGB = settings.audioStorageQuotaGB ?? 0
+
+  if (quotaGB === 0) {
+    return // Unlimited
+  }
+
+  const usage = dbService.getAudioStorageUsage()
+  console.log(`[Quota] Current audio storage: ${usage.totalGB.toFixed(2)} GB / ${quotaGB} GB`)
+
+  if (usage.totalGB <= quotaGB) {
+    return // Under quota
+  }
+
+  // Delete oldest files until under quota
+  const quotaBytes = quotaGB * (1024 ** 3)
+  let currentBytes = usage.totalBytes
+  let deletedCount = 0
+
+  const oldestRecordings = dbService.getOldestRecordings(1000) // Max 1000 at a time
+
+  for (const recording of oldestRecordings) {
+    if (currentBytes <= quotaBytes) {
+      break // Under quota now
+    }
+
+    try {
+      // Delete file from disk
+      if (fs.existsSync(recording.file_path)) {
+        fs.unlinkSync(recording.file_path)
+      }
+
+      // Update database
+      dbService.clearRecordingFilePath(recording.id)
+
+      currentBytes -= recording.file_size_bytes
+      deletedCount++
+
+      console.log(`[Quota] Deleted: ${recording.file_path} (${(recording.file_size_bytes / (1024 ** 2)).toFixed(1)} MB)`)
+    } catch (error) {
+      console.error(`[Quota] Failed to delete ${recording.file_path}:`, error)
+    }
+  }
+
+  console.log(`[Quota] Enforcement complete: ${deletedCount} files deleted`)
+}
+```
+
+Run: `npm test` → Tests pass ✅
+
+**Phase 3 (REFACTOR)**:
+- Optimize deletion loop (batch deletes)
+- Add safety margin (delete to 90% of quota, not 100%)
 
 ---
 
-### Task 5: Storage Usage Dashboard
+### Task 1.5: Storage Usage Dashboard
+
 **Estimated**: 1 hour | **Priority**: MEDIUM
 
-**Goal**: Add visibility into storage usage in Settings UI.
+#### TDD Approach
 
-**UI Design**:
+**Phase 1 (RED - Write Failing Tests)**:
+
+Create `tests/storage-dashboard.test.ts`:
+
+```typescript
+describe('Storage Dashboard IPC', () => {
+  it('should return accurate storage usage stats', async () => {
+    // Insert test data
+    // Call get-storage-usage
+    // Assert stats match expected values
+  })
+
+  it('should trigger manual cleanup', async () => {
+    // Insert old data
+    // Call run-cleanup-now
+    // Assert data deleted
+  })
+})
 ```
-┌─────────────────────────────────────────┐
-│ Storage Usage                           │
-├─────────────────────────────────────────┤
-│ Audio Files: 2.3 GB / 10 GB (23%)      │
-│ ██████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   │
-│                                         │
-│ Database: 45 MB                         │
-│ - Transcripts: 32 (oldest: 45 days)   │
-│ - Summaries: 12 (oldest: 120 days)    │
-│ - Recordings: 32 files                 │
-│                                         │
-│ [Run Cleanup Now]                       │
-└─────────────────────────────────────────┘
+
+Run: `npm test` → Tests fail
+
+**Phase 2 (GREEN - Implement to Pass Tests)**:
+
+Add IPC handlers to `src/main/index.ts`:
+
+```typescript
+ipcMain.handle('get-storage-usage', async () => {
+  try {
+    const audioUsage = dbService.getAudioStorageUsage()
+    const settings = settingsService.getCategory('dataRetention')
+
+    const db = dbService.getDatabase()
+
+    const transcriptCount = db.prepare('SELECT COUNT(*) as count FROM transcripts').get().count
+    const summaryCount = db.prepare('SELECT COUNT(*) as count FROM summaries').get().count
+    const recordingCount = db.prepare('SELECT COUNT(*) as count FROM recordings WHERE file_path IS NOT NULL').get().count
+
+    // Get oldest transcript/summary age
+    const oldestTranscript = db.prepare(`
+      SELECT (julianday('now') - julianday(created_at)) as age_days
+      FROM transcripts
+      ORDER BY created_at ASC
+      LIMIT 1
+    `).get()
+
+    const oldestSummary = db.prepare(`
+      SELECT (julianday('now') - julianday(created_at)) as age_days
+      FROM summaries
+      ORDER BY created_at ASC
+      LIMIT 1
+    `).get()
+
+    return {
+      success: true,
+      usage: {
+        audioGB: audioUsage.totalGB,
+        quotaGB: settings.audioStorageQuotaGB ?? 10,
+        transcriptCount,
+        summaryCount,
+        recordingCount,
+        oldestTranscriptDays: Math.floor(oldestTranscript?.age_days || 0),
+        oldestSummaryDays: Math.floor(oldestSummary?.age_days || 0)
+      }
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get storage usage'
+    }
+  }
+})
+
+ipcMain.handle('run-cleanup-now', async () => {
+  try {
+    const settings = settingsService.getCategory('dataRetention')
+
+    const transcriptResult = dbService.cleanupOldTranscripts(settings.transcriptRetentionDays ?? 90)
+    const summaryResult = dbService.cleanupOldSummaries(settings.summaryRetentionDays ?? 365)
+
+    // Run audio quota enforcement
+    await jobScheduler.enforceAudioQuota()
+
+    return {
+      success: true,
+      result: {
+        deletedTranscripts: transcriptResult.deletedCount,
+        deletedSummaries: summaryResult.deletedCount
+      }
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Cleanup failed'
+    }
+  }
+})
 ```
 
-**Implementation**:
-- Add IPC handler: `get-storage-usage`
-  - Returns: `{ audioGB, quotaGB, transcriptCount, summaryCount, recordingCount, oldestTranscriptDays, oldestSummaryDays }`
-- Add IPC handler: `run-cleanup-now`
-  - Manually triggers retention cleanup
-  - Returns: `{ deletedTranscripts, deletedSummaries, deletedAudioFiles }`
-- In `SettingsPanel.tsx`:
-  - Add new "Storage" tab section at bottom
-  - Fetch usage on mount
-  - Display progress bar for audio quota
-  - Display stats for database
-  - Add "Run Cleanup Now" button
+Add to `src/preload/index.ts`:
 
-**Testing**:
-- Verify usage stats are accurate
-- Verify progress bar displays correctly
-- Verify manual cleanup works
+```typescript
+storage: {
+  getUsage: () => ipcRenderer.invoke('get-storage-usage'),
+  runCleanupNow: () => ipcRenderer.invoke('run-cleanup-now')
+}
+```
+
+Add Storage section to `src/renderer/components/SettingsPanel.tsx`:
+
+```tsx
+// In Storage tab
+const [storageUsage, setStorageUsage] = useState(null)
+
+useEffect(() => {
+  window.electronAPI.storage.getUsage().then(result => {
+    if (result.success) {
+      setStorageUsage(result.usage)
+    }
+  })
+}, [])
+
+const handleRunCleanup = async () => {
+  const result = await window.electronAPI.storage.runCleanupNow()
+  if (result.success) {
+    // Refresh usage stats
+    const usage = await window.electronAPI.storage.getUsage()
+    setStorageUsage(usage.usage)
+  }
+}
+
+return (
+  <div className="storage-usage">
+    <h3>Storage Usage</h3>
+    <div className="storage-audio">
+      <p>Audio Files: {storageUsage.audioGB.toFixed(2)} GB / {storageUsage.quotaGB} GB</p>
+      <progress value={storageUsage.audioGB} max={storageUsage.quotaGB} />
+    </div>
+    <div className="storage-database">
+      <p>Transcripts: {storageUsage.transcriptCount} (oldest: {storageUsage.oldestTranscriptDays} days)</p>
+      <p>Summaries: {storageUsage.summaryCount} (oldest: {storageUsage.oldestSummaryDays} days)</p>
+      <p>Recordings: {storageUsage.recordingCount} files</p>
+    </div>
+    <button onClick={handleRunCleanup}>Run Cleanup Now</button>
+  </div>
+)
+```
+
+Run: `npm test` → Tests pass ✅
 
 ---
 
-## Testing Strategy
+### Part 1 Summary: Storage Management Testing Checklist
 
-### Unit Tests
-- `JobScheduler`: Start, stop, interval timing
-- `DatabaseService.cleanupOldTranscripts()`: Correct SQL, edge cases
-- `DatabaseService.cleanupOldSummaries()`: Correct SQL, edge cases
-- `DatabaseService.getAudioStorageUsage()`: Correct calculation
-- Quota enforcement algorithm: Delete correct files
+**Unit Tests**:
+- [ ] JobScheduler: Start, stop, interval timing
+- [ ] cleanupOldTranscripts: SQL correctness, edge cases
+- [ ] cleanupOldSummaries: SQL correctness, edge cases
+- [ ] Audio quota: Deletion algorithm accuracy
 
-### Integration Tests
-- End-to-end cleanup flow:
-  1. Create old data (transcripts, summaries, audio)
-  2. Run scheduler
-  3. Verify correct data deleted
-  4. Verify database integrity maintained
+**Integration Tests**:
+- [ ] End-to-end cleanup (insert old data → run cleanup → verify deleted)
+- [ ] Database integrity after cleanup (no orphaned records)
 
-### Manual Tests
-- Set retention to 1 day, wait 24 hours, verify cleanup
-- Set quota to 100MB, add 200MB audio, verify oldest deleted
-- Use "Run Cleanup Now" button, verify immediate cleanup
-- Check logs for cleanup activity
+**Manual Tests**:
+- [ ] Set retention to 1 day, verify cleanup after 24 hours
+- [ ] Set quota to 100MB, add 200MB audio, verify oldest deleted
+- [ ] Use "Run Cleanup Now" button, verify immediate cleanup
 
 ---
 
-## Database Schema Updates
+## Part 2: Gmail Integration (TDD Approach)
 
-**No schema changes required** - existing tables support retention:
-- `transcripts.created_at` - used for age calculation
-- `summaries.created_at` - used for age calculation
-- `recordings.file_path` - set to NULL when file deleted
-- `recordings.file_size_bytes` - used for quota calculation
+**See**: `docs/planning/gmail-integration.md` for comprehensive 12-16 hour implementation plan with detailed specifications, architecture diagrams, and testing strategy.
 
----
+### High-Level TDD Approach
 
-## Risks & Mitigation
+#### Task 2.1: GoogleAuthService (3 hours)
 
-| Risk | Mitigation |
-|------|------------|
-| **Data loss** (accidentally delete active data) | Add 7-day safety buffer (delete only if > retention + 7) |
-| **Quota thrashing** (constantly deleting/re-recording) | Warn user if quota too small (< 1GB) |
-| **Long-running cleanup** (blocks app) | Run cleanup in async tasks, add timeout |
-| **Disk space errors** (can't delete files) | Catch errors, log, continue with next file |
-| **User surprise** (data disappeared) | Add notification: "Cleanup deleted 5 transcripts (>30 days old)" |
+**Phase 1 (RED - Write Failing Tests)**:
+
+```typescript
+describe('GoogleAuthService', () => {
+  it('should initialize OAuth2 client', async () => { /* ... */ })
+  it('should store tokens in keychain', async () => { /* ... */ })
+  it('should refresh expired tokens', async () => { /* ... */ })
+  it('should handle login flow', async () => { /* ... */ })
+  it('should handle logout', async () => { /* ... */ })
+})
+```
+
+**Phase 2 (GREEN)**: Implement `src/services/googleAuth.ts` using `googleapis` package
+
+**Phase 3 (REFACTOR)**: Error handling, logging
+
+#### Task 2.2: GmailApiService (2 hours)
+
+**Phase 1 (RED)**:
+
+```typescript
+describe('GmailApiService', () => {
+  it('should build MIME message correctly', () => { /* ... */ })
+  it('should encode to Base64url', () => { /* ... */ })
+  it('should send email via Gmail API', async () => { /* ... */ })
+  it('should handle To and CC recipients', () => { /* ... */ })
+})
+```
+
+**Phase 2 (GREEN)**: Implement `src/services/gmailApi.ts`
+
+**Phase 3 (REFACTOR)**: MIME message builder optimization
+
+#### Task 2.3: EmailProvider Abstraction (1.5 hours)
+
+**Phase 1 (RED)**:
+
+```typescript
+describe('EmailProvider', () => {
+  it('should create M365 provider', () => { /* ... */ })
+  it('should create Gmail provider', () => { /* ... */ })
+  it('should route emails to correct provider', async () => { /* ... */ })
+})
+```
+
+**Phase 2 (GREEN)**: Implement `src/services/emailProvider.ts` with factory pattern
+
+**Phase 3 (REFACTOR)**: Shared interface validation
+
+#### Task 2.4: Settings Integration (2 hours)
+
+**Phase 1 (RED)**:
+
+```typescript
+describe('Gmail Settings', () => {
+  it('should save Google credentials', async () => { /* ... */ })
+  it('should persist provider selection', async () => { /* ... */ })
+  it('should validate credential format', () => { /* ... */ })
+})
+```
+
+**Phase 2 (GREEN)**: Update settings schema, UI components
+
+**Phase 3 (REFACTOR)**: UI polish, validation messages
+
+#### Task 2.5: Integration Testing (1.5 hours)
+
+**Manual Tests** (cannot be fully automated due to OAuth):
+- [ ] Authenticate with real Google account
+- [ ] Send test email via Gmail API
+- [ ] Verify email in recipient inbox
+- [ ] Switch between M365 and Gmail
+- [ ] Verify token persistence after restart
 
 ---
 
 ## Success Criteria
 
-- [ ] Transcripts older than retention period are automatically deleted
-- [ ] Summaries older than retention period are automatically deleted
-- [ ] Audio storage stays under quota (oldest files deleted when exceeded)
-- [ ] Cleanup runs every 24 hours automatically
-- [ ] Storage usage dashboard shows accurate stats
-- [ ] Manual "Run Cleanup Now" works
-- [ ] All retention settings respected (0 = keep forever)
-- [ ] Database integrity maintained (no orphaned records)
-- [ ] Comprehensive logging for troubleshooting
+### Part 1: Storage Management
+- [ ] Transcripts older than retention period automatically deleted
+- [ ] Summaries older than retention period automatically deleted
+- [ ] Audio storage under quota (oldest deleted when exceeded)
+- [ ] Cleanup runs every 24 hours
+- [ ] Storage dashboard shows accurate stats
+- [ ] Manual cleanup works
+- [ ] Database integrity maintained
+
+### Part 2: Gmail Integration
+- [ ] User can authenticate with Google account
+- [ ] User can send emails via Gmail API
+- [ ] Emails appear correctly formatted in Gmail
+- [ ] Provider switching works seamlessly
+- [ ] Tokens persist across app restarts
+- [ ] No breaking changes for M365 users
 
 ---
 
-## Future Enhancements (Phase 8+)
+## Testing Strategy Summary
 
-- Export/archive old data before deletion
-- User confirmation before first cleanup
-- Scheduled cleanup time (e.g., 3am daily)
-- Email notifications for cleanup activity
-- Retention policy per meeting (keep important meetings longer)
-- Compression for old transcripts (save space without deletion)
+**Total Tests Estimated**:
+- Storage Management: ~30 unit tests + 5 integration tests
+- Gmail Integration: ~25 unit tests + manual testing checklist
+
+**Test Framework**: Jest (existing)
+
+**Coverage Goal**: >80% for new code
+
+**Manual Testing**: Required for OAuth flows and email delivery verification
+
+---
+
+## Documentation Updates
+
+**New Files**:
+- `docs/guides/google-cloud-setup.md` - Google Cloud Console setup
+- `docs/guides/gmail-setup.md` - Gmail integration guide
+- `docs/technical/email-distribution.md` - Email provider architecture
+
+**Updated Files**:
+- `README.md` - Add Gmail to features
+- `docs/developer/architecture.md` - Email provider abstraction
+- `CLAUDE.md` - Update tech stack
 
 ---
 
 ## Notes
 
-- Start with conservative safety margins (retention + 7 days)
-- Add extensive logging for first few releases
-- Consider user notification for first cleanup
-- Monitor user feedback on retention defaults
-- May need to adjust defaults based on usage patterns
+- Part 1 (Storage Management) is **critical** - user has retention policies configured but not enforced
+- Part 2 (Gmail Integration) is **high priority** - expands user base beyond M365 users
+- Both parts use TDD methodology for quality and maintainability
+- After completion, move this plan to `docs/archive/phase7/`
+- Create `docs/planning/phase8-plan.md` for performance optimization
