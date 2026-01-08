@@ -12,6 +12,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### [0.6.5.0] - 2026-01-08
 
 ##### Added
+- **EmailProvider Abstraction** (Task 2.3): Unified email provider interface
+  - Factory pattern for creating M365 or Gmail email providers
+  - `EmailProvider` interface with `sendEmail()`, `isAuthenticated()`, and `getProviderType()` methods
+  - `StandardEmailData` interface for consistent email data format across providers
+  - `M365EmailProvider` wraps GraphApiService with email format conversion
+  - `GmailEmailProvider` wraps GmailApiService for Gmail sending
+  - `EmailProviderFactory` creates appropriate provider based on settings
+  - Decoupled from concrete SettingsService using simple `EmailSettings` interface
+  - Support for runtime provider switching (M365 ↔ Gmail)
+  - Independent authentication states per provider
+  - Comprehensive error handling and validation
 - **GmailApiService** (Task 2.2): Complete Gmail API email sending implementation
   - RFC 2822 compliant MIME message construction
   - Base64url encoding for Gmail API compatibility
@@ -30,8 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Logout functionality with keychain cleanup
   - Comprehensive error handling and logging throughout
 - New dependencies: `googleapis` (Google API client), `keytar` (keychain storage)
-- Unit tests: `google-auth.test.ts` with 20 test cases (TDD approach)
-- TypeScript interfaces: `GoogleTokens`, `GoogleCredentials`
+- Unit tests: `email-provider.test.ts` (17 test cases), `gmail-api.test.ts` (24 test cases), `google-auth.test.ts` (20 test cases) - TDD approach
+- TypeScript interfaces: `EmailProvider`, `StandardEmailData`, `EmailSettings`, `GoogleTokens`, `GoogleCredentials`
 
 ##### Technical Details
 - Uses `googleapis` library for OAuth2 flow
