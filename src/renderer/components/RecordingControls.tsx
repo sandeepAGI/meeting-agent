@@ -3,6 +3,7 @@
  * Displays recording status, audio levels, and control buttons.
  */
 
+import { useState, useEffect } from 'react'
 import type { AudioLevel } from '../../types/audio'
 import { AudioLevelMeter } from './AudioLevelMeter'
 import { RecordingButtons } from './RecordingButtons'
@@ -47,6 +48,20 @@ export function RecordingControls({
   onTranscribe,
   onTranscribeOnly,
 }: RecordingControlsProps) {
+  // Phase 6 Batch 5: Load showRecordingAnnouncement setting
+  const [showAnnouncement, setShowAnnouncement] = useState(true) // Default to true
+
+  useEffect(() => {
+    window.electronAPI.settings.getSettings().then((result) => {
+      if (result.success && result.settings) {
+        const showRecordingAnnouncement = result.settings.ui?.showRecordingAnnouncement ?? true
+        setShowAnnouncement(showRecordingAnnouncement)
+      }
+    }).catch((err) => {
+      console.error('[RecordingControls] Failed to load showRecordingAnnouncement setting:', err)
+    })
+  }, [])
+
   // Calculate time since last save
   const getTimeSinceLastSave = (): string => {
     if (!lastSaveTime) return 'Not saved yet'
@@ -62,7 +77,7 @@ export function RecordingControls({
       <div className="status-bar">
         <div className="timer">{formatDuration(duration)}</div>
         <div className="status">
-          {isPlayingAnnouncement ? '📢 Playing announcement...' : isRecording ? '🔴 Recording...' : '⏸️ Ready'}
+          {(isPlayingAnnouncement && showAnnouncement) ? '📢 Playing announcement...' : isRecording ? '🔴 Recording...' : '⏸️ Ready'}
         </div>
       </div>
 

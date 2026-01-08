@@ -75,15 +75,18 @@
   --font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-family-mono: 'Courier New', 'Monaco', 'Consolas', monospace;
 
-  /* Font Sizes */
-  --font-size-xs: 0.75rem;      /* 12px */
-  --font-size-sm: 0.875rem;     /* 14px */
-  --font-size-base: 1rem;       /* 16px */
-  --font-size-lg: 1.125rem;     /* 18px */
-  --font-size-xl: 1.25rem;      /* 20px */
-  --font-size-2xl: 1.5rem;      /* 24px */
-  --font-size-3xl: 1.875rem;    /* 30px */
-  --font-size-4xl: 2.25rem;     /* 36px */
+  /* Phase 6 Batch 5: Font Scale (controlled by ui.fontSize setting) */
+  --font-scale: 1.0;  /* medium (default) */
+
+  /* Font Sizes (scaled by --font-scale) */
+  --font-size-xs: calc(0.75rem * var(--font-scale));      /* 12px */
+  --font-size-sm: calc(0.875rem * var(--font-scale));     /* 14px */
+  --font-size-base: calc(1rem * var(--font-scale));       /* 16px */
+  --font-size-lg: calc(1.125rem * var(--font-scale));     /* 18px */
+  --font-size-xl: calc(1.25rem * var(--font-scale));      /* 20px */
+  --font-size-2xl: calc(1.5rem * var(--font-scale));      /* 24px */
+  --font-size-3xl: calc(1.875rem * var(--font-scale));    /* 30px */
+  --font-size-4xl: calc(2.25rem * var(--font-scale));     /* 36px */
 
   /* Font Weights */
   --font-weight-light: 300;
@@ -167,6 +170,15 @@
   --input-border-focus: var(--border-focus);
   --input-radius: var(--radius-base);
   --input-bg: var(--bg-primary);
+}
+
+/* Phase 6 Batch 5: Font size scaling based on ui.fontSize setting */
+:root[data-font-size="small"] {
+  --font-scale: 0.9;
+}
+
+:root[data-font-size="large"] {
+  --font-scale: 1.1;
 }
 
 /* ========================================

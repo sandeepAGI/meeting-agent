@@ -3,7 +3,7 @@
  * Orchestrates audio capture, transcription, and UI display.
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAudioCapture } from './hooks/useAudioCapture'
 import { useTranscription } from './hooks/useTranscription'
 import { useMeetingIntelligence } from './hooks/useMeetingIntelligence'
@@ -38,6 +38,24 @@ function App() {
 
   // Meeting intelligence hook (Phase 2.3-3)
   const { state: intelligenceState, actions: intelligenceActions } = useMeetingIntelligence()
+
+  // Phase 6 Batch 5: Load fontSize setting and apply to root element
+  useEffect(() => {
+    window.electronAPI.settings.getSettings().then((result) => {
+      if (result.success && result.settings) {
+        const fontSize = result.settings.ui?.fontSize || 'medium'
+        // Apply data-font-size attribute to HTML root element
+        if (fontSize !== 'medium') {
+          document.documentElement.setAttribute('data-font-size', fontSize)
+        } else {
+          document.documentElement.removeAttribute('data-font-size')
+        }
+        console.log('[App] Font size setting applied:', fontSize)
+      }
+    }).catch((err) => {
+      console.error('[App] Failed to load font size setting:', err)
+    })
+  }, [])
 
   // Handle stop recording and save audio path
   const handleStopRecording = async () => {
