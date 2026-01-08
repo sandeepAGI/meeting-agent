@@ -18,6 +18,7 @@ export interface EmailContent {
   detailedNotes: DetailedNotes | null
   customIntroduction?: string
   enabledSections?: EmailSectionToggles
+  customDisclaimer?: string  // Phase 6 Batch 3: Custom disclaimer text
   // Phase 4c: Meeting metadata
   meetingTitle?: string
   meetingDate?: string // ISO date string
@@ -352,6 +353,10 @@ export function generateEmailHTML(content: EmailContent): string {
   }
 
   // AI Disclaimer (Phase 5.5 - always included)
+  // Phase 6 Batch 3: Use custom disclaimer if provided
+  const disclaimerText = content.customDisclaimer ||
+    'This summary was automatically generated using AI and may contain errors or omissions. Please review carefully and verify critical information against the original recording or transcript.'
+
   html += `
     <div style="margin-top: 30px; margin-bottom: 30px; background: #f5f5f5; padding: 15px; border-radius: 6px; border-left: 4px solid #95a5a6;">
       <div style="display: flex; align-items: flex-start;">
@@ -359,7 +364,7 @@ export function generateEmailHTML(content: EmailContent): string {
         <div>
           <strong style="color: #555; font-size: 14px;">AI-Generated Summary Disclaimer</strong>
           <p style="margin: 8px 0 0 0; color: #666; font-size: 13px; line-height: 1.5;">
-            This summary was automatically generated using AI and may contain errors or omissions. Please review carefully and verify critical information against the original recording or transcript.
+            ${escapeHtml(disclaimerText)}
           </p>
         </div>
       </div>
@@ -551,9 +556,13 @@ export function generatePlainTextEmail(content: EmailContent): string {
   }
 
   // AI Disclaimer (Phase 5.5 - always included)
+  // Phase 6 Batch 3: Use custom disclaimer if provided
+  const plainTextDisclaimerText = content.customDisclaimer ||
+    AI_DISCLAIMER.split('\n').slice(2).join('\n')
+
   text += '⚠️  AI-GENERATED SUMMARY DISCLAIMER\n'
   text += '-'.repeat(50) + '\n'
-  text += AI_DISCLAIMER.split('\n').slice(1).join('\n') + '\n\n'
+  text += plainTextDisclaimerText + '\n\n'
 
   // Footer
   text += '-'.repeat(50) + '\n'

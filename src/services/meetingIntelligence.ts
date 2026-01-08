@@ -13,6 +13,7 @@ import { ClaudeBatchService } from './claudeBatch'
 import { DatabaseService } from './database'
 import { PromptLoader } from '../utils/promptLoader'
 import { mergeDiarizationWithTranscript } from '../utils/mergeDiarization'
+import { settingsService } from './settings'
 import type {
   MeetingContext,
   MeetingSummary,
@@ -34,6 +35,24 @@ export class MeetingIntelligenceService {
     this.claudeService = claudeService
     this.db = db
     this.promptLoader = new PromptLoader()
+  }
+
+  /**
+   * Phase 6 Batch 3: Get verbosity instruction based on settings
+   */
+  private getVerbosityInstruction(): string {
+    const summarySettings = settingsService.getCategory('summary')
+    const verbosity = summarySettings.verbosity || 'detailed'
+
+    switch (verbosity) {
+      case 'concise':
+        return 'IMPORTANT: Provide a brief, concise summary focusing only on key points. Keep all sections short and to the point.\n\n'
+      case 'comprehensive':
+        return 'IMPORTANT: Provide an exhaustive summary capturing all discussion points, nuances, and context. Include detailed explanations and background where relevant.\n\n'
+      case 'detailed':
+      default:
+        return 'IMPORTANT: Provide a comprehensive summary with context and details. Balance brevity with completeness.\n\n'
+    }
   }
 
   /**
@@ -180,7 +199,7 @@ export class MeetingIntelligenceService {
       .join(', ')
 
     // Substitute variables in prompt
-    const prompt = this.promptLoader.loadAndSubstitute(
+    const basePrompt = this.promptLoader.loadAndSubstitute(
       'pass1-summary.txt',
       {
         subject: context.meeting.subject,
@@ -193,6 +212,10 @@ export class MeetingIntelligenceService {
         transcript: context.transcript
       }
     )
+
+    // Phase 6 Batch 3: Prepend verbosity instruction
+    const verbosityInstruction = this.getVerbosityInstruction()
+    const prompt = verbosityInstruction + basePrompt
 
     // Create batch request
     const request = ClaudeBatchService.createBatchRequest(
@@ -367,7 +390,7 @@ export class MeetingIntelligenceService {
       .join(', ')
 
     // Substitute variables in prompt
-    const prompt = this.promptLoader.loadAndSubstitute(
+    const basePrompt = this.promptLoader.loadAndSubstitute(
       'pass2-validation.txt',
       {
         subject: context.meeting.subject,
@@ -383,6 +406,10 @@ export class MeetingIntelligenceService {
         pass1DetailedNotes: pass1Data.detailed_notes ? JSON.stringify(pass1Data.detailed_notes, null, 2) : ''
       }
     )
+
+    // Phase 6 Batch 3: Prepend verbosity instruction
+    const verbosityInstruction = this.getVerbosityInstruction()
+    const prompt = verbosityInstruction + basePrompt
 
     // Create batch request
     const request = ClaudeBatchService.createBatchRequest(

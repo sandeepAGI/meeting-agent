@@ -4,8 +4,10 @@
  * Preview formatted email before sending
  * Phase 4b: Summary Editor & Email
  * Phase 5: Uses emailGenerator utility for HTML generation
+ * Phase 6 Batch 3: Custom disclaimer support
  */
 
+import { useState, useEffect } from 'react'
 import type { MeetingSummary, SpeakerMapping, ActionItem, DetailedNotes, EmailRecipient, EmailSectionToggles } from '../../types/meetingSummary'
 import { generateEmailHTML } from '../../utils/emailGenerator'
 
@@ -53,6 +55,17 @@ export function EmailPreview({
   meetingEndTime,
   meetingLocation
 }: EmailPreviewProps) {
+  // Phase 6 Batch 3: Load custom disclaimer from settings
+  const [customDisclaimer, setCustomDisclaimer] = useState<string | undefined>(undefined)
+
+  useEffect(() => {
+    window.electronAPI.settings.getSettings().then((settings) => {
+      if (settings.success && settings.settings) {
+        setCustomDisclaimer(settings.settings.summary?.customDisclaimer || undefined)
+      }
+    })
+  }, [])
+
   // Generate email HTML using utility
   const emailHtml = generateEmailHTML({
     summary,
@@ -62,6 +75,7 @@ export function EmailPreview({
     detailedNotes,
     customIntroduction,
     enabledSections,
+    customDisclaimer,  // Phase 6 Batch 3
     meetingTitle,
     meetingStartTime,
     meetingEndTime,
