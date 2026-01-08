@@ -109,6 +109,17 @@ async function initializeServicesFromSettings(): Promise<void> {
     console.error('[Settings] Failed to initialize ClaudeBatchService:', error)
   }
 
+  // 4. Transcription Settings (CPU Threads)
+  try {
+    const transcriptionSettings = settingsService.getCategory('transcription')
+    const threads = transcriptionSettings.threads ?? 0 // 0 = auto-detect
+
+    transcriptionService.setThreads(threads)
+    console.log(`[Settings] Transcription threads configured: ${threads === 0 ? 'auto' : threads}`)
+  } catch (error) {
+    console.error('[Settings] Failed to configure transcription threads:', error)
+  }
+
   console.log('[Settings] Service initialization complete')
 }
 
@@ -118,10 +129,17 @@ initializeAudioLoopback()
 // IPC Handlers for transcription
 ipcMain.handle('transcribe-audio', async (event, audioFilePath: string, options?: TranscriptionOptions) => {
   try {
+    // Phase 6 Batch 2: Read language from settings if not provided
+    const transcriptionSettings = settingsService.getCategory('transcription')
+    const mergedOptions: TranscriptionOptions = {
+      language: transcriptionSettings.language || 'en',
+      ...options // Allow caller to override
+    }
+
     // Transcribe with progress updates
     const result = await transcriptionService.transcribe(
       audioFilePath,
-      options,
+      mergedOptions,
       (progress) => {
         // Send progress updates to renderer
         event.sender.send('transcription-progress', progress)
@@ -520,9 +538,16 @@ ipcMain.handle('transcribe-and-diarize', async (event, audioFilePath: string, op
       message: 'Starting transcription...'
     })
 
+    // Phase 6 Batch 2: Read language from settings if not provided
+    const transcriptionSettings = settingsService.getCategory('transcription')
+    const mergedOptions: TranscriptionOptions = {
+      language: transcriptionSettings.language || 'en',
+      ...options // Allow caller to override
+    }
+
     const transcriptionResult = await transcriptionService.transcribe(
       audioFilePath,
-      options,
+      mergedOptions,
       (progress) => {
         // Scale progress to 0-50%
         event.sender.send('transcription-progress', {
