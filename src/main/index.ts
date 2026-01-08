@@ -17,6 +17,7 @@ import { mergeDiarizationWithTranscript } from '../utils/mergeDiarization'
 import type { TranscriptionOptions } from '../types/transcription'
 import { settingsService } from '../services/settings'
 import type { AppSettings } from '../types/settings'
+import { JobScheduler } from '../services/jobScheduler'
 
 // Load environment variables from .env file (fallback for non-settings configs)
 dotenv.config()
@@ -44,6 +45,9 @@ graphApiService.setDatabaseService(dbService)
 let claudeService: ClaudeBatchService | null = null
 let emailService: EmailContextService | null = null
 let intelligenceService: MeetingIntelligenceService | null = null
+
+// Initialize Job Scheduler (Phase 7: Storage Management)
+const jobScheduler = new JobScheduler()
 
 let mainWindow: BrowserWindow | null = null
 
@@ -1589,6 +1593,14 @@ app.whenReady().then(async () => {
     }
   }
 
+  // Phase 7: Start job scheduler for retention cleanup
+  try {
+    jobScheduler.start()
+    console.log('[App] Job scheduler started')
+  } catch (error) {
+    console.error('[App] Failed to start job scheduler:', error)
+  }
+
   createWindow()
 
   app.on('activate', () => {
@@ -1601,5 +1613,15 @@ app.whenReady().then(async () => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
+  }
+})
+
+// Phase 7: Stop job scheduler on app quit
+app.on('will-quit', () => {
+  try {
+    jobScheduler.stop()
+    console.log('[App] Job scheduler stopped')
+  } catch (error) {
+    console.error('[App] Failed to stop job scheduler:', error)
   }
 })
