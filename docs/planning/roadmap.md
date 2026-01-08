@@ -8,30 +8,30 @@
 
 ## 📍 Current Status
 
-**Phase**: 6 (Configuration & Settings) - In Progress
-**Progress**: Batch 1 (API Keys) ✅ Complete | Batches 2-6 ⏳ Pending
+**Phase**: 6 (Configuration & Settings) - ✅ Complete
+**Progress**: All Batches (1-6) ✅ Complete
 **Production Ready**: YES
-**What Works**: Audio capture + transcription + diarization + M365 integration + LLM summaries + email distribution + meeting metadata editing + settings UI
-**Latest**: Phase 4c complete - Meeting title/datetime editing, participant deletion with TDD approach
+**What Works**: Audio capture + transcription + diarization + M365 integration + LLM summaries + email distribution + meeting metadata editing + fully functional settings
+**Latest**: Phase 6 complete - All settings wired and functional, 2 critical bugs fixed with TDD
 
 ---
 
-## 🎯 Next Up: Complete Phase 6
+## 🎯 Next Up: Phase 7 - Storage Management
 
-**Current Work**: Wire remaining settings (Batches 2-6)
-**Priority**: HIGH - Settings UI exists but not all settings are used by application
-**Estimated**: ~4 hours
+**Current Work**: Planning Phase 7 implementation
+**Priority**: HIGH - Critical retention policies not enforced (user has 30-day retention set but not active)
+**Estimated**: 3-4 hours
 
 **Tasks**:
-- [ ] Batch 2: Transcription settings (CPU threads, language)
-- [ ] Batch 3: Summary settings (verbosity, custom disclaimer)
-- [ ] Batch 4: Audio settings (microphone toggle, announcement text)
-- [ ] Batch 5: UI settings (default view, font size)
-- [ ] Batch 6: Storage setting (delete audio after transcription)
+- [ ] Implement transcript retention policy (automatic cleanup after N days)
+- [ ] Implement summary retention policy (automatic cleanup after N days)
+- [ ] Implement audio storage quota enforcement (delete oldest when quota exceeded)
+- [ ] Add background job scheduler for retention cleanup
+- [ ] Add storage usage dashboard in settings
 
-**See**: `docs/planning/phase6-completion-plan.md` for detailed task list
+**See**: `docs/planning/phase7-plan.md` for detailed implementation plan
 
-**Then**: Phase 7 - Storage Management (retention policies, quota enforcement)
+**Then**: Phase 8 - Performance Optimization OR Phase 10 - Packaging & Distribution
 
 ---
 
@@ -58,6 +58,7 @@
 | 5 | Email Distribution | ✅ | Jan 27, 2026 | Send via Microsoft Graph API |
 | 5.5 | Email Customization | ✅ | Oct 30, 2025 | Section toggles, custom intro, disclaimer |
 | 6 (Batch 1) | Settings - API Keys | ✅ | Dec 4, 2025 | Settings UI + keychain integration |
+| 6 (Batches 2-6) | Settings - Wire All | ✅ | Jan 7, 2026 | All settings functional + 2 bug fixes |
 
 **Refactor Sprints**:
 - R1: Critical bug fixes (chunked recording, WAV headers) ✅
@@ -67,13 +68,12 @@
 
 | Phase | Name | Status | Summary |
 |-------|------|--------|---------|
-| 6 (Batches 2-6) | Settings - Wire Remaining | ⏳ In Progress | Make all settings functional |
+| 7 | Data Management & Storage | 📋 Planning | Retention policies, quota enforcement, auto-cleanup |
 
 ### Planned
 
 | Phase | Name | Priority | Summary |
 |-------|------|----------|---------|
-| 7 | Data Management & Storage | HIGH | Retention policies, quota enforcement, auto-cleanup |
 | 8 | Performance Optimization | MEDIUM | Streaming, parallel processing, large meeting support |
 | 9 | Error Handling & Logging | MEDIUM | Retry mechanisms, user-friendly errors, diagnostics |
 | 10 | Packaging & Distribution | HIGH | Auto-updates, code signing, DMG installer |
@@ -82,27 +82,34 @@
 
 ## 📚 Completed Phases (Details)
 
-### Phase 6: Configuration & Settings (Batch 1) ✅
+### Phase 6: Configuration & Settings (Complete) ✅
 
-**Completed**: December 4, 2025
-**Duration**: 1 day
+**Completed**: January 7, 2026
+**Duration**: Batch 1 (Dec 4, 2025) + Batches 2-6 (Jan 7, 2026)
 **Deliverables**:
 - Settings panel UI with 6 tabs (API Keys, Transcription, Summary, Storage, Interface, Audio)
-- Keychain integration for API keys (Anthropic, HuggingFace)
-- JSON file for non-sensitive settings
+- Keychain integration for API keys (Anthropic, HuggingFace, Azure)
+- JSON file for non-sensitive settings (28 total settings)
 - Auto-migration from .env on first launch
 - 8 new IPC handlers for settings operations
 - React hook (useSettings) for state management
+- **All settings wired and functional**
 
-**What Works**:
-- ✅ Anthropic API Key + Model → Used by ClaudeBatchService
-- ✅ HuggingFace Token → Used by DiarizationService
-- ✅ Azure Client/Tenant ID → Used by M365AuthService
-- ✅ Whisper Model Selection → Used at startup
+**Settings Wired** (Batches 2-6):
+- ✅ **Batch 2**: Transcription (CPU threads, language)
+- ✅ **Batch 3**: Summary (verbosity, custom disclaimer)
+- ✅ **Batch 4**: Audio (microphone toggle, announcement text)
+- ✅ **Batch 5**: UI (default view, font size, recording announcement)
+- ✅ **Batch 6**: Storage (delete audio after transcription)
 
-**What's Pending** (Batches 2-6):
-- Settings UI complete but not all settings wired to application logic
-- See: `docs/planning/phase6-completion-plan.md`
+**Bug Fixes** (TDD):
+- ✅ Meeting Intelligence Error Recovery UI (retry, cancel, go back)
+- ✅ Recording Database Insertion (save immediately after stop)
+
+**Deferred to Phase 7**:
+- Transcript retention policy (auto-cleanup after N days)
+- Summary retention policy (auto-cleanup after N days)
+- Audio storage quota enforcement
 
 **Archive**: `docs/archive/phase6/`
 
