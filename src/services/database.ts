@@ -1078,6 +1078,49 @@ export class DatabaseService {
     console.log(`Cleaned up ${result.changes} expired email cache entries`)
   }
 
+  // ===========================================================================
+  // Data Retention / Cleanup (Phase 7: Storage Management)
+  // ===========================================================================
+
+  /**
+   * Clean up old transcripts based on retention policy
+   * Phase 7: Storage Management - Task 1.2
+   *
+   * @param retentionDays - Delete transcripts older than this many days (0 = keep forever)
+   * @returns Object with deletedCount
+   */
+  cleanupOldTranscripts(retentionDays: number): { deletedCount: number } {
+    // 0 = keep forever
+    if (retentionDays === 0) {
+      return { deletedCount: 0 }
+    }
+
+    // Get transcripts to delete
+    const toDelete = this.db.prepare(`
+      SELECT t.id
+      FROM transcripts t
+      WHERE t.created_at < datetime('now', '-' || ? || ' days')
+    `).all(retentionDays) as Array<{ id: string }>
+
+    let deletedCount = 0
+
+    // Delete transcripts and their associated diarization data
+    for (const transcript of toDelete) {
+      // Delete associated diarization results (CASCADE should handle this, but explicit is safer)
+      this.db.prepare('DELETE FROM diarization_results WHERE transcript_id = ?')
+        .run(transcript.id)
+
+      // Delete transcript
+      this.db.prepare('DELETE FROM transcripts WHERE id = ?')
+        .run(transcript.id)
+
+      deletedCount++
+    }
+
+    console.log(`[Cleanup] Deleted ${deletedCount} transcripts older than ${retentionDays} days`)
+    return { deletedCount }
+  }
+
   /**
    * Close database connection
    */

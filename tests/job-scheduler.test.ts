@@ -5,16 +5,28 @@
  */
 
 import { JobScheduler } from '../src/services/jobScheduler'
+import type { DatabaseService } from '../src/services/database'
+import type { SettingsService } from '../src/services/settings'
 
 describe('JobScheduler', () => {
   let scheduler: JobScheduler
   let setIntervalSpy: jest.SpyInstance
   let clearIntervalSpy: jest.SpyInstance
+  let mockDbService: Partial<DatabaseService>
+  let mockSettingsService: Partial<SettingsService>
 
   beforeEach(() => {
     jest.useFakeTimers()
     setIntervalSpy = jest.spyOn(global, 'setInterval')
     clearIntervalSpy = jest.spyOn(global, 'clearInterval')
+
+    // Create mock services
+    mockDbService = {
+      cleanupOldTranscripts: jest.fn().mockReturnValue({ deletedCount: 0 })
+    }
+    mockSettingsService = {
+      getCategory: jest.fn().mockReturnValue({ transcriptRetentionDays: 90 })
+    }
   })
 
   afterEach(() => {
@@ -23,7 +35,7 @@ describe('JobScheduler', () => {
   })
 
   it('should start with 24-hour interval', () => {
-    scheduler = new JobScheduler()
+    scheduler = new JobScheduler(mockDbService as DatabaseService, mockSettingsService as SettingsService)
     scheduler.start()
 
     // Verify setInterval called with 24 hours in milliseconds
@@ -34,7 +46,7 @@ describe('JobScheduler', () => {
   })
 
   it('should run cleanup immediately on start', async () => {
-    scheduler = new JobScheduler()
+    scheduler = new JobScheduler(mockDbService as DatabaseService, mockSettingsService as SettingsService)
 
     // Spy on private method via prototype
     const runCleanupSpy = jest.spyOn(scheduler as any, 'runRetentionCleanup')
@@ -47,7 +59,7 @@ describe('JobScheduler', () => {
   })
 
   it('should stop interval on stop()', () => {
-    scheduler = new JobScheduler()
+    scheduler = new JobScheduler(mockDbService as DatabaseService, mockSettingsService as SettingsService)
     scheduler.start()
 
     const intervalId = setIntervalSpy.mock.results[0].value
@@ -58,7 +70,7 @@ describe('JobScheduler', () => {
   })
 
   it('should call all cleanup methods', async () => {
-    scheduler = new JobScheduler()
+    scheduler = new JobScheduler(mockDbService as DatabaseService, mockSettingsService as SettingsService)
 
     // Spy on private cleanup methods
     const cleanupTranscriptsSpy = jest.spyOn(scheduler as any, 'cleanupTranscripts')
@@ -77,7 +89,7 @@ describe('JobScheduler', () => {
   })
 
   it('should handle errors in cleanup gracefully', async () => {
-    scheduler = new JobScheduler()
+    scheduler = new JobScheduler(mockDbService as DatabaseService, mockSettingsService as SettingsService)
 
     // Mock one cleanup method to throw error
     jest.spyOn(scheduler as any, 'cleanupTranscripts')

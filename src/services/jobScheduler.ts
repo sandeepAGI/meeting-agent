@@ -6,8 +6,18 @@
  * Runs cleanup every 24 hours and enforces retention settings.
  */
 
+import type { DatabaseService } from './database'
+import type { SettingsService } from './settings'
+
 export class JobScheduler {
   private intervalId: NodeJS.Timeout | null = null
+  private dbService: DatabaseService
+  private settingsService: SettingsService
+
+  constructor(dbService: DatabaseService, settingsService: SettingsService) {
+    this.dbService = dbService
+    this.settingsService = settingsService
+  }
 
   /**
    * Start the job scheduler.
@@ -74,12 +84,15 @@ export class JobScheduler {
 
   /**
    * Clean up old transcripts based on retention policy.
-   * Implemented in Task 1.2
+   * Phase 7: Storage Management - Task 1.2
    * @private
    */
   private async cleanupTranscripts(): Promise<void> {
-    // TODO: Implement in Task 1.2
-    console.log('[JobScheduler] Transcript cleanup (not yet implemented)')
+    const settings = this.settingsService.getCategory('dataRetention')
+    const retentionDays = settings.transcriptRetentionDays ?? 90
+
+    const result = this.dbService.cleanupOldTranscripts(retentionDays)
+    console.log(`[JobScheduler] Transcript cleanup: ${result.deletedCount} deleted (retention: ${retentionDays} days)`)
   }
 
   /**

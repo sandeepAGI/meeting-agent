@@ -47,7 +47,7 @@ let emailService: EmailContextService | null = null
 let intelligenceService: MeetingIntelligenceService | null = null
 
 // Initialize Job Scheduler (Phase 7: Storage Management)
-const jobScheduler = new JobScheduler()
+const jobScheduler = new JobScheduler(dbService, settingsService)
 
 let mainWindow: BrowserWindow | null = null
 
