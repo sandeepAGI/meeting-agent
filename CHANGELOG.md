@@ -7,9 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added - Phase 7: Storage Management (Part 1 - In Progress)
+### Added - Phase 7 Part 2: Gmail Integration (In Progress)
 
-#### [0.6.4.0] - 2026-01-08
+#### [0.6.5.0] - 2026-01-08
+
+##### Added
+- **GoogleAuthService** (Task 2.1): Complete Google OAuth2 authentication implementation
+  - OAuth2 client initialization with Google Cloud credentials
+  - Authorization URL generation for user consent flow
+  - Authorization code exchange for access/refresh tokens
+  - Token storage in macOS Keychain for secure persistence
+  - Automatic token refresh when expired
+  - Authentication status checking
+  - Logout functionality with keychain cleanup
+  - Comprehensive error handling and logging throughout
+- New dependencies: `googleapis` (Google API client), `keytar` (keychain storage)
+- Unit tests: `google-auth.test.ts` with 20 test cases (TDD approach)
+- TypeScript interfaces: `GoogleTokens`, `GoogleCredentials`
+
+##### Technical Details
+- Uses `googleapis` library for OAuth2 flow
+- Stores tokens securely in macOS Keychain via `keytar`
+- Supports offline access with refresh token persistence
+- Scopes: `gmail.send` (sending emails via Gmail API)
+- Auto-refresh expired tokens before API calls
+- All methods include comprehensive error handling with context
+- Detailed logging for debugging authentication flow
+
+## [0.6.4.0] - 2026-01-08
+
+### Added - Phase 7 Part 1: Storage Management
 
 ##### Added
 - **Storage Usage Dashboard** (Task 1.5): Added visual storage dashboard in Settings > Storage tab
