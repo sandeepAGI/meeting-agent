@@ -660,6 +660,21 @@ ipcMain.handle('transcribe-and-diarize', async (event, audioFilePath: string, op
       // Don't fail the entire operation if database save fails
     }
 
+    // Phase 6 Batch 6: Delete audio file if keepAudioFiles setting is false
+    try {
+      const dataRetentionSettings = settingsService.getCategory('dataRetention')
+      const keepAudioFiles = dataRetentionSettings.keepAudioFiles ?? false
+      if (!keepAudioFiles) {
+        fs.unlinkSync(audioFilePath)
+        console.log('[Cleanup] Deleted audio file (keepAudioFiles=false):', audioFilePath)
+      } else {
+        console.log('[Cleanup] Keeping audio file (keepAudioFiles=true):', audioFilePath)
+      }
+    } catch (cleanupError) {
+      console.error('[Cleanup] Failed to delete audio file:', cleanupError)
+      // Don't fail the entire operation if cleanup fails
+    }
+
     return {
       success: true,
       result: {
