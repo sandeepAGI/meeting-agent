@@ -114,15 +114,16 @@ export class JobScheduler {
    * Phase 7: Storage Management - Task 1.4
    *
    * Deletes oldest audio files when quota is exceeded.
+   * @returns Object with deletedCount and deletedMB
    * @private
    */
-  private async enforceAudioQuota(): Promise<void> {
+  private async enforceAudioQuota(): Promise<{ deletedCount: number; deletedMB: number }> {
     const settings = this.settingsService.getCategory('dataRetention')
     const quotaGB = settings.audioStorageQuotaGB ?? 0
 
     if (quotaGB === 0) {
       console.log('[JobScheduler] Audio quota enforcement skipped (quota = 0, unlimited)')
-      return // Unlimited
+      return { deletedCount: 0, deletedMB: 0 } // Unlimited
     }
 
     const usage = this.dbService.getAudioStorageUsage()
@@ -130,7 +131,7 @@ export class JobScheduler {
 
     if (usage.totalGB <= quotaGB) {
       console.log('[JobScheduler] Audio storage under quota, no action needed')
-      return // Under quota
+      return { deletedCount: 0, deletedMB: 0 } // Under quota
     }
 
     // Delete oldest files until under quota
@@ -168,5 +169,7 @@ export class JobScheduler {
 
     const deletedMB = deletedBytes / (1024 ** 2)
     console.log(`[JobScheduler] Audio quota enforcement complete: ${deletedCount} files deleted (${deletedMB.toFixed(1)} MB freed)`)
+
+    return { deletedCount, deletedMB }
   }
 }

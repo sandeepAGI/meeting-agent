@@ -157,6 +157,8 @@ export interface ElectronAPI {
       result?: {
         deletedTranscripts: number
         deletedSummaries: number
+        deletedAudioFiles: number
+        deletedAudioMB: number
       }
       error?: string
     }>

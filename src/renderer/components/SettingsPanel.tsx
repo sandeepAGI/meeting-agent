@@ -50,7 +50,12 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
   } | null>(null)
   const [isLoadingStorage, setIsLoadingStorage] = useState(false)
   const [isRunningCleanup, setIsRunningCleanup] = useState(false)
-  const [cleanupResult, setCleanupResult] = useState<{ deletedTranscripts: number; deletedSummaries: number } | null>(null)
+  const [cleanupResult, setCleanupResult] = useState<{
+    deletedTranscripts: number;
+    deletedSummaries: number;
+    deletedAudioFiles: number;
+    deletedAudioMB: number;
+  } | null>(null)
 
   // Load storage usage when storage tab is active
   useEffect(() => {
@@ -625,7 +630,10 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                           Cleanup complete: {cleanupResult.deletedTranscripts} transcript
                           {cleanupResult.deletedTranscripts !== 1 ? 's' : ''},{' '}
                           {cleanupResult.deletedSummaries} summar
-                          {cleanupResult.deletedSummaries !== 1 ? 'ies' : 'y'} deleted
+                          {cleanupResult.deletedSummaries !== 1 ? 'ies' : 'y'},{' '}
+                          {cleanupResult.deletedAudioFiles} audio file
+                          {cleanupResult.deletedAudioFiles !== 1 ? 's' : ''}{' '}
+                          ({cleanupResult.deletedAudioMB?.toFixed(1) || 0} MB) deleted
                         </div>
                       )}
                     </div>
