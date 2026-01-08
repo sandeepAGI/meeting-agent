@@ -11,9 +11,16 @@ import type { SummaryStatusDisplay } from '../../types/meetingSummary'
 interface SummaryProcessingProps {
   status: SummaryStatusDisplay
   onCancel: () => void
+  onRetry?: () => void  // NEW: Retry status check (for transient errors)
+  onGoBack?: () => void // NEW: Return to recording selection
 }
 
-export function SummaryProcessing({ status, onCancel }: SummaryProcessingProps) {
+export function SummaryProcessing({
+  status,
+  onCancel,
+  onRetry,
+  onGoBack
+}: SummaryProcessingProps) {
   // Real-time elapsed time calculation
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
 
@@ -102,7 +109,8 @@ export function SummaryProcessing({ status, onCancel }: SummaryProcessingProps) 
   const isComplete = status.status === 'complete'
   const isError = status.status === 'error'
   const isCancelled = status.status === 'cancelled'
-  const canCancel = !isComplete && !isError && !isCancelled
+  const canCancel = !isComplete && !isCancelled // FIXED: Allow actions in error state
+  const showErrorActions = isError // NEW: Show error recovery UI
 
   return (
     <div className="summary-processing">
@@ -162,10 +170,59 @@ export function SummaryProcessing({ status, onCancel }: SummaryProcessingProps) 
         </div>
       </div>
 
-      {canCancel && (
+      {canCancel && !showErrorActions && (
         <button onClick={onCancel} className="btn btn-cancel">
           Cancel Generation
         </button>
+      )}
+
+      {/* NEW: Error recovery actions */}
+      {showErrorActions && (
+        <div className="error-actions">
+          <p className="error-help-text">
+            What would you like to do?
+          </p>
+
+          <div className="error-buttons">
+            {onRetry && (
+              <button
+                onClick={onRetry}
+                className="btn btn-primary"
+                title="Check batch status again (in case of transient error)"
+              >
+                🔄 Retry Status Check
+              </button>
+            )}
+
+            {onCancel && (
+              <button
+                onClick={onCancel}
+                className="btn btn-warning"
+                title="Cancel this batch and start a new one"
+              >
+                🔁 Cancel and Resubmit
+              </button>
+            )}
+
+            {onGoBack && (
+              <button
+                onClick={onGoBack}
+                className="btn btn-secondary"
+                title="Return to recording selection"
+              >
+                ← Go Back
+              </button>
+            )}
+          </div>
+
+          <div className="error-advice">
+            <span className="advice-icon">💡</span>
+            <span className="advice-text">
+              Transient errors: Try "Retry Status Check" first.
+              If the batch is stuck, use "Cancel and Resubmit".
+            </span>
+          </div>
+        </div>
       )}
 
       {!isComplete && !isError && !isCancelled && (

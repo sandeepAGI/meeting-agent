@@ -110,6 +110,13 @@ export interface ElectronAPI {
     getRecordingsWithSummaries: (limit?: number) => Promise<{ success: boolean; recordings?: any[]; error?: string }>
     // Phase 5: Email Distribution
     markSummarySent: (summaryId: string, recipients: { name: string; email: string }[]) => Promise<{ success: boolean; error?: string }>
+    // Phase 1.5: Recording Database Insertion Bug Fix
+    saveRecording: (recordingData: {
+      id: string
+      filePath: string
+      duration: number
+      sizeBytes?: number
+    }) => Promise<{ success: boolean; recordingId?: string; error?: string }>
   }
 
   // Meeting Metadata Editing

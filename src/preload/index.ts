@@ -130,7 +130,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.invoke('db-get-recordings-with-summaries', limit),
     // Phase 5: Email Distribution
     markSummarySent: (summaryId: string, recipients: { name: string; email: string }[]) =>
-      ipcRenderer.invoke('db-mark-summary-sent', summaryId, recipients)
+      ipcRenderer.invoke('db-mark-summary-sent', summaryId, recipients),
+    // Phase 1.5: Recording Database Insertion Bug Fix
+    saveRecording: (recordingData: {
+      id: string
+      filePath: string
+      duration: number
+      sizeBytes?: number
+    }) => ipcRenderer.invoke('save-recording-to-database', recordingData)
   },
 
   // Phase 6: Settings

@@ -226,6 +226,8 @@ function App() {
               <SummaryProcessing
                 status={intelligenceState.status}
                 onCancel={() => intelligenceActions.cancel(intelligenceState.summaryId!)}
+                onRetry={() => intelligenceActions.fetchStatus(intelligenceState.summaryId!)}
+                onGoBack={intelligenceActions.clear}
               />
             )}
 

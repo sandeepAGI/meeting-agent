@@ -296,6 +296,46 @@ ipcMain.handle('merge-audio-chunks', async (_event, sessionId: string) => {
   }
 })
 
+// Phase 1.5: Save recording to database after merge
+// Bug Fix: Recordings were only saved during transcription, not after recording stops
+ipcMain.handle('save-recording-to-database', async (_event, recordingData: {
+  id: string
+  filePath: string
+  duration: number
+  sizeBytes?: number
+}) => {
+  try {
+    const { id, filePath, duration, sizeBytes } = recordingData
+
+    // Get file stats if not provided
+    let fileSize = sizeBytes
+    if (!fileSize) {
+      const stats = fs.statSync(filePath)
+      fileSize = stats.size
+    }
+
+    // Save to database
+    dbService.saveRecording({
+      id,
+      file_path: filePath,
+      file_size_bytes: fileSize,
+      duration_seconds: duration,
+      sample_rate: 16000,
+      channels: 2, // Stereo from audio loopback
+      format: 'wav'
+    })
+
+    console.log(`[Database] Recording saved: ${id} (${filePath})`)
+    return { success: true, recordingId: id }
+  } catch (error) {
+    console.error('[Database] Failed to save recording:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+})
+
 ipcMain.handle('get-transcription-status', async () => {
   return transcriptionService.getStatus()
 })

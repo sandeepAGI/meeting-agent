@@ -357,14 +357,38 @@ export class AudioCaptureService {
           // Create a placeholder blob (actual audio is on disk)
           const blob = new Blob([], { type: 'audio/wav' })
 
+          // Generate UUID for recording (Bug Fix: use proper ID instead of timestamp)
+          const recordingId = crypto.randomUUID()
+
           const session: RecordingSessionWithBlob = {
-            id: this.startTime!.toISOString(),
+            id: recordingId,
             filePath: mergeResult.filePath || '', // Path to merged file
             startTime: this.startTime!,
             endTime,
             duration,
             sizeBytes: mergeResult.sizeBytes || 0,
             blob, // Empty blob since audio is on disk
+          }
+
+          // Bug Fix: Save recording to database immediately after stop
+          // Previously recordings were only saved during transcription
+          try {
+            const dbResult = await window.electronAPI.database.saveRecording({
+              id: recordingId,
+              filePath: mergeResult.filePath || '',
+              duration,
+              sizeBytes: mergeResult.sizeBytes
+            })
+
+            if (dbResult.success) {
+              console.log('[AudioCapture] Recording saved to database:', recordingId)
+            } else {
+              console.error('[AudioCapture] Failed to save to database:', dbResult.error)
+              // Don't throw - recording is still on disk, user can manually recover
+            }
+          } catch (dbError) {
+            console.error('[AudioCapture] Database save exception:', dbError)
+            // Continue - recording file exists, just not in database yet
           }
 
           this.isRecording = false
