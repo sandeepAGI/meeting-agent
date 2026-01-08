@@ -10,7 +10,7 @@
  * - Audio (microphone, announcement)
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSettings } from '../hooks/useSettings'
 import type { SettingsTab } from '../../types/settings'
 import {
@@ -35,6 +35,61 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
   const [huggingfaceKey, setHuggingfaceKey] = useState('')
   const [keyError, setKeyError] = useState<string | null>(null)
   const [keySaveSuccess, setKeySaveSuccess] = useState<string | null>(null)
+
+  // Phase 7: Storage Dashboard state
+  const [storageUsage, setStorageUsage] = useState<{
+    audioGB: number
+    quotaGB: number
+    transcriptCount: number
+    summaryCount: number
+    recordingCount: number
+    oldestTranscriptDays: number
+    oldestSummaryDays: number
+    transcriptRetentionDays: number
+    summaryRetentionDays: number
+  } | null>(null)
+  const [isLoadingStorage, setIsLoadingStorage] = useState(false)
+  const [isRunningCleanup, setIsRunningCleanup] = useState(false)
+  const [cleanupResult, setCleanupResult] = useState<{ deletedTranscripts: number; deletedSummaries: number } | null>(null)
+
+  // Load storage usage when storage tab is active
+  useEffect(() => {
+    if (activeTab === 'storage') {
+      loadStorageUsage()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab])
+
+  const loadStorageUsage = async () => {
+    setIsLoadingStorage(true)
+    try {
+      const result = await window.electronAPI.storage.getUsage()
+      if (result.success && result.usage) {
+        setStorageUsage(result.usage)
+      }
+    } catch (err) {
+      console.error('Failed to load storage usage:', err)
+    } finally {
+      setIsLoadingStorage(false)
+    }
+  }
+
+  const handleRunCleanup = async () => {
+    setIsRunningCleanup(true)
+    setCleanupResult(null)
+    try {
+      const result = await window.electronAPI.storage.runCleanupNow()
+      if (result.success && result.result) {
+        setCleanupResult(result.result)
+        // Refresh usage stats
+        await loadStorageUsage()
+      }
+    } catch (err) {
+      console.error('Cleanup failed:', err)
+    } finally {
+      setIsRunningCleanup(false)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -498,6 +553,85 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div className="storage-dashboard">
+                <h3>Storage Usage</h3>
+                {isLoadingStorage ? (
+                  <div className="storage-loading">Loading storage stats...</div>
+                ) : storageUsage ? (
+                  <>
+                    <div className="storage-stats">
+                      <div className="storage-stat-card">
+                        <div className="storage-stat-label">Audio Files</div>
+                        <div className="storage-stat-value">
+                          {storageUsage.audioGB.toFixed(2)} GB / {storageUsage.quotaGB} GB
+                        </div>
+                        <div className="storage-progress-bar">
+                          <div
+                            className="storage-progress-fill"
+                            style={{
+                              width: `${storageUsage.quotaGB > 0 ? Math.min((storageUsage.audioGB / storageUsage.quotaGB) * 100, 100) : 0}%`,
+                              backgroundColor:
+                                storageUsage.audioGB > storageUsage.quotaGB * 0.9
+                                  ? '#ff4444'
+                                  : storageUsage.audioGB > storageUsage.quotaGB * 0.7
+                                  ? '#ffaa00'
+                                  : '#44ff44'
+                            }}
+                          />
+                        </div>
+                        <div className="storage-stat-detail">
+                          {storageUsage.recordingCount} recording{storageUsage.recordingCount !== 1 ? 's' : ''}
+                        </div>
+                      </div>
+
+                      <div className="storage-stat-card">
+                        <div className="storage-stat-label">Transcripts</div>
+                        <div className="storage-stat-value">{storageUsage.transcriptCount}</div>
+                        <div className="storage-stat-detail">
+                          Oldest: {storageUsage.oldestTranscriptDays} day
+                          {storageUsage.oldestTranscriptDays !== 1 ? 's' : ''} ago
+                        </div>
+                        <div className="storage-stat-detail">
+                          Retention: {storageUsage.transcriptRetentionDays === 0 ? 'Forever' : `${storageUsage.transcriptRetentionDays} days`}
+                        </div>
+                      </div>
+
+                      <div className="storage-stat-card">
+                        <div className="storage-stat-label">Summaries</div>
+                        <div className="storage-stat-value">{storageUsage.summaryCount}</div>
+                        <div className="storage-stat-detail">
+                          Oldest: {storageUsage.oldestSummaryDays} day
+                          {storageUsage.oldestSummaryDays !== 1 ? 's' : ''} ago
+                        </div>
+                        <div className="storage-stat-detail">
+                          Retention: {storageUsage.summaryRetentionDays === 0 ? 'Forever' : `${storageUsage.summaryRetentionDays} days`}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="storage-actions">
+                      <button
+                        className="cleanup-button"
+                        onClick={handleRunCleanup}
+                        disabled={isRunningCleanup}
+                      >
+                        {isRunningCleanup ? 'Running Cleanup...' : 'Run Cleanup Now'}
+                      </button>
+                      {cleanupResult && (
+                        <div className="cleanup-result">
+                          Cleanup complete: {cleanupResult.deletedTranscripts} transcript
+                          {cleanupResult.deletedTranscripts !== 1 ? 's' : ''},{' '}
+                          {cleanupResult.deletedSummaries} summar
+                          {cleanupResult.deletedSummaries !== 1 ? 'ies' : 'y'} deleted
+                        </div>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="storage-error">Failed to load storage stats</div>
+                )}
               </div>
             </div>
           )}

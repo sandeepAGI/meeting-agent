@@ -156,6 +156,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.invoke('settings-validate-api-key', service, key)
   },
 
+  // Phase 7: Storage Management
+  storage: {
+    getUsage: () => ipcRenderer.invoke('storage-get-usage'),
+    runCleanupNow: () => ipcRenderer.invoke('storage-run-cleanup-now')
+  },
+
   // Model Management (Packaging Phase 2)
   modelManager: {
     isAvailable: (modelName: string) => ipcRenderer.invoke('model-is-available', modelName),

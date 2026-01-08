@@ -1,35 +1,35 @@
 # Development Roadmap
 
 **Project**: Meeting Agent
-**Version**: 0.6.3.0
-**Last Updated**: 2026-01-07
+**Version**: 0.6.4.0
+**Last Updated**: 2026-01-08
 
 ---
 
 ## 📍 Current Status
 
-**Phase**: 6 (Configuration & Settings) - ✅ Complete
-**Progress**: All Batches (1-6) ✅ Complete
+**Phase**: 7 (Storage Management & Gmail Integration) - 🔄 In Progress
+**Progress**: Part 1 (Storage Management) ✅ Complete | Part 2 (Gmail Integration) - Not Started
 **Production Ready**: YES
-**What Works**: Audio capture + transcription + diarization + M365 integration + LLM summaries + email distribution + meeting metadata editing + fully functional settings
-**Latest**: Phase 6 complete - All settings wired and functional, 2 critical bugs fixed with TDD
+**What Works**: Audio capture + transcription + diarization + M365 integration + LLM summaries + email distribution + meeting metadata editing + fully functional settings + automated data retention cleanup + storage dashboard
+**Latest**: Phase 7 Part 1 complete - Background job scheduler, retention policies (transcripts & summaries), audio quota enforcement, and storage dashboard all implemented with TDD
 
 ---
 
-## 🎯 Next Up: Phase 7 - Storage Management
+## 🎯 Next Up: Phase 7 Part 2 - Gmail Integration
 
-**Current Work**: Planning Phase 7 implementation
-**Priority**: HIGH - Critical retention policies not enforced (user has 30-day retention set but not active)
-**Estimated**: 3-4 hours
+**Current Work**: Beginning Gmail integration implementation
+**Priority**: HIGH - Expand user base beyond M365 users
+**Estimated**: 12-16 hours
 
 **Tasks**:
-- [ ] Implement transcript retention policy (automatic cleanup after N days)
-- [ ] Implement summary retention policy (automatic cleanup after N days)
-- [ ] Implement audio storage quota enforcement (delete oldest when quota exceeded)
-- [ ] Add background job scheduler for retention cleanup
-- [ ] Add storage usage dashboard in settings
+- [ ] Implement GoogleAuthService with OAuth2 (Task 2.1)
+- [ ] Implement GmailApiService for sending emails (Task 2.2)
+- [ ] Create EmailProvider abstraction (M365/Gmail) (Task 2.3)
+- [ ] Integrate Gmail settings into Settings panel (Task 2.4)
+- [ ] Perform integration testing (Task 2.5)
 
-**See**: `docs/planning/phase7-plan.md` for detailed implementation plan
+**See**: `docs/planning/phase7-plan.md` and `docs/planning/gmail-integration.md` for detailed implementation plan
 
 **Then**: Phase 8 - Performance Optimization OR Phase 10 - Packaging & Distribution
 
@@ -59,6 +59,7 @@
 | 5.5 | Email Customization | ✅ | Oct 30, 2025 | Section toggles, custom intro, disclaimer |
 | 6 (Batch 1) | Settings - API Keys | ✅ | Dec 4, 2025 | Settings UI + keychain integration |
 | 6 (Batches 2-6) | Settings - Wire All | ✅ | Jan 7, 2026 | All settings functional + 2 bug fixes |
+| 7 (Part 1) | Storage Management | ✅ | Jan 8, 2026 | Retention policies + quota enforcement + dashboard (TDD) |
 
 **Refactor Sprints**:
 - R1: Critical bug fixes (chunked recording, WAV headers) ✅
@@ -68,7 +69,7 @@
 
 | Phase | Name | Status | Summary |
 |-------|------|--------|---------|
-| 7 | Data Management & Storage | 📋 Planning | Retention policies, quota enforcement, auto-cleanup |
+| 7 (Part 2) | Gmail Integration | 📋 Planning | Google OAuth2 + Gmail API + email provider abstraction |
 
 ### Planned
 
@@ -112,6 +113,52 @@
 - Audio storage quota enforcement
 
 **Archive**: `docs/archive/phase6/`
+
+---
+
+### Phase 7 Part 1: Storage Management (Complete) ✅
+
+**Completed**: January 8, 2026
+**Duration**: ~4 hours (Tasks 1.1-1.5)
+**Approach**: Test-Driven Development (TDD - RED/GREEN/REFACTOR)
+
+**Deliverables**:
+- ✅ **Task 1.1**: Background job scheduler (runs cleanup every 24 hours)
+- ✅ **Task 1.2**: Transcript retention policy (auto-delete after N days)
+- ✅ **Task 1.3**: Summary retention policy (auto-delete after N days)
+- ✅ **Task 1.4**: Audio storage quota enforcement (delete oldest files when quota exceeded)
+- ✅ **Task 1.5**: Storage usage dashboard (real-time stats + manual cleanup button)
+
+**New Features**:
+- Automated cleanup runs every 24 hours on app startup
+- Respects user-configured retention settings:
+  - `transcriptRetentionDays` (default: 90, 0 = keep forever)
+  - `summaryRetentionDays` (default: 365, 0 = keep forever)
+  - `audioStorageQuotaGB` (default: 10, 0 = unlimited)
+- Storage dashboard in Settings > Storage shows:
+  - Audio usage with color-coded progress bar (green/orange/red)
+  - Transcript/summary counts with oldest item age
+  - Current retention policy settings
+  - "Run Cleanup Now" button for immediate enforcement
+
+**Technical Implementation**:
+- New service: `JobScheduler` class for background task management
+- New database methods: `cleanupOldTranscripts()`, `cleanupOldSummaries()`, `getAudioStorageUsage()`, `enforceAudioQuota()`
+- New IPC handlers: `storage-get-usage`, `storage-run-cleanup-now`
+- React component updates: Storage dashboard in SettingsPanel
+- Unit tests: `storage-dashboard-ipc.test.ts`
+
+**Testing Levels Completed**:
+- ✅ Level 1: Type checking + build verification
+- ✅ Level 2: Logic review (error handling, edge cases)
+- ⏳ Level 3: Manual testing (to be performed on next app run)
+
+**Documentation**:
+- Updated: `CHANGELOG.md` (new file created)
+- Updated: `docs/planning/roadmap.md` (this file)
+- Reference: `docs/planning/phase7-plan.md` (detailed TDD approach)
+
+**Next**: Phase 7 Part 2 - Gmail Integration
 
 ---
 

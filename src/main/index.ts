@@ -1539,6 +1539,85 @@ ipcMain.handle('settings-validate-api-key', async (_event, service: 'anthropic' 
   }
 })
 
+// ===========================================================================
+// Phase 7: Storage Management - IPC Handlers
+// ===========================================================================
+
+ipcMain.handle('storage-get-usage', async () => {
+  try {
+    const audioUsage = dbService.getAudioStorageUsage()
+    const settings = settingsService.getCategory('dataRetention')
+
+    const db_instance = (dbService as any).db
+
+    const transcriptCount = db_instance.prepare('SELECT COUNT(*) as count FROM transcripts').get().count
+    const summaryCount = db_instance.prepare('SELECT COUNT(*) as count FROM meeting_summaries').get().count
+    const recordingCount = db_instance.prepare("SELECT COUNT(*) as count FROM recordings WHERE file_path != ''").get().count
+
+    // Get oldest transcript/summary age
+    const oldestTranscript = db_instance.prepare(`
+      SELECT (julianday('now') - julianday(created_at)) as age_days
+      FROM transcripts
+      ORDER BY created_at ASC
+      LIMIT 1
+    `).get()
+
+    const oldestSummary = db_instance.prepare(`
+      SELECT (julianday('now') - julianday(created_at)) as age_days
+      FROM meeting_summaries
+      ORDER BY created_at ASC
+      LIMIT 1
+    `).get()
+
+    return {
+      success: true,
+      usage: {
+        audioGB: audioUsage.totalGB,
+        quotaGB: settings.audioStorageQuotaGB ?? 10,
+        transcriptCount,
+        summaryCount,
+        recordingCount,
+        oldestTranscriptDays: Math.floor(oldestTranscript?.age_days || 0),
+        oldestSummaryDays: Math.floor(oldestSummary?.age_days || 0),
+        transcriptRetentionDays: settings.transcriptRetentionDays ?? 90,
+        summaryRetentionDays: settings.summaryRetentionDays ?? 365
+      }
+    }
+  } catch (error) {
+    console.error('[Storage] Get usage failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get storage usage'
+    }
+  }
+})
+
+ipcMain.handle('storage-run-cleanup-now', async () => {
+  try {
+    const settings = settingsService.getCategory('dataRetention')
+
+    const transcriptResult = dbService.cleanupOldTranscripts(settings.transcriptRetentionDays ?? 90)
+    const summaryResult = dbService.cleanupOldSummaries(settings.summaryRetentionDays ?? 365)
+
+    // Run audio quota enforcement
+    await jobScheduler['enforceAudioQuota']()
+
+    return {
+      success: true,
+      result: {
+        deletedTranscripts: transcriptResult.deletedCount,
+        deletedSummaries: summaryResult.deletedCount
+      }
+    }
+  } catch (error) {
+    console.error('[Storage] Cleanup failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Cleanup failed'
+    }
+  }
+})
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,

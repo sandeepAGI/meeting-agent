@@ -134,6 +134,33 @@ export interface ElectronAPI {
     setApiKey: (service: 'anthropic' | 'huggingface', key: string) => Promise<{ success: boolean; error?: string }>
     validateApiKey: (service: 'anthropic' | 'huggingface', key: string) => Promise<{ valid: boolean; error?: string }>
   }
+
+  // Phase 7: Storage Management
+  storage: {
+    getUsage: () => Promise<{
+      success: boolean
+      usage?: {
+        audioGB: number
+        quotaGB: number
+        transcriptCount: number
+        summaryCount: number
+        recordingCount: number
+        oldestTranscriptDays: number
+        oldestSummaryDays: number
+        transcriptRetentionDays: number
+        summaryRetentionDays: number
+      }
+      error?: string
+    }>
+    runCleanupNow: () => Promise<{
+      success: boolean
+      result?: {
+        deletedTranscripts: number
+        deletedSummaries: number
+      }
+      error?: string
+    }>
+  }
 }
 
 export interface M365AuthState {
