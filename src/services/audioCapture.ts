@@ -23,7 +23,6 @@ export class AudioCaptureService {
   private onAudioLevelCallback: ((level: AudioLevel) => void) | null = null
 
   private captureMicrophone = true // Default: capture microphone
-  private announcementText: string | null = null // Phase 6 Batch 4: Cached announcement text
 
   // Phase 1.5: Chunked recording
   private sessionId: string | null = null
@@ -68,14 +67,9 @@ export class AudioCaptureService {
   }
 
   /**
-   * Phase 6 Batch 4: Get announcement text from settings (with caching)
+   * Phase 6 Batch 4: Get announcement text from settings (no caching - fetch fresh each time)
    */
   private async getAnnouncementText(): Promise<string> {
-    // Return cached value if available
-    if (this.announcementText !== null) {
-      return this.announcementText
-    }
-
     // Default announcement text
     const defaultText =
       "This meeting, with your permission, is being recorded to generate meeting notes. " +
@@ -84,16 +78,14 @@ export class AudioCaptureService {
     try {
       const result = await window.electronAPI.settings.getSettings()
       if (result.success && result.settings) {
-        this.announcementText = result.settings.audio?.announcementText || defaultText
+        return result.settings.audio?.announcementText || defaultText
       } else {
-        this.announcementText = defaultText
+        return defaultText
       }
     } catch (error) {
       console.error('[AudioCapture] Failed to load announcement text from settings, using default')
-      this.announcementText = defaultText
+      return defaultText
     }
-
-    return this.announcementText
   }
 
   /**

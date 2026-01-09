@@ -493,7 +493,7 @@
 ### Phase 9: Error Handling, Logging & Model Management
 
 **Priority**: MEDIUM
-**Estimated**: ~11 hours
+**Estimated**: ~14 hours
 
 **Tasks**:
 - **Whisper Model Management UI** (4 hours) - HIGH PRIORITY
@@ -507,6 +507,12 @@
   - Display status in console when regenerate is triggered
   - Show "Regenerating..." status in UI during regeneration
   - Clear visual feedback that regeneration started successfully
+- **Theme Implementation** (3 hours)
+  - Implement dark theme CSS in design-system.css
+  - Apply theme setting to UI (light/dark/system)
+  - System theme detection (match macOS appearance)
+  - Persist theme preference across sessions
+  - Re-enable Theme dropdown in Settings
 - Retry mechanisms for API failures
 - User-friendly error messages (no technical jargon)
 - Diagnostic logging for troubleshooting
@@ -521,11 +527,15 @@
 - User sees actionable error messages ("Check your API key" not "401 Unauthorized")
 - App recovers from crashes without data loss
 
-**Current Blocker**:
-- Whisper Model selection is DISABLED in Settings (as of Phase 7 completion)
-- Reason: Selecting large models (3 GB) causes silent 10-15 minute download during app startup with no progress indicator
-- Users would think the app crashed/froze
-- Must implement proper download UX before re-enabling model selection
+**Current Blockers**:
+- **Whisper Model selection** is DISABLED in Settings (as of Phase 7 completion)
+  - Reason: Selecting large models (3 GB) causes silent 10-15 minute download during app startup with no progress indicator
+  - Users would think the app crashed/froze
+  - Must implement proper download UX before re-enabling model selection
+- **Theme selection** is DISABLED in Settings (Interface tab cleanup)
+  - Reason: Only saves setting but doesn't apply theme to UI (no dark mode CSS implemented)
+  - Misleading hint text: "Dark theme coming in a future update"
+  - Must implement dark theme CSS and system theme detection before re-enabling
 
 ---
 

@@ -40,9 +40,8 @@ export interface AppSettings {
 
   // UI Preferences
   ui: {
-    theme: 'light' | 'dark' | 'system'
+    theme: 'light' | 'dark' | 'system' // Disabled in UI until Phase 9
     fontSize: 'small' | 'medium' | 'large'
-    defaultView: 'browse' | 'generate'
     showRecordingAnnouncement: boolean
   }
 

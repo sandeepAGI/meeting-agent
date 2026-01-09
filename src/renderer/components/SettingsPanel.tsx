@@ -624,6 +624,11 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
             <div className="settings-section">
               <h3>Interface Preferences</h3>
 
+              {/* DISABLED: Theme selection requires proper CSS implementation (Phase 9)
+                  Current theme: light (hard-coded in design-system.css)
+                  Issue: Only saves setting but doesn't apply theme to UI
+                  "Dark theme coming in a future update" hint is misleading
+                  See Phase 9 roadmap for proper implementation.
               <div className="settings-field">
                 <label>Theme</label>
                 <select
@@ -642,37 +647,31 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                 </select>
                 <span className="settings-hint">Dark theme coming in a future update</span>
               </div>
+              */}
 
               <div className="settings-field">
                 <label>Font Size</label>
                 <select
                   value={settings.ui.fontSize}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const newFontSize = e.target.value as typeof settings.ui.fontSize
+                    // Save setting
                     actions.updateCategory('ui', {
-                      fontSize: e.target.value as typeof settings.ui.fontSize
+                      fontSize: newFontSize
                     })
-                  }
+                    // Apply immediately to DOM
+                    if (newFontSize !== 'medium') {
+                      document.documentElement.setAttribute('data-font-size', newFontSize)
+                    } else {
+                      document.documentElement.removeAttribute('data-font-size')
+                    }
+                  }}
                 >
                   {FONT_SIZE_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
                   ))}
-                </select>
-              </div>
-
-              <div className="settings-field">
-                <label>Default View</label>
-                <select
-                  value={settings.ui.defaultView}
-                  onChange={(e) =>
-                    actions.updateCategory('ui', {
-                      defaultView: e.target.value as typeof settings.ui.defaultView
-                    })
-                  }
-                >
-                  <option value="generate">Generate (New Summaries)</option>
-                  <option value="browse">Browse (Past Recordings)</option>
                 </select>
               </div>
 

@@ -62,16 +62,17 @@ export function useAudioCapture() {
     }
   }, [])
 
-  // Phase 6 Batch 4: Load includeMicrophone setting on mount
+  // Phase 6 Batch 4: Load includeMicrophone setting on mount (for initial UI state only)
+  // Note: Fresh setting is fetched when Initialize is clicked, so changes in Settings take effect immediately
   useEffect(() => {
     window.electronAPI.settings.getSettings().then((result) => {
       if (result.success && result.settings) {
         const includeMic = result.settings.audio?.includeMicrophone ?? true
         setCaptureMicrophone(includeMic)
-        console.log('[Audio] Microphone capture setting loaded:', includeMic)
+        console.log('[Audio] Initial microphone setting loaded:', includeMic)
       }
     }).catch((err) => {
-      console.error('[Audio] Failed to load microphone setting:', err)
+      console.error('[Audio] Failed to load initial microphone setting:', err)
     })
   }, [])
 
@@ -112,8 +113,21 @@ export function useAudioCapture() {
         throw new Error('Audio service not available')
       }
 
+      // Phase 6 Batch 4: Fetch microphone setting fresh from settings (no caching)
+      let includeMic = true // Default
+      try {
+        const result = await window.electronAPI.settings.getSettings()
+        if (result.success && result.settings) {
+          includeMic = result.settings.audio?.includeMicrophone ?? true
+          setCaptureMicrophone(includeMic) // Update state to reflect current setting
+          console.log('[Audio] Microphone setting loaded for initialization:', includeMic)
+        }
+      } catch (err) {
+        console.error('[Audio] Failed to load microphone setting, using default:', err)
+      }
+
       // Set microphone capture preference
-      audioServiceRef.current.setCaptureMicrophone(captureMicrophone)
+      audioServiceRef.current.setCaptureMicrophone(includeMic)
 
       // Initialize WAV encoder
       await audioServiceRef.current.initialize()

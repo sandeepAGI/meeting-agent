@@ -65,9 +65,8 @@ export interface AppSettings {
 
   // UI Preferences
   ui: {
-    theme: 'light' | 'dark' | 'system'
+    theme: 'light' | 'dark' | 'system' // Disabled in UI until Phase 9
     fontSize: 'small' | 'medium' | 'large'
-    defaultView: 'browse' | 'generate'
     showRecordingAnnouncement: boolean
   }
 
@@ -113,7 +112,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
   ui: {
     theme: 'light',
     fontSize: 'medium',
-    defaultView: 'generate',
     showRecordingAnnouncement: true
   },
   audio: {

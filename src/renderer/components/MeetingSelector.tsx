@@ -92,19 +92,6 @@ export function MeetingSelector({ onStartSummary, onViewTranscript, onViewSummar
   const [showMeetingPicker, setShowMeetingPicker] = useState(false)
   const [pendingTranscriptId, setPendingTranscriptId] = useState<string | null>(null)
 
-  // Phase 6 Batch 5: Load defaultView setting on mount
-  useEffect(() => {
-    window.electronAPI.settings.getSettings().then((result) => {
-      if (result.success && result.settings) {
-        const defaultView = result.settings.ui?.defaultView || 'generate'
-        setMode(defaultView)
-        console.log('[MeetingSelector] Default view loaded:', defaultView)
-      }
-    }).catch((err) => {
-      console.error('[MeetingSelector] Failed to load default view setting:', err)
-    })
-  }, [])
-
   // Fetch recordings on mount and when mode changes
   useEffect(() => {
     // Clear state when switching modes to prevent showing stale data
