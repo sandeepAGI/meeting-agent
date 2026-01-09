@@ -490,12 +490,19 @@
 
 ---
 
-### Phase 9: Error Handling & Logging
+### Phase 9: Error Handling, Logging & Model Management
 
 **Priority**: MEDIUM
-**Estimated**: ~6 hours
+**Estimated**: ~10 hours
 
 **Tasks**:
+- **Whisper Model Management UI** (4 hours) - HIGH PRIORITY
+  - Model selection with download status indicators (✅/❌ downloaded)
+  - Pre-download warning for large models (e.g., "3 GB download required")
+  - Background download with progress bar (percentage, speed, ETA)
+  - Model size and accuracy information for each option
+  - Current model indicator during transcription
+  - Ability to delete unused models to free space
 - Retry mechanisms for API failures
 - User-friendly error messages (no technical jargon)
 - Diagnostic logging for troubleshooting
@@ -503,9 +510,18 @@
 - Network failure handling
 
 **Success Criteria**:
+- Users can change Whisper model without app hanging (downloads show progress)
+- Model downloads are cancellable and don't block the UI
+- Clear indicators show which models are available vs need download
 - API failure auto-retries 3 times before showing error
 - User sees actionable error messages ("Check your API key" not "401 Unauthorized")
 - App recovers from crashes without data loss
+
+**Current Blocker**:
+- Whisper Model selection is DISABLED in Settings (as of Phase 7 completion)
+- Reason: Selecting large models (3 GB) causes silent 10-15 minute download during app startup with no progress indicator
+- Users would think the app crashed/froze
+- Must implement proper download UX before re-enabling model selection
 
 ---
 

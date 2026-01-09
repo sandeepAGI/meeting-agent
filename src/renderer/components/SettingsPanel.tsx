@@ -344,6 +344,10 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
             <div className="settings-section">
               <h3>Transcription Settings</h3>
 
+              {/* DISABLED: Model selection requires proper download UX (Phase 9)
+                  Current model: base (141 MB) - hard-coded until Phase 9
+                  Issue: Changing to large (3 GB) would block app startup for 10+ minutes
+                  with no progress indicator. See Phase 9 roadmap for proper implementation.
               <div className="settings-field">
                 <label>Whisper Model</label>
                 <select
@@ -364,6 +368,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                   Larger models are more accurate but slower. Base is recommended for most users.
                 </span>
               </div>
+              */}
 
               <div className="settings-field">
                 <label>CPU Threads</label>
