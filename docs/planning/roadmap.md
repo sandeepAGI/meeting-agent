@@ -493,7 +493,7 @@
 ### Phase 9: Error Handling, Logging & Model Management
 
 **Priority**: MEDIUM
-**Estimated**: ~10 hours
+**Estimated**: ~11 hours
 
 **Tasks**:
 - **Whisper Model Management UI** (4 hours) - HIGH PRIORITY
@@ -503,6 +503,10 @@
   - Model size and accuracy information for each option
   - Current model indicator during transcription
   - Ability to delete unused models to free space
+- **Summary Regeneration Feedback** (1 hour)
+  - Display status in console when regenerate is triggered
+  - Show "Regenerating..." status in UI during regeneration
+  - Clear visual feedback that regeneration started successfully
 - Retry mechanisms for API failures
 - User-friendly error messages (no technical jargon)
 - Diagnostic logging for troubleshooting
