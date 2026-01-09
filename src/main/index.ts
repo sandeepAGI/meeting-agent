@@ -1600,7 +1600,14 @@ ipcMain.handle('storage-run-cleanup-now', async () => {
     const summaryResult = dbService.cleanupOldSummaries(settings.summaryRetentionDays ?? 365)
 
     // Run audio quota enforcement
-    const audioResult = await jobScheduler['enforceAudioQuota']()
+    const audioResult = await jobScheduler.runAudioQuotaEnforcement()
+
+    console.log('[Storage] Cleanup results:', {
+      transcripts: transcriptResult.deletedCount,
+      summaries: summaryResult.deletedCount,
+      audioFiles: audioResult.deletedCount,
+      audioMB: audioResult.deletedMB
+    })
 
     return {
       success: true,

@@ -55,6 +55,14 @@ export class JobScheduler {
   }
 
   /**
+   * Run audio quota enforcement manually.
+   * Public method for manual cleanup triggering.
+   */
+  async runAudioQuotaEnforcement(): Promise<{ deletedCount: number; deletedMB: number }> {
+    return await this.enforceAudioQuota()
+  }
+
+  /**
    * Run all retention cleanup tasks.
    * Called immediately on start and every 24 hours thereafter.
    * @private
