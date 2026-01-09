@@ -384,7 +384,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                   }
                 />
                 <span className="settings-hint">
-                  Number of CPU threads for transcription. Use 0 for auto-detection.
+                  Controls transcription speed vs CPU usage. 0 = auto (recommended). Increase for faster processing, decrease to preserve CPU for other tasks.
                 </span>
               </div>
 
