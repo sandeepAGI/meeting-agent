@@ -3,10 +3,7 @@
  * Phase 2.3-3: Meeting Intelligence
  *
  * Shared utility for extracting meaningful keywords from meeting titles.
- * Used by EmailContextService for two-tier email search and by test scripts
- * for validation.
- *
- * Ensures tests validate actual production code (no duplication).
+ * Used by test scripts for validation.
  */
 
 /**

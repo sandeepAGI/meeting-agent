@@ -358,7 +358,7 @@ export class GraphApiService {
   }
 
   /**
-   * Get the initialized Graph API client (for EmailContextService)
+   * Get the initialized Graph API client
    */
   getClient(): Client | null {
     return this.client

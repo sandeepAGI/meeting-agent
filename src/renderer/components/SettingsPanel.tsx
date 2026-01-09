@@ -453,37 +453,6 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                 </span>
               </div>
 
-              <div className="settings-field">
-                <label>Email Body Max Length</label>
-                <input
-                  type="number"
-                  min="500"
-                  max="10000"
-                  value={settings.summary.emailBodyMaxLength}
-                  onChange={(e) =>
-                    actions.updateCategory('summary', {
-                      emailBodyMaxLength: parseInt(e.target.value, 10) || 2000
-                    })
-                  }
-                />
-                <span className="settings-hint">Maximum characters per email body in context</span>
-              </div>
-
-              <div className="settings-field">
-                <label>Email Context Max Count</label>
-                <input
-                  type="number"
-                  min="1"
-                  max="50"
-                  value={settings.summary.emailContextMaxCount}
-                  onChange={(e) =>
-                    actions.updateCategory('summary', {
-                      emailContextMaxCount: parseInt(e.target.value, 10) || 10
-                    })
-                  }
-                />
-                <span className="settings-hint">Maximum number of emails to include in context</span>
-              </div>
             </div>
           )}
 

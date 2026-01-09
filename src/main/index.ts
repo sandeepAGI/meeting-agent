@@ -11,7 +11,6 @@ import { M365AuthService } from '../services/m365Auth'
 import { GraphApiService } from '../services/graphApi'
 import { DatabaseService } from '../services/database'
 import { ClaudeBatchService } from '../services/claudeBatch'
-import { EmailContextService } from '../services/emailContext'
 import { MeetingIntelligenceService } from '../services/meetingIntelligence'
 import { mergeDiarizationWithTranscript } from '../utils/mergeDiarization'
 import type { TranscriptionOptions } from '../types/transcription'
@@ -43,7 +42,6 @@ graphApiService.setDatabaseService(dbService)
 // Initialize Meeting Intelligence services (Phase 2.3-3)
 // These are initialized later from settings in app.whenReady()
 let claudeService: ClaudeBatchService | null = null
-let emailService: EmailContextService | null = null
 let intelligenceService: MeetingIntelligenceService | null = null
 
 // Initialize Job Scheduler (Phase 7: Storage Management)
@@ -1021,7 +1019,6 @@ function ensureIntelligenceService(): MeetingIntelligenceService {
       throw new Error('Graph API client not initialized. Please log in first.')
     }
 
-    emailService = new EmailContextService(graphClient, dbService)
     intelligenceService = new MeetingIntelligenceService(
       claudeService,
       dbService
@@ -1136,25 +1133,6 @@ ipcMain.handle('meeting-intelligence-regenerate', async (_event, summaryId: stri
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to regenerate summary'
-    }
-  }
-})
-
-// Fetch email context for a meeting
-ipcMain.handle('meeting-intelligence-fetch-emails', async (_event, meetingId: string, participantEmails: string[]) => {
-  try {
-    if (!emailService) {
-      throw new Error('Email service not initialized')
-    }
-
-    const emails = await emailService.getEmailsForMeeting(meetingId, participantEmails)
-
-    return { success: true, emails }
-  } catch (error) {
-    console.error('[MeetingIntelligence] Fetch emails failed:', error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to fetch emails'
     }
   }
 })

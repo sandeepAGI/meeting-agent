@@ -174,24 +174,6 @@ CREATE INDEX IF NOT EXISTS idx_batch_jobs_summary_id ON batch_jobs(summary_id);
 CREATE INDEX IF NOT EXISTS idx_batch_jobs_status ON batch_jobs(status);
 
 -- =============================================================================
--- Table: email_context_cache
--- Caches email context for faster regeneration
--- =============================================================================
-CREATE TABLE IF NOT EXISTS email_context_cache (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  meeting_id TEXT NOT NULL UNIQUE,
-  emails_json TEXT NOT NULL,        -- JSON array of EmailContext
-  fetched_at DATETIME NOT NULL,
-  expires_at DATETIME NOT NULL,     -- Cache expires after 7 days
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-
-  FOREIGN KEY (meeting_id) REFERENCES meetings(id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_email_cache_meeting_id ON email_context_cache(meeting_id);
-CREATE INDEX IF NOT EXISTS idx_email_cache_expires_at ON email_context_cache(expires_at);
-
--- =============================================================================
 -- Triggers for updated_at timestamp
 -- =============================================================================
 CREATE TRIGGER IF NOT EXISTS update_meetings_timestamp

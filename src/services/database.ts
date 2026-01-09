@@ -15,8 +15,7 @@ import type {
   SummaryStatus,
   Pass1Result,
   Pass2Result,
-  UpdateSummaryRequest,
-  EmailContext
+  UpdateSummaryRequest
 } from '../types'
 
 // Conditional electron import - only available in Electron environment
@@ -1022,60 +1021,6 @@ export class DatabaseService {
       ORDER BY pass_number ASC
     `)
     return stmt.all(summaryId) as any[]
-  }
-
-  // ===========================================================================
-  // Email Context Cache
-  // ===========================================================================
-
-  cacheEmails(meetingId: string, emails: EmailContext[]): void {
-    const expiresAt = new Date()
-    expiresAt.setDate(expiresAt.getDate() + 7) // 7 day cache
-
-    const stmt = this.db.prepare(`
-      INSERT OR REPLACE INTO email_context_cache (
-        meeting_id, emails_json, fetched_at, expires_at
-      ) VALUES (?, ?, CURRENT_TIMESTAMP, ?)
-    `)
-
-    stmt.run(meetingId, JSON.stringify(emails), expiresAt.toISOString())
-  }
-
-  getCachedEmails(meetingId: string): EmailContext[] | null {
-    const stmt = this.db.prepare(`
-      SELECT emails_json, expires_at 
-      FROM email_context_cache 
-      WHERE meeting_id = ?
-    `)
-
-    const result = stmt.get(meetingId) as any
-
-    if (!result) return null
-
-    // Check if expired
-    const expiresAt = new Date(result.expires_at)
-    if (expiresAt < new Date()) {
-      // Cache expired, delete it
-      this.db
-        .prepare('DELETE FROM email_context_cache WHERE meeting_id = ?')
-        .run(meetingId)
-      return null
-    }
-
-    return JSON.parse(result.emails_json)
-  }
-
-  // ===========================================================================
-  // Cleanup / Maintenance
-  // ===========================================================================
-
-  cleanupExpiredCache(): void {
-    const stmt = this.db.prepare(`
-      DELETE FROM email_context_cache 
-      WHERE expires_at < CURRENT_TIMESTAMP
-    `)
-    const result = stmt.run()
-    console.log(`Cleaned up ${result.changes} expired email cache entries`)
   }
 
   // ===========================================================================

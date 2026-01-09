@@ -28,8 +28,6 @@ export interface AppSettings {
   summary: {
     verbosity: 'concise' | 'detailed' | 'comprehensive'
     customDisclaimer: string | null // null = use default
-    emailBodyMaxLength: number
-    emailContextMaxCount: number
   }
 
   // Data Retention Settings

@@ -53,8 +53,6 @@ export interface AppSettings {
   summary: {
     verbosity: 'concise' | 'detailed' | 'comprehensive'
     customDisclaimer: string | null // null = use default
-    emailBodyMaxLength: number
-    emailContextMaxCount: number
   }
 
   // Data Retention Settings
@@ -104,9 +102,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   },
   summary: {
     verbosity: 'detailed',
-    customDisclaimer: null,
-    emailBodyMaxLength: 2000,
-    emailContextMaxCount: 10
+    customDisclaimer: null
   },
   dataRetention: {
     keepAudioFiles: false,
@@ -245,14 +241,6 @@ export class SettingsService {
       if (['tiny', 'base', 'small', 'medium', 'large'].includes(model)) {
         this.settings.transcription.model = model
       }
-    }
-
-    if (process.env.EMAIL_BODY_MAX_LENGTH) {
-      this.settings.summary.emailBodyMaxLength = parseInt(process.env.EMAIL_BODY_MAX_LENGTH, 10)
-    }
-
-    if (process.env.EMAIL_CONTEXT_MAX_COUNT) {
-      this.settings.summary.emailContextMaxCount = parseInt(process.env.EMAIL_CONTEXT_MAX_COUNT, 10)
     }
 
     if (process.env.DATA_RETENTION_DAYS) {
